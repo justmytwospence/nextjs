@@ -13,8 +13,23 @@ export function computeDistanceMiles(polyline: GeoJSON.LineString): number[] {
   });
 }
 
+function smoothArray(arr: number[], windowSize: number = 10): number[] {
+  const result = [];
+  for (let i = 0; i < arr.length; i++) {
+    let sum = 0;
+    let count = 0;
+    for (let j = Math.max(0, i - Math.floor(windowSize / 2));
+      j <= Math.min(arr.length - 1, i + Math.floor(windowSize / 2)); j++) {
+      sum += arr[j];
+      count++;
+    }
+    result.push(sum / count);
+  }
+  return result;
+}
+
 export function computeGradient(polyline: GeoJSON.LineString): number[] {
-  return polyline.coordinates.map((point, index, coords) => {
+  const rawGradients = polyline.coordinates.map((point, index, coords) => {
     if (index === 0) return 0;
     const from = turf.point(coords[index - 1]);
     const to = turf.point(point);
@@ -22,6 +37,8 @@ export function computeGradient(polyline: GeoJSON.LineString): number[] {
     const elevationChange = (point[2] - coords[index - 1][2]) * 0.3048;
     return elevationChange / distance;
   });
+
+  return smoothArray(rawGradients);
 }
 
 export function computeCdf(data, range) {
