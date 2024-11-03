@@ -33,7 +33,11 @@ export default async function Topbar() {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="secondary" size="icon" className="rounded-full">
-              <CircleUser className="h-5 w-5" />
+              <img
+                src={session?.user?.image || ''}
+                alt="Profile"
+                className="h-full w-full rounded-full"
+              />
               <span className="sr-only">Toggle user menu</span>
             </Button>
           </DropdownMenuTrigger>
