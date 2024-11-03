@@ -77,7 +77,7 @@ function RouteGrid({ routes }: { routes: StravaRoute[] }) {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="aspect-[16/9] w-full overflow-hidden rounded-md">
-              <LazyMap route={route} />
+              <LazyMap route={route} interactive={false} />
             </div>
           </CardContent>
           <CardFooter className="text-sm text-muted-foreground">

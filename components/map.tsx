@@ -26,15 +26,17 @@ const GeoJSONLayer = ({ polyline }) => {
   return null;
 };
 
-const Map = ({ route }) => {
+const Map = ({ route, interactive = true }: { route: StravaRoute; interactive?: boolean }) => {
   return (
     <MapContainer
       className="map-container"
       style={{ height: '100%', width: '100%' }}
       center={[51.505, -0.09]}
       zoom={13}
-      zoomControl={false}
-      dragging={false}
+      zoomControl={interactive}
+      dragging={interactive}
+      attributionControl={interactive}
+      doubleClickZoom={interactive}
     >
       <TileLayer url='https://tile.jawg.io/jawg-terrain/{z}/{x}/{y}{r}.png?access-token=bDE5WHMnFV1P973D59QWuGaq6hebBcjPSyud6vVGYqqi2r4kZyaShdbC3SF2Bc7y' />
       {route.summaryPolyline && <GeoJSONLayer polyline={route.summaryPolyline} />}
