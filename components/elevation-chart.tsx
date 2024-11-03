@@ -18,7 +18,6 @@ export default function ElevationChart({ route, maxGradient }) {
   const distance = computeDistanceMiles(polyline);
   const elevationData = polyline.coordinates.map(point => point[2] * 3.28084); // Convert meters to feet for elevation
   const gradientData = computeGradient(polyline);
-  console.log(gradientData)
 
   const data = {
     labels: distance,

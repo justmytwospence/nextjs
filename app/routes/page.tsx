@@ -7,7 +7,7 @@ export default async function RoutesPage() {
   const session = await auth();
   const sessionLogger = createSessionLogger(session);
   const initialRoutes = await queryUserRoutes(session);
-  sessionLogger.info('Found routes', initialRoutes);
+  sessionLogger.info(`Found ${initialRoutes.length} routes`);
 
   return <RoutesClient initialRoutes={initialRoutes} />;
 }

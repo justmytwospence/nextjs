@@ -23,3 +23,23 @@ export function computeGradient(polyline: GeoJSON.LineString): number[] {
     return elevationChange / distance;
   });
 }
+
+export function computeCdf(data, range) {
+  const sorted = [...data].sort((a, b) => a - b);
+  const cdf = [];
+  let cumulativeCount = 0;
+  let dataIndex = 0;
+
+  range.forEach(x => {
+    while (dataIndex < sorted.length && sorted[dataIndex] <= x) {
+      cumulativeCount++;
+      dataIndex++;
+    }
+    cdf.push({
+      x: x,
+      y: cumulativeCount / sorted.length
+    });
+  });
+
+  return cdf;
+};
