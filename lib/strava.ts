@@ -7,7 +7,7 @@ import tj from '@mapbox/togeojson';
 import { DOMParser } from '@xmldom/xmldom';
 import { Session } from 'next-auth';
 
-export async function fetchUserRoutes(session: Session, per_page: number = 30) {
+export async function fetchUserRoutes(session: Session, per_page: number = 200) {
   const sessionLogger = createSessionLogger(session);
   sessionLogger.info('Fetching user routes from Strava', { per_page });
   try {
