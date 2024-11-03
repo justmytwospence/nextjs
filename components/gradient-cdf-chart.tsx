@@ -33,14 +33,14 @@ const GradientCdfChart = ({ selectedRoute1, selectedRoute2 }: { routes: { Strava
     labels: xAxisRange,
     datasets: [
       {
-        label: 'Course 1',
+        label: selectedRoute1.name, // Use route name for Course 1
         data: cdf1.map(point => point.y),
         borderColor: 'rgba(75,192,192,1)',
         fill: false,
         pointRadius: 0,
       },
       {
-        label: 'Course 2',
+        label: selectedRoute2.name, // Use route name for Course 2
         data: cdf2.map(point => point.y),
         borderColor: 'rgba(153,102,255,1)',
         fill: false,
