@@ -10,8 +10,6 @@ import ElevationChart from './elevation-chart';
 export default function RouteComparisonColumn({ routes, selectedRoute, setSelectedRoute }) {
   return (
     <div className="space-y-6 p-6 bg-background border rounded-lg">
-      <h2 className="text-2xl font-semibold tracking-tight">Select a Route</h2>
-
       <Select onValueChange={async (value) => {
         const fullRoute = await queryRouteAction(value);
         setSelectedRoute(fullRoute);
