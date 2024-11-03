@@ -30,7 +30,15 @@ export default function SyncStravaButton() {
     progress: number,
     succeeded: number,
     total: number
-  } | null>();
+  }>({
+    currentRoute: "",
+    failed: 0,
+    failedRoutes: [],
+    message: "",
+    progress: 0,
+    succeeded: 0,
+    total: 0,
+  });
 
   const handleButtonClick = () => {
     if (isLoading) {
@@ -43,15 +51,6 @@ export default function SyncStravaButton() {
   const startSync = useCallback(async () => {
     setIsLoading(true);
     setShowModal(true);
-    setProgressSummary(prev => ({
-      ...prev,
-      failed: 0,
-      failedRoutes: [],
-      message: "Starting sync...",
-      progress: 0,
-      succeeded: 0,
-      total: 0,
-    }));
 
     const events = new EventSource('/api/sync-strava');
 
@@ -80,19 +79,26 @@ export default function SyncStravaButton() {
             progress: prev.progress + 1,
             succeeded: prev.succeeded + 1
           }));
+          break;
         case 'fail':
           setProgressSummary(prev => ({
             ...prev,
             message: `Failed to sync ${data.route}: ${data.error}`,
             progress: prev.progress + 1,
-            failed: data.current - (prev?.failedRoutes.length || 0),
-            failedRoutes: [...prev.failedRoutes, { name: data.route, error: data.error }]
+            failed: prev.failed + 1,
+            failedRoutes: [
+              ...prev.failedRoutes,
+              {
+                name: data.route,
+                error: data.error
+              }
+            ]
           }));
           break;
         case 'complete':
           events.close();
           setIsLoading(false);
-          router.refresh();
+          // router.refresh();
           break;
         case 'error':
           events.close();
@@ -107,38 +113,29 @@ export default function SyncStravaButton() {
       }
     };
 
-  }, []); // Empty dependency array since router.refresh() is stable
+  }, []);
 
-  const PopoverProgress = () => progressSummary?.total ? (
+  const PopoverProgress = ({ progressSummary }) => progressSummary?.total ? (
     <div className="space-y-2">
       <Progress value={(progressSummary.progress / progressSummary.total) * 100} />
       <p className="text-sm text-muted-foreground">
-        Currently syncing: {progressSummary.currentRoute}
-      </p>
-      <p className="text-sm text-muted-foreground">
-        {progressSummary.progress} of {progressSummary.total} routes ({Math.round((progressSummary.progress / progressSummary.total) * 100)}%)
-      </p>
-      <p className="text-sm text-muted-foreground">
-        Success: {progressSummary.succeeded} | Failed: {progressSummary.failed}
+        {progressSummary.message}
       </p>
     </div>
   ) : null;
 
-  const ModalProgress = () => progressSummary?.total ? (
+  const ModalProgress = ({ progressSummary }) => progressSummary?.total ? (
     <div className="space-y-2">
       <Progress value={(progressSummary.progress / progressSummary.total) * 100} />
       <p className="text-sm text-muted-foreground">
-        Currently syncing: {progressSummary.currentRoute}
-      </p>
-      <p className="text-sm text-muted-foreground">
-        Progress: {progressSummary.progress} of {progressSummary.total} routes ({Math.round((progressSummary.progress / progressSummary.total) * 100)}%)
+        {progressSummary.message}
       </p>
       {progressSummary.failedRoutes.length > 0 && (
         <div className="mt-4">
           <p className="text-sm font-medium text-destructive">Failed routes:</p>
           <ul className="text-sm text-muted-foreground list-disc pl-4">
-            {progressSummary.failedRoutes.map((route, i) => (
-              <li key={i}>{route.name}: {route.error}</li>
+            {progressSummary.failedRoutes.map((failedRoute, i) => (
+              <li key={i}>{failedRoute.name}: {failedRoute.error}</li>
             ))}
           </ul>
         </div>
@@ -169,11 +166,8 @@ export default function SyncStravaButton() {
             </Button>
           </PopoverTrigger>
           {isLoading && (
-            <PopoverContent
-              className="w-80"
-              sideOffset={5}
-            >
-              <PopoverProgress />
+            <PopoverContent className="w-80" sideOffset={5}>
+              <PopoverProgress progressSummary={progressSummary} />
             </PopoverContent>
           )}
         </div>
@@ -187,20 +181,7 @@ export default function SyncStravaButton() {
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            {isLoading ? (
-              <ModalProgress />
-            ) : (
-              progressSummary && (
-                <>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    {progressSummary.message}
-                  </p>
-                  <div className="flex justify-end mt-4">
-                    <Button onClick={() => setShowModal(false)}>Close</Button>
-                  </div>
-                </>
-              )
-            )}
+            <ModalProgress progressSummary={progressSummary} />
           </div>
         </DialogContent>
       </Dialog>

@@ -3,7 +3,6 @@ import { fetchUserRoutes } from "@/lib/strava";
 import { upsertRoute } from "@/lib/db";
 import { NextResponse } from "next/server";
 import { createSessionLogger } from '@/lib/logger';
-import { Session } from 'next-auth';
 
 export async function GET() {
   const session = await auth();
@@ -44,7 +43,7 @@ async function syncRoutes(session: Session, send) {
       nRoutes: routes.length
     });
 
-    await Promise.all(routes.map(async (route) => {
+    for (const route of routes) {
       sessionLogger.debug('Processing route', {
         routeName: route.name,
         routeId: route.id_str
@@ -74,7 +73,7 @@ async function syncRoutes(session: Session, send) {
           error: error instanceof Error ? error.message : String(error)
         });
       }
-    }));
+    }
 
     sessionLogger.info('Route sync completed');
     await send({
