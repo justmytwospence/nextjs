@@ -5,6 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import LazyMap from "@/components/lazy-map";
 import { StravaRoute } from "@prisma/client";
 import { queryRouteAction } from "@/app/actions/queryRoute";
+import ElevationChart from './elevation-chart';
 
 export default function RouteComparisonColumn({ routes }) {
   const [selectedRoute, setSelectedRoute] = useState<StravaRoute | null>(null);
@@ -36,6 +37,10 @@ export default function RouteComparisonColumn({ routes }) {
         <div className="h-[300px] w-full mt-4">
           <LazyMap route={selectedRoute} />
         </div>
+      )}
+
+      {selectedRoute && (
+        <ElevationChart route={selectedRoute} maxGradient={0.1} />
       )}
     </div>
   );

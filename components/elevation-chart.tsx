@@ -1,34 +1,23 @@
 "use client";
 
-import polyline from '@mapbox/polyline';
-import * as turf from '@turf/turf';
+import { computeDistanceMiles, computeGradient } from '../lib/geo';
 import { CategoryScale, Chart as ChartJS, Filler, LinearScale, LineElement, PointElement, Title, Tooltip } from 'chart.js';
 import React from 'react';
 import { Line } from 'react-chartjs-2';
-
+import { Spinner } from '@/components/ui/spinner';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Filler);
 
-const ElevationChart = ({ stravaRoute, maxGradient }) => {
-  if (!stravaRoute) {
-    return <div>No data available</div>;
+export default function ElevationChart({ route, maxGradient }) {
+  if (!route) {
+    return <Spinner className="w-6 h-6 text-blue-500" />;
   }
 
-  const summaryPolyline = polyline.toGeoJSON(stravaRoute.summaryPolyline);
-  console.log(summaryPolyline)
+  const polyline = route.polyline.features[0].geometry;
 
-  const distance = summaryPolyline.coordinates.reduce((acc, coord, index) => {
-    if (index === 0) return [0];
-    const from = turf.point([summaryPolyline.coordinates[index - 1][0], summaryPolyline.coordinates[index - 1][1]]);
-    const to = turf.point([coord[0], coord[1]]);
-    const distance = turf.distance(from, to);
-    return [...acc, acc[index - 1] + distance];
-  }, []).map(d => d.toFixed(2));
-  console.log(distance)
-  // Convert meters to feet for elevation
-  const elevationData = summaryPolyline.coordinates.map(point => point.ele * 3.28084);
-  console.log(elevationData)
-  const gradientData = summaryPolyline.coordinates.map(point => point.gradient);
+  const distance = computeDistanceMiles(polyline);
+  const elevationData = polyline.coordinates.map(point => point[2] * 3.28084); // Convert meters to feet for elevation
+  const gradientData = computeGradient(polyline);
   console.log(gradientData)
 
   const data = {
@@ -128,5 +117,3 @@ const ElevationChart = ({ stravaRoute, maxGradient }) => {
 
   return <Line data={data} options={options} />;
 };
-
-export default ElevationChart;
