@@ -4,7 +4,7 @@ import { createSessionLogger } from '@/lib/logger';
 import prisma from '@/lib/prisma';
 import { fetchRouteGeoJson } from '@/lib/strava';
 import polyline from '@mapbox/polyline';
-import { Strava } from "./routes";
+import type { StravaRoute } from "@prisma/client";
 
 
 export async function queryUserAccount(session: Session, accountProvider: string) {
@@ -35,7 +35,7 @@ export async function queryUserAccount(session: Session, accountProvider: string
   }
 }
 
-export async function queryUserRoutes(session: Session) {
+export async function queryUserRoutes(session: Session): Promise<StravaRoute[]> {
   const sessionLogger = createSessionLogger(session);
   try {
     sessionLogger.info('Querying user routes');

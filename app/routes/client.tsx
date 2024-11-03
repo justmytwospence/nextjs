@@ -12,8 +12,9 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import type { StravaRoute } from "@prisma/client";
 
-export default function RoutesClient({ initialRoutes }) {
+export default function RoutesClient({ initialRoutes }: { initialRoutes: StravaRoute[] }) {
   const [selectedType, setSelectedType] = useState('all');
 
   const routeTypes = {
@@ -50,7 +51,7 @@ export default function RoutesClient({ initialRoutes }) {
   );
 }
 
-function RouteGrid({ routes }) {
+function RouteGrid({ routes }: { routes: StravaRoute[] }) {
   return (
     <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
       {routes.map((route) => (
