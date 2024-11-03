@@ -96,9 +96,13 @@ export default function SyncStravaButton() {
           }));
           break;
         case 'complete':
+          setProgressSummary(prev => ({
+            ...prev,
+            message: `Synced ${data.nRoutes} routes from Strava`,
+          }));
           events.close();
           setIsLoading(false);
-          // router.refresh();
+          router.refresh();
           break;
         case 'error':
           events.close();
