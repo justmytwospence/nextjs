@@ -4,6 +4,7 @@ import { createSessionLogger } from '@/lib/logger';
 import prisma from '@/lib/prisma';
 import { fetchRouteGeoJson } from '@/lib/strava';
 import polyline from '@mapbox/polyline';
+import { Strava } from "./routes";
 import type { StravaRoute } from "@prisma/client";
 
 
@@ -38,17 +39,40 @@ export async function queryUserAccount(session: Session, accountProvider: string
 export async function queryUserRoutes(session: Session): Promise<StravaRoute[]> {
   const sessionLogger = createSessionLogger(session);
   try {
-    sessionLogger.info('Querying user routes');
-    const stravaRoutes = await prisma.stravaRoute.findMany({
+    sessionLogger.info('Querying user routes for user', { userId: session.userId });
+    const routes = await prisma.stravaRoute.findMany({
       where: {
         userId: session.userId
       },
     });
-    sessionLogger.debug('Found routes', { count: stravaRoutes.length });
-    return stravaRoutes;
+    sessionLogger.info('Found routes', { count: routes.length });
+    return routes;
   } catch (error) {
     sessionLogger.error('Error querying user routes', {
       error: error.message
+    });
+    throw error;
+  }
+}
+
+export async function queryRoute(session: Session, routeId: string): Promise<StravaRoute | null> {
+  const sessionLogger = createSessionLogger(session);
+  try {
+    sessionLogger.info('Querying user route');
+    const route = await prisma.stravaRoute.findUnique({
+      where: {
+        id_userId: {
+          id: routeId,
+          userId: session.userId
+        }
+      }
+    });
+    sessionLogger.info('Found route', { routeId });
+    return route;
+  } catch (error) {
+    sessionLogger.error('Error querying user route', {
+      error: error.message,
+      routeId
     });
     throw error;
   }
@@ -94,7 +118,7 @@ export async function upsertRoute(session: Session, route: Strava.Route) {
       },
     });
 
-    sessionLogger.debug('Route upserted successfully', {
+    sessionLogger.info('Route upserted successfully', {
       routeId: route.id_str,
       routeName: route.name
     });
