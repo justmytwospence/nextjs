@@ -1,5 +1,6 @@
 import { auth, signIn, signOut } from "@/auth";
 import { Button } from "@/components/ui/button";
+import { createSessionLogger } from "@/lib/logger";
 
 export function SignIn({ redirectUrl }) {
   return (
@@ -35,6 +36,8 @@ export function SignOut({ session }) {
 
 export default async function LoginButton({ redirectUrl }) {
   const session = await auth();
+  const logger = createSessionLogger(session);
+  logger.info("Session", session);
   if (session) {
     return <SignOut session={session} />;
   }

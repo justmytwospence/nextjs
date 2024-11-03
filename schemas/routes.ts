@@ -1,6 +1,5 @@
 import * as z from "zod";
 
-
 export const AthleteSchema = z.object({
   "id": z.number(),
   "resource_state": z.number().nullish(),
@@ -17,14 +16,12 @@ export const AthleteSchema = z.object({
   "created_at": z.coerce.date().nullish(),
   "updated_at": z.coerce.date().nullish(),
 });
-export type Athlete = z.infer<typeof AthleteSchema>;
 
 export const MapSchema = z.object({
   "id": z.string().nullish(),
   "polyline": z.string().nullish(),
   "summary_polyline": z.string().nullish(),
 });
-export type Map = z.infer<typeof MapSchema>;
 
 export const AthletePrEffortSchema = z.object({
   "pr_activity_id": z.number().nullish(),
@@ -32,7 +29,6 @@ export const AthletePrEffortSchema = z.object({
   "pr_date": z.coerce.date().nullish(),
   "effort_count": z.number().nullish(),
 });
-export type AthletePrEffort = z.infer<typeof AthletePrEffortSchema>;
 
 export const AthleteSegmentStatsSchema = z.object({
   "id": z.number().nullish(),
@@ -43,7 +39,6 @@ export const AthleteSegmentStatsSchema = z.object({
   "distance": z.number().nullish(),
   "is_kom": z.boolean().nullish(),
 });
-export type AthleteSegmentStats = z.infer<typeof AthleteSegmentStatsSchema>;
 
 export const WaypointSchema = z.object({
   "latlng": z.array(z.number()).nullish(),
@@ -53,7 +48,6 @@ export const WaypointSchema = z.object({
   "description": z.string().nullish(),
   "distance_into_route": z.number().nullish(),
 });
-export type Waypoint = z.infer<typeof WaypointSchema>;
 
 export const SegmentSchema = z.object({
   "id": z.number().nullish(),
@@ -74,7 +68,6 @@ export const SegmentSchema = z.object({
   "athlete_pr_effort": AthletePrEffortSchema.nullish(),
   "athlete_segment_stats": AthleteSegmentStatsSchema.nullish(),
 });
-export type Segment = z.infer<typeof SegmentSchema>;
 
 export const RouteSchema = z.object({
   "athlete": AthleteSchema,
@@ -96,4 +89,13 @@ export const RouteSchema = z.object({
   "segments": z.array(SegmentSchema).nullish(),
   "waypoints": z.array(WaypointSchema).nullish(),
 });
-export type Route = z.infer<typeof RouteSchema>;
+
+export namespace Strava {
+  export type Athlete = z.infer<typeof AthleteSchema>
+  export type Map = z.infer<typeof MapSchema>
+  export type AthletePrEffort = z.infer<typeof AthletePrEffortSchema>
+  export type AthleteSegmentStats = z.infer<typeof AthleteSegmentStatsSchema>
+  export type Waypoint = z.infer<typeof WaypointSchema>
+  export type Segment = z.infer<typeof SegmentSchema>
+  export type Route = z.infer<typeof RouteSchema>
+}

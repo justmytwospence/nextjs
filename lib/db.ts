@@ -1,11 +1,16 @@
 "use server";
 
+import { createSessionLogger } from '@/lib/logger';
 import prisma from '@/lib/prisma';
 import { fetchRouteGeoJson } from '@/lib/strava';
 import polyline from '@mapbox/polyline';
+import { Strava } from "./routes";
 
-export async function queryUserAccount(session, accountProvider) {
+
+export async function queryUserAccount(session: Session, accountProvider: string) {
+  const sessionLogger = createSessionLogger(session);
   try {
+    sessionLogger.info('Querying user account', { provider: accountProvider });
     const account = await prisma.account.findUnique({
       where: {
         userId_provider: {
@@ -16,32 +21,47 @@ export async function queryUserAccount(session, accountProvider) {
     });
 
     if (!account) {
-      throw new Error(`No ${accountProvider} account found for this user ${session.userId}`);
+      sessionLogger.warn('No account found', { provider: accountProvider });
+      throw new Error(`No ${accountProvider} account found for this user`);
     }
 
     return account;
   } catch (error) {
-    console.error("Error querying user account:", error);
+    sessionLogger.error('Error querying user account', {
+      error: error.message,
+      provider: accountProvider
+    });
     throw error;
   }
 }
 
-export async function queryUserRoutes(session) {
+export async function queryUserRoutes(session: Session) {
+  const sessionLogger = createSessionLogger(session);
   try {
+    sessionLogger.info('Querying user routes');
     const stravaRoutes = await prisma.stravaRoute.findMany({
       where: {
         userId: session.userId
       },
     });
+    sessionLogger.debug('Found routes', { count: stravaRoutes.length });
     return stravaRoutes;
   } catch (error) {
-    console.error("Error querying user routes:", error);
+    sessionLogger.error('Error querying user routes', {
+      error: error.message
+    });
     throw error;
   }
 }
 
-export async function upsertRoute(session, route) {
+export async function upsertRoute(session: Session, route: Strava.Route) {
+  const sessionLogger = createSessionLogger(session);
   try {
+    sessionLogger.info('Upserting route', {
+      routeId: route.id_str,
+      routeName: route.name
+    });
+
     const routePolyline = await fetchRouteGeoJson(session, route.id_str);
     const routeSummaryPolyline = polyline.toGeoJSON(route["map"].summary_polyline);
 
@@ -73,8 +93,17 @@ export async function upsertRoute(session, route) {
         type: route.type,
       },
     });
+
+    sessionLogger.debug('Route upserted successfully', {
+      routeId: route.id_str,
+      routeName: route.name
+    });
   } catch (error) {
-    console.error("Error upserting Strava routes:", error);
+    sessionLogger.error('Error upserting Strava route', {
+      error: error.message,
+      routeId: route.id_str,
+      routeName: route.name
+    });
     throw error;
   } finally {
     await prisma.$disconnect();

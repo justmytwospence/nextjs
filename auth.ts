@@ -29,7 +29,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     })
   ],
   callbacks: {
-    async session({ session, user }) {
+    async session({ session, user }: { session: Session, user: any }) {
       const stravaAccount = await prisma.account.findUnique({
         where: {
           userId_provider: {
@@ -38,8 +38,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           }
         },
       })
+
       if (stravaAccount.expires_at * 1000 < Date.now()) {
-        // If the access token has expired, try to refresh it
         try {
           const response = await fetch("https://www.strava.com/api/v3/oauth/token", {
             method: "POST",
@@ -52,7 +52,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           })
 
           const tokensOrError = await response.json()
-          if (!response.ok) throw tokensOrError
+          if (!response.ok) {
+            throw tokensOrError;
+          }
 
           const newTokens = tokensOrError as {
             access_token: string
@@ -74,7 +76,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             },
           })
         } catch (error) {
-          console.error("Error refreshing access_token", error)
           session.error = "RefreshTokenError"
         }
       }

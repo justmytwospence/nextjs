@@ -15,6 +15,7 @@
     },
     {
       "name": "Next.js: debug full stack",
+      "console": "integratedTerminal",
       "type": "node",
       "request": "launch",
       "program": "${workspaceFolder}/node_modules/.bin/next",
