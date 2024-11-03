@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from 'react';
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { computeDistanceMiles, computeGradient } from '../lib/geo';
 import { CategoryScale, Chart as ChartJS, Filler, LinearScale, LineElement, PointElement, Title, Tooltip } from 'chart.js';
 import React from 'react';
@@ -9,6 +11,8 @@ import { Spinner } from '@/components/ui/spinner';
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Filler);
 
 export default function ElevationChart({ route, maxGradient }) {
+  const [dialogOpen, setDialogOpen] = useState(false);
+
   if (!route) {
     return <Spinner className="w-6 h-6 text-blue-500" />;
   }
@@ -19,7 +23,7 @@ export default function ElevationChart({ route, maxGradient }) {
   const elevationData = polyline.coordinates.map(point => point[2] * 3.28084); // Convert meters to feet for elevation
   const gradientData = computeGradient(polyline);
 
-  const data = {
+  const createChartData = (isLarge = false) => ({
     labels: distance,
     datasets: [
       {
@@ -28,7 +32,8 @@ export default function ElevationChart({ route, maxGradient }) {
         borderColor: 'blue',
         backgroundColor: 'rgba(75, 192, 192, 0.2)',
         yAxisID: 'elevation',
-        pointRadius: 0
+        pointRadius: isLarge ? 1 : 0,
+        borderWidth: isLarge ? 2 : 1
       },
       {
         label: 'Gradient (%)',
@@ -36,17 +41,21 @@ export default function ElevationChart({ route, maxGradient }) {
         borderColor: 'gray',
         backgroundColor: 'rgba(128, 128, 128, 0.5)', // Transparent gray
         yAxisID: 'gradient',
-        pointRadius: 0,
+        pointRadius: isLarge ? 1 : 0,
         fill: true,
+        borderWidth: isLarge ? 2 : 1,
         segment: {
           borderColor: ctx => ctx.p0.parsed.y > maxGradient ? 'red' : 'gray',
           backgroundColor: ctx => ctx.p0.parsed.y > maxGradient ? 'rgba(255, 0, 0, 0.5)' : 'rgba(128, 128, 128, 0.5)',
         },
       },
     ],
-  };
+  });
 
-  const options = {
+  const gradientMin = Math.max(Math.min(...gradientData), -0.3);
+  const gradientMax = Math.min(Math.max(...gradientData), 0.3);
+
+  const createChartOptions = (isLarge = false) => ({
     responsive: true,
     animation: false,
     plugins: {
@@ -95,6 +104,8 @@ export default function ElevationChart({ route, maxGradient }) {
         type: 'linear',
         display: true,
         position: 'right',
+        min: gradientMin,
+        max: gradientMax,
         title: {
           display: true,
           text: 'Gradient (%)',
@@ -112,7 +123,29 @@ export default function ElevationChart({ route, maxGradient }) {
         },
       },
     },
-  };
+    maintainAspectRatio: !isLarge,
+    ...(!isLarge && { aspectRatio: 2 }),
+  });
 
-  return <Line data={data} options={options} />;
-};
+  return (
+    <>
+      <div 
+        onClick={() => setDialogOpen(true)} 
+        className="cursor-pointer hover:opacity-90 transition-opacity"
+      >
+        <Line data={createChartData()} options={createChartOptions()} />
+      </div>
+
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent className="max-w-[90vw] max-h-[90vh] w-[1200px]">
+          <div className="h-[600px]">
+            <Line 
+              data={createChartData(true)} 
+              options={createChartOptions(true)} 
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
