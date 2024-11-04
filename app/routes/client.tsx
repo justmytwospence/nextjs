@@ -33,8 +33,14 @@ export default function RoutesClient({ initialRoutes }: { initialRoutes: StravaR
     5: 'Run',
   }
 
-  if (!initialRoutes) {
-    return (<p>Please sync with Strava!</p>);
+  if (initialRoutes.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <p className="text-2xl font-bold text-center">
+          Please sync with Strava!
+        </p>
+      </div>
+    );
   }
 
   const filteredRoutes = selectedType === 'all'
