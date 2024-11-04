@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { computeDistanceMiles, computeGradient } from '../lib/geo';
-import { CategoryScale, Chart as ChartJS, Filler, LinearScale, LineElement, PointElement, Title, Tooltip, ScaleOptions } from 'chart.js';
+import { CategoryScale, Chart as ChartJS, Filler, LinearScale, LineElement, PointElement, Title, Tooltip } from 'chart.js';
 import React from 'react';
 import { Line } from 'react-chartjs-2';
 import { Spinner } from '@/components/ui/spinner';
@@ -20,7 +20,7 @@ export default function ElevationChart({ route, maxGradient }) {
   const polyline = route.polyline.features[0].geometry;
 
   const distance = computeDistanceMiles(polyline);
-  const elevationData = polyline.coordinates.map(point => point[2] * 3.28084); 
+  const elevationData = polyline.coordinates.map(point => point[2] * 3.28084);
   const gradientData = computeGradient(polyline);
 
   const createChartData = (isLarge = false) => ({
@@ -129,8 +129,8 @@ export default function ElevationChart({ route, maxGradient }) {
 
   return (
     <>
-      <div 
-        onClick={() => setDialogOpen(true)} 
+      <div
+        onClick={() => setDialogOpen(true)}
         className="cursor-pointer hover:opacity-90 transition-opacity"
       >
         <Line data={createChartData()} options={createChartOptions()} />
@@ -139,9 +139,9 @@ export default function ElevationChart({ route, maxGradient }) {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-[90vw] max-h-[90vh] w-[1200px]">
           <div className="h-[600px]">
-            <Line 
-              data={createChartData(true)} 
-              options={createChartOptions(true)} 
+            <Line
+              data={createChartData(true)}
+              options={createChartOptions(true)}
             />
           </div>
         </DialogContent>
