@@ -35,6 +35,7 @@ const Map = ({ route, interactive = true }: { route: StravaRoute; interactive?: 
       center={[51.505, -0.09]}
       zoom={13}
       zoomControl={interactive}
+      scrollWheelZoom={interactive}
       dragging={interactive}
       attributionControl={interactive}
       doubleClickZoom={interactive}
