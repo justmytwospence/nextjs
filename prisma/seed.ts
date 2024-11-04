@@ -25,6 +25,7 @@ async function main() {
         estimatedMovingTime: 5400,
         private: false,
         starred: true,
+        type: 1,
         subType: 1,
         timestamp: new Date(),
         summaryPolyline: {
@@ -73,6 +74,7 @@ async function main() {
         estimatedMovingTime: 3600,
         private: true,
         starred: false,
+        type: 5,
         subType: 5,
         timestamp: new Date(),
         summaryPolyline: {
