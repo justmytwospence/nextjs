@@ -93,7 +93,14 @@ export default function RoutesClient({ initialRoutes }: { initialRoutes: StravaR
     <div className="container mx-auto p-6">
       <h1 className="text-3xl font-bold mb-6">My Routes</h1>
 
-      <Tabs value={selectedType} onValueChange={setSelectedType} className="mb-6">
+      <Tabs 
+        value={selectedType} 
+        onValueChange={(value) => {
+          setSelectedType(value);
+          setCurrentPage(1);
+        }} 
+        className="mb-6"
+      >
         <div className="flex justify-between items-center mb-4">
           <TabsList className="h-10">
             <TabsTrigger value="all">All</TabsTrigger>
