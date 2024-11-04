@@ -111,11 +111,11 @@ model UserSegment {
   athleteCount       Int?       @map("athlete_count")
   createdAt          DateTime?  @map("created_at")
   hazardous          Boolean?
-  polyline           String?    @map("polyline")
+  polyline           Json?      @map("polyline")
   mapResourceState   Int?       @map("map_resource_state")
   starCount          Int?       @map("star_count")
   starred            Boolean?
-  summaryPolyline    String?    @map("summary_polyline")
+  summaryPolyline    Json?      @map("summary_polyline")
   totalElevationGain Float?     @map("total_elevation_gain")
   updatedAt          DateTime?  @map("updated_at")
   UserRoute          UserRoute? @relation(fields: [userRouteId], references: [id])
