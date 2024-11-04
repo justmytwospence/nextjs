@@ -4,7 +4,7 @@ import { createSessionLogger } from '@/lib/logger';
 import { prisma } from '@/lib/prisma';
 import polyline from '@mapbox/polyline';
 import type { AthleteRoute, AthleteRouteSegment, AthleteSegment } from "@/schemas/strava";
-import type { UserRoute, Account } from "@prisma/client";
+import type { UserRoute, Account, Prisma } from "@prisma/client";
 import type { Session } from "next-auth";
 
 
@@ -128,15 +128,21 @@ export async function enrichUserRoute(session: Session, routeId: string, route: 
   const sessionLogger = createSessionLogger(session);
   sessionLogger.info(`Enriching route ${routeId}`);
 
-  await prisma.userRoute.update({
-    where: {
-      id: routeId,
-      userId: session.user.id
-    },
-    data: {
-      polyline: route,
-    }
-  });
+  try {
+    await prisma.userRoute.update({
+      where: {
+        id: routeId,
+        userId: session.user.id
+      },
+      data: {
+        polyline: (route as unknown) as Prisma.InputJsonValue
+      }
+    });
+  } catch (error) {
+    throw error;
+  } finally {
+    await prisma.$disconnect();
+  }
 }
 
 export async function createUserSegment(session: Session, segment: AthleteRouteSegment) {
@@ -166,9 +172,9 @@ export async function createUserSegment(session: Session, segment: AthleteRouteS
         userId: session.user.id,
       }
     });
-
     sessionLogger.info(`Segment ${segment.name} created successfully`);
   } catch (error) {
+    sessionLogger.error(`Failed to create segment ${segment.name}`);
     throw error;
   } finally {
     await prisma.$disconnect();
