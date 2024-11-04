@@ -11,8 +11,7 @@ export default async function RouteComparisonPage() {
   }
   const sessionLogger = createSessionLogger(session)
   const initialRoutes = (await queryUserRoutes(session)).map(({ id, name }) => ({ id, name }));
-  sessionLogger.info(initialRoutes);
-  console.log("initial routes", initialRoutes)
+  sessionLogger.info(`Initial routes for comparison page: ${JSON.stringify(initialRoutes, null, 2)}`);
 
   if (initialRoutes.length === 0) {
     return (<PleaseSync />)
