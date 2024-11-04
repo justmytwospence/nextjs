@@ -1,7 +1,6 @@
 'use server-only';
 
 import winston from 'winston';
-import 'winston-daily-rotate-file';
 import { Session } from 'next-auth';
 
 export const baseLogger = winston.createLogger({
@@ -23,20 +22,9 @@ export const baseLogger = winston.createLogger({
 
 export function createSessionLogger(session: Session | null) {
   const logger = baseLogger.child({});
-
-  logger.add(
-    new winston.transports.DailyRotateFile({
-      filename: 'logs/%DATE%.log',
-      datePattern: 'YYYY-MM-DD',
-      maxSize: '20m',
-      maxFiles: '14d',
-    })
-  );
-
   if (!session) {
     return logger;
   }
-
   return logger.child({
     userId: session?.user?.id || 'unknown',
   });
