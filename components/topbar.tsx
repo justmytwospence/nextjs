@@ -9,7 +9,6 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { auth, signOut } from "@/auth"
 import SyncStravaButton from "@/components/sync-strava-button"
-import Image from 'next/image'
 import NavLinks from "./topbar.client"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
