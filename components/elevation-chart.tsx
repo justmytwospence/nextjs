@@ -17,11 +17,11 @@ export default function ElevationChart({ route, maxGradient }) {
     return <Spinner className="w-6 h-6 text-blue-500" />;
   }
 
-  const polyline = route.polyline.features[0].geometry;
-
-  const distance = computeDistanceMiles(polyline);
-  const elevationData = polyline.coordinates.map(point => point[2] * 3.28084);
-  const gradientData = computeGradient(polyline);
+  const polyline = route.polyline || route.summaryPolyline
+  const geom = polyline.features[0].geometry
+  const distance = computeDistanceMiles(geom);
+  const elevationData = geom.coordinates.map(point => point[2] * 3.28084);
+  const gradientData = computeGradient(geom);
 
   const createChartData = (isLarge = false) => ({
     labels: distance,

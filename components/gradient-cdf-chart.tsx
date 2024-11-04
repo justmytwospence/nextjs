@@ -16,11 +16,13 @@ export default function GradientCdfChart({ selectedRoute1, selectedRoute2 }) {
   useEffect(() => {
     if (selectedRoute1 && selectedRoute2) {
 
-      const polyline1 = selectedRoute1.polyline.features[0].geometry;
-      const polyline2 = selectedRoute2.polyline.features[0].geometry;
+      const polyline1 = selectedRoute1.polyline || selectedRoute1.summaryPolyline
+      const geom1 = polyline1.features[0].geometry
+      const polyline2 = selectedRoute2.polyline || selectedRoute2.summaryPolyline
+      const geom2 = polyline2.features[0].geometry
 
-      setGradients1(computeGradient(polyline1));
-      setGradients2(computeGradient(polyline2));
+      setGradients1(computeGradient(geom1));
+      setGradients2(computeGradient(geom2));
 
       setCdf1(computeCdf(gradients1, xAxisRange));
       setCdf2(computeCdf(gradients2, xAxisRange));
