@@ -1,7 +1,7 @@
 "use server";
 
 import { createSessionLogger } from '@/lib/logger';
-import prisma from '@/lib/prisma';
+import { prisma } from '@/lib/prisma';
 import { fetchRouteGeoJson } from '@/lib/strava';
 import polyline from '@mapbox/polyline';
 import { Strava } from "@/schemas/routes";

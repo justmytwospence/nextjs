@@ -39,8 +39,5 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# migrations
-migrations
-
 # logs
 logs/
