@@ -52,7 +52,7 @@ export default function SyncStravaButton() {
     setIsLoading(true);
     setShowModal(true);
 
-    const events = new EventSource('/api/sync-strava');
+    const events = new EventSource('/api/strava-sync');
 
     events.onmessage = (event) => {
       const data = JSON.parse(event.data);
