@@ -29,8 +29,8 @@ export default function RoutesClient({ initialRoutes }: { initialRoutes: StravaR
 
   const routeTypes: { [key: string]: string } = {
     1: 'Ride',
-    2: 'Run',
-    5: 'Ride',
+    2: 'Trail Run',
+    5: 'Run',
   }
 
   if (!initialRoutes) {
@@ -93,12 +93,12 @@ export default function RoutesClient({ initialRoutes }: { initialRoutes: StravaR
     <div className="container mx-auto p-6">
       <h1 className="text-3xl font-bold mb-6">My Routes</h1>
 
-      <Tabs 
-        value={selectedType} 
+      <Tabs
+        value={selectedType}
         onValueChange={(value) => {
           setSelectedType(value);
           setCurrentPage(1);
-        }} 
+        }}
         className="mb-6"
       >
         <div className="flex justify-between items-center mb-4">
