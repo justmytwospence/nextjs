@@ -37,7 +37,6 @@ export async function fetchUserRoutes(session: Session, per_page: number = 200) 
 
     return stravaRoutes;
   } catch (error) {
-    sessionLogger.error('Error fetching user routes', { error: error.message });
     throw error;
   }
 }
@@ -69,10 +68,6 @@ export async function fetchRouteGeoJson(session: Session, routeId: string) {
     sessionLogger.info('Successfully converted GPX to GeoJSON', { routeId });
     return geoJson;
   } catch (error) {
-    sessionLogger.error('Error fetching route GeoJSON', {
-      routeId,
-      error: error.message
-    });
     throw error;
   }
 }

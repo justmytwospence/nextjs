@@ -3,10 +3,11 @@ import { fetchUserRoutes } from "@/lib/strava";
 import { upsertRoute } from "@/lib/db";
 import { NextResponse } from "next/server";
 import { createSessionLogger } from '@/lib/logger';
+import type { Session } from "next-auth";
 
 export async function GET() {
   const session = await auth();
-  const sessionLogger = createSessionLogger(session);
+  if (!session) { return new NextResponse(null, { status: 401 }) };
   const encoder = new TextEncoder();
   const stream = new TransformStream();
   const writer = stream.writable.getWriter();
@@ -16,7 +17,7 @@ export async function GET() {
   };
 
   // Start the sync process in the background
-  syncRoutes(session, send, sessionLogger).finally(() => writer.close());
+  syncRoutes(session, send).finally(() => writer.close());
 
   return new NextResponse(stream.readable, {
     headers: {
@@ -27,7 +28,7 @@ export async function GET() {
   });
 }
 
-async function syncRoutes(session: Session, send) {
+async function syncRoutes(session: Session, send: (message: any) => Promise<void>) {
   const sessionLogger = createSessionLogger(session);
   try {
     sessionLogger.info('Starting route sync');
@@ -62,7 +63,8 @@ async function syncRoutes(session: Session, send) {
           type: 'success',
           route: route.name
         });
-      } catch (error) {
+      } catch (err) {
+        const error = err as Error;
         sessionLogger.error('Route sync failed', {
           error: error.message,
           routeName: route.name
@@ -70,7 +72,7 @@ async function syncRoutes(session: Session, send) {
         await send({
           type: 'fail',
           route: route.name,
-          error: error instanceof Error ? error.message : String(error)
+          error: error.message
         });
       }
     }
@@ -80,13 +82,14 @@ async function syncRoutes(session: Session, send) {
       type: 'complete',
     });
 
-  } catch (error) {
+  } catch (err) {
+    const error = err as Error;
     sessionLogger.error('Route sync failed with error', {
-      error: error instanceof Error ? error.message : String(error)
+      error: error.message
     });
     await send({
       type: 'error',
-      error: error instanceof Error ? error.message : String(error)
+      error: error.message
     });
   }
 }

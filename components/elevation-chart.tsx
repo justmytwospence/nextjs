@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { computeDistanceMiles, computeGradient } from '../lib/geo';
-import { CategoryScale, Chart as ChartJS, Filler, LinearScale, LineElement, PointElement, Title, Tooltip } from 'chart.js';
+import { CategoryScale, Chart as ChartJS, Filler, LinearScale, LineElement, PointElement, Title, Tooltip, ScaleOptions } from 'chart.js';
 import React from 'react';
 import { Line } from 'react-chartjs-2';
 import { Spinner } from '@/components/ui/spinner';
@@ -20,7 +20,7 @@ export default function ElevationChart({ route, maxGradient }) {
   const polyline = route.polyline.features[0].geometry;
 
   const distance = computeDistanceMiles(polyline);
-  const elevationData = polyline.coordinates.map(point => point[2] * 3.28084); // Convert meters to feet for elevation
+  const elevationData = polyline.coordinates.map(point => point[2] * 3.28084); 
   const gradientData = computeGradient(polyline);
 
   const createChartData = (isLarge = false) => ({
@@ -57,7 +57,9 @@ export default function ElevationChart({ route, maxGradient }) {
 
   const createChartOptions = (isLarge = false) => ({
     responsive: true,
-    animation: false,
+    animation: {
+      duration: 0 // Set duration to 0 to disable animation
+    },
     plugins: {
       title: {
         display: true,
@@ -65,16 +67,14 @@ export default function ElevationChart({ route, maxGradient }) {
       },
     },
     hover: {
-      mode: 'index',
       intersect: false,
     },
     interaction: {
-      mode: 'index',
       intersect: false,
     },
     scales: {
       x: {
-        type: 'linear',
+        type: 'linear' as const,
         min: 0,
         ticks: {
           stepSize: 1,
@@ -85,9 +85,9 @@ export default function ElevationChart({ route, maxGradient }) {
         },
       },
       elevation: {
-        type: 'linear',
+        type: 'linear' as const,
         display: true,
-        position: 'left',
+        position: 'left' as const,
         title: {
           display: true,
           text: 'Elevation (ft)',
@@ -101,9 +101,9 @@ export default function ElevationChart({ route, maxGradient }) {
         },
       },
       gradient: {
-        type: 'linear',
+        type: 'linear' as const,
         display: true,
-        position: 'right',
+        position: 'right' as const,
         min: gradientMin,
         max: gradientMax,
         title: {

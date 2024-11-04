@@ -4,6 +4,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { useEffect } from 'react';
 import { MapContainer, TileLayer, useMap } from 'react-leaflet';
+import { StravaRoute } from "@prisma/client";
 
 const GeoJSONLayer = ({ polyline }) => {
   const map = useMap();

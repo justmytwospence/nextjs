@@ -1,6 +1,6 @@
 import prisma from "@/lib/prisma"
 import { PrismaAdapter } from "@auth/prisma-adapter"
-import NextAuth from "next-auth"
+import NextAuth, { Session } from "next-auth"
 import StravaProvider from "next-auth/providers/strava"
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
@@ -30,6 +30,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   ],
   callbacks: {
     async session({ session, user }: { session: Session, user: any }) {
+      session.user.id = user.id
+
       const stravaAccount = await prisma.account.findUnique({
         where: {
           userId_provider: {
@@ -39,8 +41,16 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         },
       })
 
+      if (!stravaAccount || !stravaAccount.expires_at) {
+        return session
+      }
+
       if (stravaAccount.expires_at * 1000 < Date.now()) {
         try {
+          if (!stravaAccount.refresh_token) {
+            return session;
+          }
+
           const response = await fetch("https://www.strava.com/api/v3/oauth/token", {
             method: "POST",
             body: new URLSearchParams({
@@ -76,7 +86,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             },
           })
         } catch (error) {
-          session.error = "RefreshTokenError"
+          return session
         }
       }
       return session

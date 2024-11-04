@@ -2,9 +2,7 @@ import LoginButton from "@/components/login-button";
 import Image from "next/image";
 import hero from './login-form-image.jpeg';
 
-export default async function LoginPage({ searchParams, }: {
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
-}) {
+export default async function LoginPage({ searchParams }) {
   const { redirectUrl = '' } = await searchParams;
 
   return (
@@ -15,9 +13,7 @@ export default async function LoginPage({ searchParams, }: {
             <h1 className="text-3xl font-bold">Login</h1>
           </div>
           <div className="grid gap-4">
-            <LoginButton redirectUrl={redirectUrl} variant="outline" className="w-full">
-              Login with Strava
-            </LoginButton>
+            <LoginButton redirectUrl={redirectUrl}/>
           </div>
         </div>
       </div>

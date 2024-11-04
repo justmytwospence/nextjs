@@ -5,6 +5,8 @@ import { queryRoute } from '@/lib/db';
 
 export async function queryRouteAction(routeId: string) {
   const session = await auth();
-  console.log("action", session, routeId);
+  if (!session) { 
+    throw new Error('Not authenticated');
+  }
   return queryRoute(session, routeId);
 }

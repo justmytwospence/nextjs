@@ -13,7 +13,7 @@ export function SignIn({ redirectUrl }) {
       <div className="text-center">
         Not signed in <br />
       </div>
-      <Button className="w-full" type="submit">Sign in</Button>
+      <Button className="w-full" type="submit">Sign in with Strava</Button>
     </form>
   );
 }

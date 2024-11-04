@@ -4,8 +4,9 @@ import { createSessionLogger } from '@/lib/logger';
 import prisma from '@/lib/prisma';
 import { fetchRouteGeoJson } from '@/lib/strava';
 import polyline from '@mapbox/polyline';
-import { Strava } from "./routes";
+import { Strava } from "@/schemas/routes";
 import type { StravaRoute } from "@prisma/client";
+import type { Session } from "next-auth";
 
 
 export async function queryUserAccount(session: Session, accountProvider: string) {
@@ -15,7 +16,7 @@ export async function queryUserAccount(session: Session, accountProvider: string
     const account = await prisma.account.findUnique({
       where: {
         userId_provider: {
-          userId: session.userId,
+          userId: session.user.id,
           provider: accountProvider,
         }
       },
@@ -28,10 +29,6 @@ export async function queryUserAccount(session: Session, accountProvider: string
 
     return account;
   } catch (error) {
-    sessionLogger.error('Error querying user account', {
-      error: error.message,
-      provider: accountProvider
-    });
     throw error;
   }
 }
@@ -39,23 +36,23 @@ export async function queryUserAccount(session: Session, accountProvider: string
 export async function queryUserRoutes(session: Session): Promise<StravaRoute[]> {
   const sessionLogger = createSessionLogger(session);
   try {
-    sessionLogger.info('Querying user routes for user', { userId: session.userId });
+    sessionLogger.info('Querying user routes for user', { userId: session.user.id });
     const routes = await prisma.stravaRoute.findMany({
       where: {
-        userId: session.userId
+        userId: session.user.id
       },
     });
     sessionLogger.info('Found routes', { count: routes.length });
     return routes;
   } catch (error) {
-    sessionLogger.error('Error querying user routes', {
-      error: error.message
-    });
     throw error;
   }
 }
 
 export async function queryRoute(session: Session, routeId: string): Promise<StravaRoute | null> {
+  if (!session) {
+    throw new Error('Session is required to query route');
+  }
   const sessionLogger = createSessionLogger(session);
   try {
     sessionLogger.info('Querying user route');
@@ -63,17 +60,13 @@ export async function queryRoute(session: Session, routeId: string): Promise<Str
       where: {
         id_userId: {
           id: routeId,
-          userId: session.userId
+          userId: session.user.id
         }
       }
     });
     sessionLogger.info('Found route', { routeId });
     return route;
   } catch (error) {
-    sessionLogger.error('Error querying user route', {
-      error: error.message,
-      routeId
-    });
     throw error;
   }
 }
@@ -95,12 +88,12 @@ export async function upsertRoute(session: Session, route: Strava.Route) {
       },
       create: {
         id: route.id_str,
-        userId: session.userId,
+        userId: session.user.id,
         createdAt: new Date(route.created_at),
         name: route.name,
-        elevationGain: parseFloat(route.elevation_gain),
+        elevationGain: route.elevation_gain,
         description: route.description,
-        distance: parseFloat(route.distance),
+        distance: route.distance,
         starred: Boolean(route.starred),
         polyline: routePolyline,
         summaryPolyline: routeSummaryPolyline,
@@ -108,9 +101,9 @@ export async function upsertRoute(session: Session, route: Strava.Route) {
       },
       update: {
         name: route.name,
-        elevationGain: parseFloat(route.elevation_gain),
+        elevationGain: route.elevation_gain,
         description: route.description,
-        distance: parseFloat(route.distance),
+        distance: route.distance,
         starred: Boolean(route.starred),
         polyline: routePolyline,
         summaryPolyline: routeSummaryPolyline,
@@ -123,11 +116,6 @@ export async function upsertRoute(session: Session, route: Strava.Route) {
       routeName: route.name
     });
   } catch (error) {
-    sessionLogger.error('Error upserting Strava route', {
-      error: error.message,
-      routeId: route.id_str,
-      routeName: route.name
-    });
     throw error;
   } finally {
     await prisma.$disconnect();

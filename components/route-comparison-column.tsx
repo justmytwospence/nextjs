@@ -1,9 +1,7 @@
 'use client';
 
-import { useState } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import LazyMap from "@/components/lazy-map";
-import { StravaRoute } from "@prisma/client";
 import { queryRouteAction } from "@/app/actions/queryRoute";
 import ElevationChart from './elevation-chart';
 

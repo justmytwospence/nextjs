@@ -112,7 +112,7 @@ export default function SyncStravaButton() {
             message: `An error occurred during sync: ${data.error}`,
           }));
           setIsLoading(false);
-          router.refresh();
+          // router.refresh();
           break;
       }
     };

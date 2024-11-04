@@ -1,17 +1,15 @@
 'use client';
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import LazyMap from "@/components/lazy-map";
-import { Navigation, TrendingUp, ChevronLeft, ChevronRight } from "lucide-react";
+import { Navigation, TrendingUp } from "lucide-react";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { StravaRoute } from "@prisma/client";
 import {
@@ -29,15 +27,19 @@ export default function RoutesClient({ initialRoutes }: { initialRoutes: StravaR
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 30;
 
-  const routeTypes = {
+  const routeTypes: { [key: string]: string } = {
     1: 'Ride',
     2: 'Run',
     5: 'Ride',
   }
 
+  if (!initialRoutes) {
+    return (<p>Please sync with Strava!</p>);
+  }
+
   const filteredRoutes = selectedType === 'all'
     ? initialRoutes
-    : initialRoutes.filter(route => route.type.toString() === selectedType);
+    : initialRoutes.filter(route => (route.type ?? '').toString() === selectedType);
 
   const totalPages = Math.ceil(filteredRoutes.length / itemsPerPage);
   const paginatedRoutes = filteredRoutes.slice(
@@ -45,8 +47,8 @@ export default function RoutesClient({ initialRoutes }: { initialRoutes: StravaR
     currentPage * itemsPerPage
   );
 
-  const generatePaginationItems = () => {
-    const items = [];
+  const generatePaginationItems = (): ReactNode[] => {
+    const items: ReactNode[] = [];
     const maxVisible = 10;
     const startPage = Math.max(1, currentPage - 2);
     const endPage = Math.min(totalPages, startPage + maxVisible - 1);
@@ -95,8 +97,8 @@ export default function RoutesClient({ initialRoutes }: { initialRoutes: StravaR
         <div className="flex justify-between items-center mb-4">
           <TabsList className="h-10">
             <TabsTrigger value="all">All</TabsTrigger>
-            {Array.from(new Set(Object.values(routeTypes))).map((label) => {
-              const type = Object.keys(routeTypes).find(key => routeTypes[key] === label);
+            {Array.from(new Set(Object.values(routeTypes))).map((label: string) => {
+              const type = Object.keys(routeTypes).find(key => routeTypes[key] === label) ?? 'all';
               return (
                 <TabsTrigger key={type} value={type}>
                   {label}

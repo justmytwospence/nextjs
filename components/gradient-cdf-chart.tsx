@@ -2,13 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { Line } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
 import { computeCdf, computeGradient } from '@/lib/geo';
-import { StravaRoute } from '@prisma/client';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
-const GradientCdfChart = ({ selectedRoute1, selectedRoute2 }: { routes: { StravaRoute, StravaRoute } }) => {
-  const [cdf1, setCdf1] = useState([]);
-  const [cdf2, setCdf2] = useState([]);
+export default function GradientCdfChart({ selectedRoute1, selectedRoute2 }) {
+  const [cdf1, setCdf1] = useState<number[]>([]);
+  const [cdf2, setCdf2] = useState<number[]>([]);
 
   const xAxisRange = Array.from({ length: 61 }, (_, i) => parseFloat((-0.2 + i * 0.01).toFixed(2)));
 
@@ -33,15 +32,15 @@ const GradientCdfChart = ({ selectedRoute1, selectedRoute2 }: { routes: { Strava
     labels: xAxisRange,
     datasets: [
       {
-        label: selectedRoute1.name, // Use route name for Course 1
-        data: cdf1.map(point => point.y),
+        label: selectedRoute1.name, 
+        data: cdf1,
         borderColor: 'rgba(75,192,192,1)',
         fill: false,
         pointRadius: 0,
       },
       {
-        label: selectedRoute2.name, // Use route name for Course 2
-        data: cdf2.map(point => point.y),
+        label: selectedRoute2.name,
+        data: cdf2,
         borderColor: 'rgba(153,102,255,1)',
         fill: false,
         pointRadius: 0,
@@ -51,7 +50,9 @@ const GradientCdfChart = ({ selectedRoute1, selectedRoute2 }: { routes: { Strava
 
   const options = {
     responsive: true,
-    animation: false,
+    animation: {
+      duration: 0 // general animation time
+    },
     plugins: {
       title: {
         display: true,
@@ -59,20 +60,20 @@ const GradientCdfChart = ({ selectedRoute1, selectedRoute2 }: { routes: { Strava
       },
       legend: {
         display: true,
-        position: 'top',
+        position: 'top' as const,
       },
     },
     hover: {
-      mode: 'index',
+      mode: 'index' as const,
       intersect: false,
     },
     interaction: {
-      mode: 'index',
+      mode: 'index' as const,
       intersect: false,
     },
     scales: {
       x: {
-        type: 'linear',
+        type: 'linear' as const,
         ticks: {
           stepSize: 0.01,
           min: -0.2,
@@ -87,6 +88,7 @@ const GradientCdfChart = ({ selectedRoute1, selectedRoute2 }: { routes: { Strava
         },
       },
       y: {
+        type: 'linear' as const,
         title: {
           display: true,
           text: 'CDF',
@@ -102,5 +104,3 @@ const GradientCdfChart = ({ selectedRoute1, selectedRoute2 }: { routes: { Strava
 
   return <Line data={data} options={options} />;
 };
-
-export default GradientCdfChart;

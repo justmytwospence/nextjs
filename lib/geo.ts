@@ -14,7 +14,7 @@ export function computeDistanceMiles(polyline: GeoJSON.LineString): number[] {
 }
 
 function smoothArray(arr: number[], windowSize: number = 10): number[] {
-  const result = [];
+  const result: number[] = [];
   for (let i = 0; i < arr.length; i++) {
     let sum = 0;
     let count = 0;
@@ -41,9 +41,9 @@ export function computeGradient(polyline: GeoJSON.LineString): number[] {
   return smoothArray(rawGradients);
 }
 
-export function computeCdf(data, range) {
+export function computeCdf(data: number[], range: number[]): number[] {
   const sorted = [...data].sort((a, b) => a - b);
-  const cdf = [];
+  const cdf: number[] = [];
   let cumulativeCount = 0;
   let dataIndex = 0;
 
@@ -52,11 +52,8 @@ export function computeCdf(data, range) {
       cumulativeCount++;
       dataIndex++;
     }
-    cdf.push({
-      x: x,
-      y: cumulativeCount / sorted.length
-    });
+    cdf.push(cumulativeCount / sorted.length);
   });
 
   return cdf;
-};
+}

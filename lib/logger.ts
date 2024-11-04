@@ -2,6 +2,7 @@
 
 import winston from 'winston';
 import 'winston-daily-rotate-file';
+import { Session } from 'next-auth';
 
 export const baseLogger = winston.createLogger({
   levels: winston.config.npm.levels,
@@ -38,6 +39,5 @@ export function createSessionLogger(session: Session | null) {
 
   return logger.child({
     userId: session?.user?.id || 'unknown',
-    sessionId: session?.sessionToken || 'unknown'
   });
 }

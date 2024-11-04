@@ -1,4 +1,3 @@
-import { CircleUser, Menu, Package2 } from "lucide-react"
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -10,7 +9,9 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { auth, signOut } from "@/auth"
 import SyncStravaButton from "@/components/sync-strava-button"
+import Image from 'next/image'
 import NavLinks from "./topbar.client"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 export default async function Topbar() {
   const session = await auth();
@@ -33,11 +34,12 @@ export default async function Topbar() {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="secondary" size="icon" className="rounded-full">
-              <img
-                src={session?.user?.image || ''}
-                alt="Profile"
-                className="h-full w-full rounded-full"
-              />
+              <Avatar className="h-8 w-8">
+                <AvatarImage src={session?.user?.image} alt="Profile" />
+                <AvatarFallback>
+                  {session?.user?.name?.split(' ').map(n => n[0]).join('') || '?'}
+                </AvatarFallback>
+              </Avatar>
               <span className="sr-only">Toggle user menu</span>
             </Button>
           </DropdownMenuTrigger>
@@ -54,7 +56,7 @@ export default async function Topbar() {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-      {session && (<SyncStravaButton session={session} />)}
+      {session && <SyncStravaButton />}
     </header >
   )
 }
