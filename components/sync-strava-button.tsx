@@ -111,32 +111,36 @@ export default function SyncStravaButton() {
           router.refresh();
           break;
         case 'error':
-          events.close();
-          console.log("not using the onerror handler")
           setProgressSummary(prev => ({
             ...prev,
             message: `An error occurred during sync: ${data.error}`,
           }));
+          setShowModal(true);  // Ensure the modal is open to display the error message
+          events.close();
           setIsLoading(false);
-          // router.refresh();
+          router.refresh();
           break;
       }
     };
 
   }, []);
 
-  const PopoverProgress = ({ progressSummary }) => progressSummary?.total ? (
+  const PopoverProgress = ({ progressSummary }) => progressSummary ? (
     <div className="space-y-2">
-      <Progress value={(progressSummary.progress / progressSummary.total) * 100} />
+      {progressSummary.total > 0 && (
+        <Progress value={(progressSummary.progress / progressSummary.total) * 100} />
+      )}
       <p className="text-sm text-muted-foreground">
         {progressSummary.message}
       </p>
     </div>
   ) : null;
 
-  const ModalProgress = ({ progressSummary }) => progressSummary?.total ? (
+  const ModalProgress = ({ progressSummary }) => progressSummary ? (
     <div className="space-y-2">
-      <Progress value={(progressSummary.progress / progressSummary.total) * 100} />
+      {progressSummary.total > 0 && (
+        <Progress value={(progressSummary.progress / progressSummary.total) * 100} />
+      )}
       <p className="text-sm text-muted-foreground">
         {progressSummary.message}
       </p>

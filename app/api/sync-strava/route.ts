@@ -103,7 +103,7 @@ async function syncRoutes(session: Session, send: (message: any) => Promise<void
     }
 
     sessionLogger.info('Route sync completed');
-    await send({ type: 'complete', });
+    await send({ type: 'complete' });
 
   } catch (error) {
     const errorMessage = (error as Error).message || 'An unknown error occurred';
