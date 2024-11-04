@@ -39,6 +39,11 @@ async function syncSegment(session: Session, segment: AthleteRouteSegment, send:
   catch (error) {
     const errorMessage = (error as Error).message || 'An unknown error occurred';
     sessionLogger.error(`Segment sync failed for ${segment.name}: ${errorMessage}`);
+
+    if (errorMessage === 'Too Many Requests') {
+      throw error; // Propagate the error up to stop further processing
+    }
+
     await send({
       type: 'fail',
       route: segment.name,
@@ -61,6 +66,11 @@ async function syncRoute(session: Session, route: AthleteRoute, send: (message: 
   catch (error) {
     const errorMessage = (error as Error).message || 'An unknown error occurred';
     sessionLogger.error(`Route sync failed for ${route.id_str}: ${errorMessage}`);
+
+    if (errorMessage === 'Too Many Requests') {
+      throw error; // Propagate the error up to stop further processing
+    }
+
     await send({
       type: 'fail',
       route: route.name,
@@ -78,7 +88,7 @@ async function syncRoute(session: Session, route: AthleteRoute, send: (message: 
       type: 'segment',
       segment: segment.name
     });
-    syncSegment(session, segment, send)
+    await syncSegment(session, segment, send); // Await to ensure errors are caught
   }
 }
 
@@ -99,7 +109,7 @@ async function syncRoutes(session: Session, send: (message: any) => Promise<void
         type: 'route',
         route: route.name
       });
-      syncRoute(session, route, send);
+      await syncRoute(session, route, send); // Await to ensure errors are caught
     }
 
     sessionLogger.info('Route sync completed');
