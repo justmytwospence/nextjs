@@ -27,14 +27,15 @@ function isStravaOrigin(request: NextRequest): boolean {
 }
 
 export async function GET(request: NextRequest) {
-  if (!isStravaOrigin(request)) {
-    return new NextResponse(null, { status: 403 });
-  }
-
   const { searchParams } = new URL(request.url);
   const hub_mode = searchParams.get('hub.mode');
   const hub_verify_token = searchParams.get('hub.verify_token');
   const hub_challenge = searchParams.get('hub.challenge');
+
+  if (!isStravaOrigin(request) && hub_verify_token == process.env.STRAVA_WEBHOOK_VERIFY_TOKEN) {
+    return new NextResponse(null, { status: 403 });
+  }
+
 
   if (hub_mode === 'subscribe' && hub_verify_token === 'STRAVA') {
     return NextResponse.json({ 'hub.challenge': hub_challenge });
