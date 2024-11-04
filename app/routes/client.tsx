@@ -21,6 +21,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination"
+import PleaseSync from "@/components/please-sync";
 
 export default function RoutesClient({ initialRoutes }: { initialRoutes: UserRoute[] }) {
   const [selectedType, setSelectedType] = useState('all');
@@ -34,13 +35,7 @@ export default function RoutesClient({ initialRoutes }: { initialRoutes: UserRou
   }
 
   if (initialRoutes.length === 0) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <p className="text-2xl font-bold text-center">
-          Please sync with Strava!
-        </p>
-      </div>
-    );
+    return (<PleaseSync />)
   }
 
   const filteredRoutes = selectedType === 'all'

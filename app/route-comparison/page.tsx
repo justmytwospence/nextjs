@@ -2,6 +2,7 @@ import { auth } from "@/auth";
 import RouteComparison from "./client"
 import { queryUserRoutes } from "@/lib/db";
 import { createSessionLogger } from "@/lib/logger";
+import PleaseSync from "@/components/please-sync";
 
 export default async function RouteComparisonPage() {
   const session = await auth();
@@ -14,11 +15,7 @@ export default async function RouteComparisonPage() {
   console.log("initial routes", initialRoutes)
 
   if (initialRoutes.length === 0) {
-    return (
-      <p className="text-center text-2xl font-bold mt-10">
-        No routes found. Please sync with Strava!
-      </p>
-    )
+    return (<PleaseSync />)
   }
   return (
     <RouteComparison routes={initialRoutes} />
