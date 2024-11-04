@@ -38,7 +38,6 @@ async function syncSegment(session: Session, segment: AthleteRouteSegment, send:
   }
   catch (err) {
     sessionLogger.error('Segment sync failed', { error: err.message, segmentId: segment.id });
-    await send({ type: 'fail', segmentId: segment.id, error: err.message });
   }
 }
 
@@ -48,10 +47,11 @@ async function syncRoute(session: Session, route: AthleteRoute, send: (message: 
     upsertUserRoute(session, route);
     const routeJson = await fetchRouteGeoJson(session, route.id);
     enrichUserRoute(session, route.id, routeJson);
+    await send({ type: 'success', route: route.name });
   }
   catch (err) {
     sessionLogger.error('Route sync failed', { error: err.message, routeId: route.id });
-    await send({ type: 'fail', routeId: route.id, error: err.message });
+    await send({ type: 'fail', route: route.name, error: err.message });
   }
 
   if (!route.segments) {

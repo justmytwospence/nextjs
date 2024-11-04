@@ -65,11 +65,17 @@ export default function SyncStravaButton() {
             message: `Fetching ${data.nRoutes} routes from Strava...`,
           }));
           break;
-        case 'upsert':
+        case 'route':
           setProgressSummary(prev => ({
             ...prev,
             currentRoute: data.route,
-            message: `Syncing ${data.route}...`,
+            message: `Syncing route ${data.route}...`,
+          }));
+          break;
+        case 'segment':
+          setProgressSummary(prev => ({
+            ...prev,
+            message: `Syncing segment ${data.segment}...`,
           }));
           break;
         case 'success':
