@@ -6,6 +6,8 @@ import { computeCdf, computeGradient } from '@/lib/geo';
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
 export default function GradientCdfChart({ selectedRoute1, selectedRoute2 }) {
+  const [gradients1, setGradients1] = useState<number[]>([]);
+  const [gradients2, setGradients2] = useState<number[]>([]);
   const [cdf1, setCdf1] = useState<number[]>([]);
   const [cdf2, setCdf2] = useState<number[]>([]);
 
@@ -16,8 +18,9 @@ export default function GradientCdfChart({ selectedRoute1, selectedRoute2 }) {
 
       const polyline1 = selectedRoute1.polyline.features[0].geometry;
       const polyline2 = selectedRoute2.polyline.features[0].geometry;
-      const gradients1 = computeGradient(polyline1);
-      const gradients2 = computeGradient(polyline2);
+
+      setGradients1(computeGradient(polyline1));
+      setGradients2(computeGradient(polyline2));
 
       setCdf1(computeCdf(gradients1, xAxisRange));
       setCdf2(computeCdf(gradients2, xAxisRange));
@@ -28,8 +31,8 @@ export default function GradientCdfChart({ selectedRoute1, selectedRoute2 }) {
     return null;
   }
 
-  const gradientMin = Math.max(Math.min(...gradientData), -0.3);
-  const gradientMax = Math.min(Math.max(...gradientData), 0.3);
+  const gradientMin = Math.max(Math.min(...[...gradients1, ...gradients2]), -0.3);
+  const gradientMax = Math.min(Math.max(...[...gradients1, ...gradients2]), 0.3);
 
   const data = {
     labels: xAxisRange,
