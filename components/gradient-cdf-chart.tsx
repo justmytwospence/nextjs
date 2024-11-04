@@ -28,11 +28,14 @@ export default function GradientCdfChart({ selectedRoute1, selectedRoute2 }) {
     return null;
   }
 
+  const gradientMin = Math.max(Math.min(...gradientData), -0.3);
+  const gradientMax = Math.min(Math.max(...gradientData), 0.3);
+
   const data = {
     labels: xAxisRange,
     datasets: [
       {
-        label: selectedRoute1.name, 
+        label: selectedRoute1.name,
         data: cdf1,
         borderColor: 'rgba(75,192,192,1)',
         fill: false,
@@ -74,6 +77,8 @@ export default function GradientCdfChart({ selectedRoute1, selectedRoute2 }) {
     scales: {
       x: {
         type: 'linear' as const,
+        min: gradientMin,
+        max: gradientMax,
         ticks: {
           stepSize: 0.01,
           min: -0.2,
