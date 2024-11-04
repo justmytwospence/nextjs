@@ -16,6 +16,10 @@ export async function fetchUserRoutes(session: Session, per_page: number = 10): 
       headers: { "Authorization": `Bearer ${userAccount.access_token}` }
     });
 
+    if (response.status === 429) {
+      throw new Error('Too Many Requests');
+    }
+
     if (!response.ok) {
       sessionLogger.error(`Failed to fetch routes from Strava: ${response.statusText}`);
       throw new Error(response.statusText);
@@ -45,6 +49,10 @@ export async function fetchUserSegment(session: Session, segmentId: number): Pro
       headers: { "Authorization": `Bearer ${userAccount.access_token}` }
     });
 
+    if (response.status === 429) {
+      throw new Error('Too Many Requests');
+    }
+
     if (!response.ok) {
       sessionLogger.error(`Failed to fetch segment ${segmentId} from Strava: ${response.statusText}`);
       throw new Error(response.statusText);
@@ -71,6 +79,10 @@ export async function fetchRouteGeoJson(session: Session, routeId: number): Prom
     const response = await fetch(`https://www.strava.com/api/v3/routes/${routeId}/export_gpx`, {
       headers: { 'Authorization': `Bearer ${userAccount.access_token}` }
     });
+
+    if (response.status === 429) {
+      throw new Error('Too Many Requests');
+    }
 
     if (!response.ok) {
       sessionLogger.error(`Failed to fetch GPX for route ${routeId} from Strava: ${response.statusText}`);
