@@ -27,10 +27,10 @@ export const MapSchema = z.object({
 });
 
 export const AthletePrEffortSchema = z.object({
-  "effort_count": z.number().nullish(),
-  "pr_activity_id": z.number().nullish(),
-  "pr_date": z.coerce.date().nullish(),
-  "pr_elapsed_time": z.number().nullish(),
+  "effort_count": z.number(),
+  "pr_activity_id": z.number(),
+  "pr_date": z.coerce.date(),
+  "pr_elapsed_time": z.number(),
 });
 
 export const RouteSegmentStatsSchema = z.object({
