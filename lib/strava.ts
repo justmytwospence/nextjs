@@ -100,21 +100,3 @@ export async function fetchRouteGeoJson(session: Session, routeId: number): Prom
     throw error;
   }
 }
-
-export async function createSubscription(session: Session) {
-  const userAccount = await queryUserAccount(session, 'strava');
-  const callbackUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/api/strava-webhook`;
-  const response = await fetch(`https://www.strava.com/api/v3/push_subscriptions`, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${userAccount.access_token}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      "callback_url": callbackUrl,
-      "verify_token": "STRAVA"
-    })
-  });
-  const responseData = await response.json();
-  console.log(responseData);
-}
