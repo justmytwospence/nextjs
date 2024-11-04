@@ -9,16 +9,17 @@ datasource db {
 }
 
 model User {
-  id            String        @id @default(cuid())
-  name          String?
-  email         String?
-  emailVerified DateTime?
-  image         String?
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
-  accounts      Account[]
-  sessions      Session[]
-  StravaRoute   StravaRoute[]
+  id             String        @id @default(cuid())
+  name           String?
+  email          String?
+  emailVerified  DateTime?
+  image          String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  accounts       Account[]
+  sessions       Session[]
+  UserRoute      UserRoute[]
+  AthleteSegment UserSegment[]
 }
 
 model Account {
@@ -58,19 +59,67 @@ model VerificationToken {
   @@id([identifier, token])
 }
 
-model StravaRoute {
-  id              String   @id
-  name            String
-  description     String?
-  distance        Float
-  createdAt       DateTime @map("created_at")
-  elevationGain   Float    @map("elevation_gain")
-  starred         Boolean
-  summaryPolyline Json     @map("summary_polyline")
-  polyline        Json?
-  type            Int?
-  userId          String   @map("user_id")
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+model UserRoute {
+  createdAt           DateTime      @map("created_at")
+  description         String?
+  distance            Float
+  elevationGain       Float         @map("elevation_gain")
+  estimatedMovingTime Float         @map("estimated_moving_time")
+  id                  String        @id
+  name                String
+  polyline            Json?
+  private             Boolean
+  starred             Boolean
+  subType             Int           @map("sub_type")
+  timestamp           DateTime
+  summaryPolyline     Json          @map("summary_polyline")
+  type                Int?
+  updatedAt           DateTime      @map("updated_at")
+  userId              String        @map("user_id")
+  user                User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  segments            UserSegment[]
+  // TODO: Add waypoints to the data model
+
+  @@unique([id, userId])
+}
+
+model UserSegment {
+  // Required fields from AthleteRouteSegment
+  activityType  String   @map("activity_type")
+  averageGrade  Float    @map("average_grade")
+  city          String
+  climbCategory Int      @map("climb_category")
+  country       String
+  distance      Float
+  effortCount   Int      @map("effort_count")
+  elevationHigh Float    @map("elevation_high")
+  elevationLow  Float    @map("elevation_low")
+  endLatLng     String   @map("end_latlng")
+  id            Int      @id
+  maximumGrade  Float    @map("maximum_grade")
+  name          String
+  prActivityId  Int?     @map("pr_activity_id")
+  prDate        DateTime @map("pr_date")
+  prElapsedTime Int      @map("pr_elapsed_time")
+  private       Boolean
+  startLatLng   String   @map("start_latlng")
+  state         String
+  userId        String   @map("user_id")
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Optional fields from AthleteSegment
+  athleteCount       Int?       @map("athlete_count")
+  createdAt          DateTime?  @map("created_at")
+  hazardous          Boolean?
+  polyline           String?    @map("polyline")
+  mapResourceState   Int?       @map("map_resource_state")
+  starCount          Int?       @map("star_count")
+  starred            Boolean?
+  summaryPolyline    String?    @map("summary_polyline")
+  totalElevationGain Float?     @map("total_elevation_gain")
+  updatedAt          DateTime?  @map("updated_at")
+  UserRoute          UserRoute? @relation(fields: [userRouteId], references: [id])
+  userRouteId        String?
 
   @@unique([id, userId])
 }
