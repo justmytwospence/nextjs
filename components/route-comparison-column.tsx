@@ -2,14 +2,14 @@
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import LazyMap from "@/components/lazy-map";
-import { queryRouteAction } from "@/app/actions/queryRoute";
+import { queryUserRouteAction } from "@/app/actions/queryRoute";
 import ElevationChart from './elevation-chart';
 
 export default function RouteComparisonColumn({ routes, selectedRoute, setSelectedRoute }) {
   return (
     <div className="space-y-6 p-6 bg-background border rounded-lg">
       <Select onValueChange={async (value) => {
-        const fullRoute = await queryRouteAction(value);
+        const fullRoute = await queryUserRouteAction(value);
         setSelectedRoute(fullRoute);
       }}>
         <SelectTrigger className="w-full">

@@ -1,12 +1,12 @@
 "use server";
 
 import { auth } from '@/auth';
-import { queryRoute } from '@/lib/db';
+import { queryUserRoute } from '@/lib/db';
 
-export async function queryRouteAction(routeId: string) {
+export async function queryUserRouteAction(routeId: string) {
   const session = await auth();
-  if (!session) { 
+  if (!session) {
     throw new Error('Not authenticated');
   }
-  return queryRoute(session, routeId);
+  return queryUserRoute(session, routeId);
 }
