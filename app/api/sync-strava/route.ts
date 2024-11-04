@@ -36,8 +36,14 @@ async function syncSegment(session: Session, segment: AthleteRouteSegment, send:
     const fullSegment = await fetchUserSegment(session, segment.id);
     enrichUserSegment(session, fullSegment);
   }
-  catch (err) {
-    sessionLogger.error('Segment sync failed', { error: err.message, segmentId: segment.id });
+  catch (error) {
+    const errorMessage = (error as Error).message || 'An unknown error occurred';
+    sessionLogger.error(`Segment sync failed for ${segment.name}: ${errorMessage}`);
+    await send({
+      type: 'fail',
+      route: segment.name,
+      error: errorMessage
+    });
   }
 }
 
@@ -46,21 +52,32 @@ async function syncRoute(session: Session, route: AthleteRoute, send: (message: 
   try {
     upsertUserRoute(session, route);
     const routeJson = await fetchRouteGeoJson(session, route.id);
-    enrichUserRoute(session, route.id, routeJson);
-    await send({ type: 'success', route: route.name });
+    enrichUserRoute(session, route.id_str, routeJson);
+    await send({
+      type: 'success',
+      route: route.name
+    });
   }
-  catch (err) {
-    sessionLogger.error('Route sync failed', { error: err.message, routeId: route.id });
-    await send({ type: 'fail', route: route.name, error: err.message });
+  catch (error) {
+    const errorMessage = (error as Error).message || 'An unknown error occurred';
+    sessionLogger.error(`Route sync failed for ${route.id_str}: ${errorMessage}`);
+    await send({
+      type: 'fail',
+      route: route.name,
+      error: errorMessage
+    });
   }
 
   if (!route.segments) {
-    sessionLogger.info('Route has no segments', { routeId: route.id });
+    sessionLogger.info(`Route ${route.name} has no segments`);
     return;
   }
 
   for (const segment of route.segments) {
-    await send({ type: 'segment', segment: segment.name });
+    await send({
+      type: 'segment',
+      segment: segment.name
+    });
     syncSegment(session, segment, send)
   }
 }
@@ -71,20 +88,29 @@ async function syncRoutes(session: Session, send: (message: any) => Promise<void
     sessionLogger.info('Starting route sync');
     await send({ type: 'start' });
     const routes = await fetchUserRoutes(session);
-    sessionLogger.info('Fetched routes from Strava', { routeCount: routes.length });
-    await send({ type: 'fetch', nRoutes: routes.length });
+    sessionLogger.info(`Fetched ${routes.length} routes from Strava`);
+    await send({
+      type: 'fetch',
+      nRoutes: routes.length
+    });
 
     for (const route of routes) {
-      await send({ type: 'route', route: route.name });
+      await send({
+        type: 'route',
+        route: route.name
+      });
       syncRoute(session, route, send);
     }
 
     sessionLogger.info('Route sync completed');
     await send({ type: 'complete', });
 
-  } catch (err) {
-    const error = err as Error;
-    sessionLogger.error('Route sync failed with error', { error: error.message });
-    await send({ type: 'error', error: error.message });
+  } catch (error) {
+    const errorMessage = (error as Error).message || 'An unknown error occurred';
+    sessionLogger.error(`Route sync failed: ${errorMessage}`);
+    await send({
+      type: 'error',
+      error: errorMessage
+    });
   }
 }
