@@ -1,4 +1,26 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Strava Tools
+
+Advanced route analysis and comparison tools for Strava users.
+
+## Tech Stack
+
+- **Framework:** Next.js 15 with App Router
+- **Authentication:** NextAuth.js v5
+- **Database:** PostgreSQL (Neon) with Prisma ORM
+- **Styling:** Tailwind CSS, shadcn/ui
+- **Maps:** Leaflet, React Leaflet
+- **Charts:** Chart.js, Recharts
+- **API Integration:** Strava API
+- **Logging:** Winston
+- **Type Safety:** TypeScript, Zod
+
+## Installation
+
+1. Clone the repository:
+```bash
+git clone https://github.com/yourusername/strava-tools.git
+cd strava-tools
+```
 
 ## Getting Started
 
