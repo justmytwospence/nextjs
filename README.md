@@ -14,6 +14,16 @@ Advanced route analysis and comparison tools for Strava users. Work in Progress.
 - **Logging:** Winston
 - **Type Safety:** TypeScript, Zod
 
+## Environment variables
+
+```
+DATABASE_URL=""
+STRAVA_CLIENT_ID=""
+STRAVA_CLIENT_SECRET=""
+AUTH_SECRET="" # Added by `npx auth`. 
+STRAVA_WEBHOOK_VERIFY_TOKEN=""
+```
+
 ## Branches/Deployment
 
 - **Production**: The `main` branch is automatically deployed to $DOMAIN and migrations are run against the production database.
