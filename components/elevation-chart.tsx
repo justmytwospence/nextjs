@@ -32,7 +32,7 @@ export default function ElevationChart({ route, maxGradient }) {
         borderColor: 'blue',
         backgroundColor: 'rgba(75, 192, 192, 0.2)',
         yAxisID: 'elevation',
-        pointRadius: isLarge ? 1 : 0,
+        pointRadius: 0,
         borderWidth: isLarge ? 2 : 1
       },
       {
@@ -41,7 +41,7 @@ export default function ElevationChart({ route, maxGradient }) {
         borderColor: 'gray',
         backgroundColor: 'rgba(128, 128, 128, 0.5)', // Transparent gray
         yAxisID: 'gradient',
-        pointRadius: isLarge ? 1 : 0,
+        pointRadius: 0,
         fill: true,
         borderWidth: isLarge ? 2 : 1,
         segment: {
