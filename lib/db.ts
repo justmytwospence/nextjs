@@ -4,11 +4,11 @@ import { createSessionLogger } from '@/lib/logger';
 import { prisma } from '@/lib/prisma';
 import polyline from '@mapbox/polyline';
 import type { AthleteRoute, AthleteRouteSegment, AthleteSegment } from "@/schemas/strava";
-import type { UserRoute } from "@prisma/client";
+import type { UserRoute, Account } from "@prisma/client";
 import type { Session } from "next-auth";
 
 
-export async function queryUserAccount(session: Session, accountProvider: string) {
+export async function queryUserAccount(session: Session, accountProvider: string): Promise<Account> {
   const sessionLogger = createSessionLogger(session);
   try {
     sessionLogger.info('Querying user account', { provider: accountProvider });
@@ -32,7 +32,7 @@ export async function queryUserAccount(session: Session, accountProvider: string
   }
 }
 
-export async function queryUserRoutes(session: Session): Promise<AthleteRoute[]> {
+export async function queryUserRoutes(session: Session): Promise<UserRoute[]> {
   const sessionLogger = createSessionLogger(session);
   try {
     sessionLogger.info('Querying user routes for user', { userId: session.user.id });
@@ -48,7 +48,7 @@ export async function queryUserRoutes(session: Session): Promise<AthleteRoute[]>
   }
 }
 
-export async function queryUserRoute(session: Session, routeId: string): Promise<AthleteRoute | null> {
+export async function queryUserRoute(session: Session, routeId: string): Promise<UserRoute | null> {
   if (!session) {
     throw new Error('Session is required to query route');
   }
@@ -164,11 +164,9 @@ export async function createUserSegment(session: Session, segment: AthleteRouteS
         climbCategory: segment.climb_category,
         country: segment.country,
         distance: segment.distance,
-        efforttCount: segment.athlete_pr_effort.effort_count,
+        effortCount: segment.athlete_pr_effort.effort_count,
         elevationHigh: segment.elevation_high,
         elevationLow: segment.elevation_low,
-        endLat: segment.end_latlng[0],
-        endLng: segment.end_latlng[1],
         id: segment.id,
         maximumGrade: segment.maximum_grade,
         name: segment.name,
@@ -176,8 +174,6 @@ export async function createUserSegment(session: Session, segment: AthleteRouteS
         prDate: segment.athlete_pr_effort.pr_date,
         prElapsedTime: segment.athlete_pr_effort.pr_elapsed_time,
         private: segment.private,
-        startLat: segment.start_latlng[0],
-        startLng: segment.start_latlng[1],
         state: segment.state,
         userId: session.user.id,
       }
@@ -219,8 +215,6 @@ export async function enrichUserSegment(session: Session, segment: AthleteSegmen
         effortCount: segment.athlete_segment_stats.effort_count,
         elevationHigh: segment.elevation_high,
         elevationLow: segment.elevation_low,
-        endLat: segment.end_latlng[0],
-        endLng: segment.end_latlng[1],
         hazardous: segment.hazardous,
         id: segment.id,
         mapResourceState: segment.map.resource_state,
@@ -232,8 +226,6 @@ export async function enrichUserSegment(session: Session, segment: AthleteSegmen
         private: segment.private,
         starCount: segment.star_count,
         starred: segment.starred,
-        startLat: segment.start_latlng[0],
-        startLng: segment.start_latlng[1],
         state: segment.state,
         totalElevationGain: segment.total_elevation_gain,
         updatedAt: new Date(segment.updated_at),
@@ -251,8 +243,6 @@ export async function enrichUserSegment(session: Session, segment: AthleteSegmen
         effortCount: segment.athlete_segment_stats.effort_count,
         elevationHigh: segment.elevation_high,
         elevationLow: segment.elevation_low,
-        endLat: segment.end_latlng[0],
-        endLng: segment.end_latlng[1],
         hazardous: segment.hazardous,
         id: segment.id,
         mapResourceState: segment.map.resource_state,
@@ -264,8 +254,6 @@ export async function enrichUserSegment(session: Session, segment: AthleteSegmen
         private: segment.private,
         starCount: segment.star_count,
         starred: segment.starred,
-        startLat: segment.start_latlng[0],
-        startLng: segment.start_latlng[1],
         state: segment.state,
         totalElevationGain: segment.total_elevation_gain,
         updatedAt: new Date(segment.updated_at),

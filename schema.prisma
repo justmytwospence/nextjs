@@ -94,7 +94,6 @@ model UserSegment {
   effortCount   Int      @map("effort_count")
   elevationHigh Float    @map("elevation_high")
   elevationLow  Float    @map("elevation_low")
-  endLatLng     String   @map("end_latlng")
   id            Int      @id
   maximumGrade  Float    @map("maximum_grade")
   name          String
@@ -102,7 +101,6 @@ model UserSegment {
   prDate        DateTime @map("pr_date")
   prElapsedTime Int      @map("pr_elapsed_time")
   private       Boolean
-  startLatLng   String   @map("start_latlng")
   state         String
   userId        String   @map("user_id")
   user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
