@@ -11,7 +11,7 @@ import type { Session } from "next-auth";
 export async function queryUserAccount(session: Session, accountProvider: string): Promise<Account> {
   const sessionLogger = createSessionLogger(session);
   try {
-    sessionLogger.info('Querying user account', { provider: accountProvider });
+    sessionLogger.info(`Querying ${accountProvider} account for user ${session.user.id}`);
     const account = await prisma.account.findUnique({
       where: {
         userId_provider: {
@@ -41,7 +41,7 @@ export async function queryUserRoutes(session: Session): Promise<UserRoute[]> {
         userId: session.user.id
       },
     });
-    sessionLogger.info('Found routes', { count: routes.length });
+    sessionLogger.info(`Found ${routes.length} routes`);
     return routes;
   } catch (error) {
     throw error;
@@ -63,7 +63,7 @@ export async function queryUserRoute(session: Session, routeId: string): Promise
         }
       }
     });
-    sessionLogger.info('Found route', { routeId });
+    sessionLogger.info(`Found route ${routeId} to be ${route?.name}`);
     return route;
   } catch (error) {
     throw error;
@@ -72,10 +72,7 @@ export async function queryUserRoute(session: Session, routeId: string): Promise
 
 export async function upsertUserRoute(session: Session, route: AthleteRoute) {
   const sessionLogger = createSessionLogger(session);
-  sessionLogger.info('Upserting route', {
-    routeId: route.id_str,
-    routeName: route.name
-  });
+  sessionLogger.info(`Upserting route ${route.name}`);
 
   try {
 
@@ -119,10 +116,7 @@ export async function upsertUserRoute(session: Session, route: AthleteRoute) {
       },
     });
 
-    sessionLogger.info('Route upserted successfully', {
-      routeId: route.id_str,
-      routeName: route.name
-    });
+    sessionLogger.info(`Route ${route.name} upserted successfully`);
   } catch (error) {
     throw error;
   } finally {
@@ -130,12 +124,9 @@ export async function upsertUserRoute(session: Session, route: AthleteRoute) {
   }
 }
 
-export async function enrichUserRoute(session: Session, routeId: number, route: JSON) {
+export async function enrichUserRoute(session: Session, routeId: string, route: JSON) {
   const sessionLogger = createSessionLogger(session);
-  sessionLogger.info('Enriching route', {
-    routeId: routeId,
-    routeName: route.name
-  });
+  sessionLogger.info(`Enriching route ${routeId}`);
 
   await prisma.userRoute.update({
     where: {
@@ -151,10 +142,7 @@ export async function enrichUserRoute(session: Session, routeId: number, route: 
 export async function createUserSegment(session: Session, segment: AthleteRouteSegment) {
   const sessionLogger = createSessionLogger(session);
   try {
-    sessionLogger.info('Creating segment', {
-      segmentId: segment.id,
-      segmentName: segment.name
-    });
+    sessionLogger.info(`Creating segment ${segment.name}`);
 
     await prisma.userSegment.create({
       data: {
@@ -179,10 +167,7 @@ export async function createUserSegment(session: Session, segment: AthleteRouteS
       }
     });
 
-    sessionLogger.info('Segment created successfully', {
-      segmentId: segment.id,
-      segmentName: segment.name
-    });
+    sessionLogger.info(`Segment ${segment.name} created successfully`);
   } catch (error) {
     throw error;
   } finally {
@@ -192,10 +177,7 @@ export async function createUserSegment(session: Session, segment: AthleteRouteS
 
 export async function enrichUserSegment(session: Session, segment: AthleteSegment) {
   const sessionLogger = createSessionLogger(session);
-  sessionLogger.info('Enriching segment', {
-    segmentId: segment.id,
-    segmentName: segment.name
-  });
+  sessionLogger.info(`Enriching segment ${segment.name}`);
 
   try {
     await prisma.userSegment.upsert({
@@ -261,10 +243,7 @@ export async function enrichUserSegment(session: Session, segment: AthleteSegmen
       }
     });
 
-    sessionLogger.info('Segment enriched successfully', {
-      segmentId: segment.id,
-      segmentName: segment.name
-    });
+    sessionLogger.info(`Segment ${segment.name} enriched successfully`);
   } catch (error) {
     throw error;
   } finally {

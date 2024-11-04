@@ -9,7 +9,7 @@ import { Session } from 'next-auth';
 
 export async function fetchUserRoutes(session: Session, per_page: number = 10): Promise<AthleteRoute[]> {
   const sessionLogger = createSessionLogger(session);
-  sessionLogger.info('Fetching user routes from Strava', { per_page });
+  sessionLogger.info(`Fetching ${per_page} routes from Strava`);
   try {
     const userAccount = await queryUserAccount(session, 'strava');
     const response = await fetch(`https://www.strava.com/api/v3/athlete/routes?per_page=${per_page}`, {
@@ -17,24 +17,19 @@ export async function fetchUserRoutes(session: Session, per_page: number = 10): 
     });
 
     if (!response.ok) {
-      const error = `${response.statusText}: access token = ${userAccount.access_token}`;
-      sessionLogger.error('Failed to fetch routes from Strava', { error, status: response.status });
-      throw new Error(error);
+      sessionLogger.error(`Failed to fetch routes from Strava: ${response.statusText}`);
+      throw new Error(response.statusText);
     }
 
     const responseData = await response.json();
-    sessionLogger.info('Received routes from Strava', { count: responseData.length });
+    sessionLogger.info(`Received ${responseData.length} routes from Strava`);
 
     const stravaRoutes = responseData
       .map(route => AthleteRouteSchema.safeParse(route))
       .filter(validationResult => validationResult.success)
       .map(validationResult => validationResult.data);
 
-    sessionLogger.info('Successfully fetched Strava routes', {
-      total: responseData.length,
-      valid: stravaRoutes.length
-    });
-
+    sessionLogger.info(`Successfully parsed routes from Strava: ${stravaRoutes.length} successful, ${responseData.length - stravaRoutes.length} failed`);
     return stravaRoutes;
   } catch (error) {
     throw error;
@@ -43,7 +38,7 @@ export async function fetchUserRoutes(session: Session, per_page: number = 10): 
 
 export async function fetchUserSegment(session: Session, segmentId: number): Promise<AthleteSegment> {
   const sessionLogger = createSessionLogger(session);
-  sessionLogger.info('Fetching segment from Strava', { segmentId });
+  sessionLogger.info(`Fetching full segment ${segmentId} from Strava`);
   try {
     const userAccount = await queryUserAccount(session, 'strava');
     const response = await fetch(`https://www.strava.com/api/v3/segments/${segmentId}`, {
@@ -51,15 +46,17 @@ export async function fetchUserSegment(session: Session, segmentId: number): Pro
     });
 
     if (!response.ok) {
-      const error = `${response.statusText}: access token = ${userAccount.access_token}`;
-      sessionLogger.error('Failed to fetch segment from Strava', { error, status: response.status });
-      throw new Error(error);
+      sessionLogger.error(`Failed to fetch segment ${segmentId} from Strava: ${response.statusText}`);
+      throw new Error(response.statusText);
     }
 
     const responseData = await response.json();
     const segment = AthleteSegmentSchema.safeParse(responseData).data;
-    sessionLogger.info('Successfully fetched Strava segment', { segment });
-
+    if (!segment) {
+      sessionLogger.error(`Failed to parse segment ${segmentId} from Strava`);
+      throw new Error('Failed to parse segment');
+    }
+    sessionLogger.info(`Successfully fetched segment ${segmentId}  as ${segment?.name} from Strava`);
     return segment;
   } catch (error) {
     throw error;
@@ -68,29 +65,24 @@ export async function fetchUserSegment(session: Session, segmentId: number): Pro
 
 export async function fetchRouteGeoJson(session: Session, routeId: number): Promise<JSON> {
   const sessionLogger = createSessionLogger(session);
-  sessionLogger.info('Fetching route GeoJSON', { routeId });
+  sessionLogger.info(`Fetching GPX for route ${routeId} from Strava`);
   try {
     const userAccount = await queryUserAccount(session, 'strava');
-    const stravaResponse = await fetch(`https://www.strava.com/api/v3/routes/${routeId}/export_gpx`, {
+    const response = await fetch(`https://www.strava.com/api/v3/routes/${routeId}/export_gpx`, {
       headers: { 'Authorization': `Bearer ${userAccount.access_token}` }
     });
 
-    if (!stravaResponse.ok) {
-      sessionLogger.error('Failed to fetch GPX from Strava', {
-        status: stravaResponse.status,
-        routeId
-      });
-      throw new Error(`Failed to fetch GPX: ${stravaResponse.statusText}`);
+    if (!response.ok) {
+      sessionLogger.error(`Failed to fetch GPX for route ${routeId} from Strava: ${response.statusText}`);
+      throw new Error(`Failed to fetch GPX: ${response.statusText}`);
     }
 
-    const gpxData = await stravaResponse.text();
-    sessionLogger.info('Received GPX data from Strava', { routeId });
-
+    const gpxData = await response.text();
+    sessionLogger.info(`Successfully fetched GPX for route ${routeId} from Strava`);
     const gpxParser = new DOMParser();
     const gpxDoc = gpxParser.parseFromString(gpxData, "text/xml");
     const geoJson = tj.gpx(gpxDoc, { styles: false });
-
-    sessionLogger.info('Successfully converted GPX to GeoJSON', { routeId });
+    sessionLogger.info(`Successfully converted GPX to GeoJSON for route ${routeId}`);
     return geoJson;
   } catch (error) {
     throw error;
