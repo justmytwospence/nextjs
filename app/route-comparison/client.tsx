@@ -3,11 +3,11 @@
 import { useState } from 'react';
 import GradientCdfChart from "@/components/gradient-cdf-chart";
 import RouteComparisonColumn from "@/components/route-comparison-column";
-import { StravaRoute } from "@prisma/client";
+import { UserRoute } from "@prisma/client";
 
 export default function RouteComparison({ routes }) {
-  const [selectedRoute1, setSelectedRoute1] = useState<StravaRoute | null>(null);
-  const [selectedRoute2, setSelectedRoute2] = useState<StravaRoute | null>(null);
+  const [selectedRoute1, setSelectedRoute1] = useState<UserRoute | null>(null);
+  const [selectedRoute2, setSelectedRoute2] = useState<UserRoute | null>(null);
 
   return (
     <>

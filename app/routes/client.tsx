@@ -11,7 +11,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import type { StravaRoute } from "@prisma/client";
+import type { UserRoute } from "@prisma/client";
 import {
   Pagination,
   PaginationContent,
@@ -22,7 +22,7 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination"
 
-export default function RoutesClient({ initialRoutes }: { initialRoutes: StravaRoute[] }) {
+export default function RoutesClient({ initialRoutes }: { initialRoutes: UserRoute[] }) {
   const [selectedType, setSelectedType] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 30;
@@ -157,7 +157,7 @@ export default function RoutesClient({ initialRoutes }: { initialRoutes: StravaR
   );
 }
 
-function RouteGrid({ routes }: { routes: StravaRoute[] }) {
+function RouteGrid({ routes }: { routes: UserRoute[] }) {
   return (
     <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
       {routes.map((route) => (
