@@ -59,6 +59,7 @@ model VerificationToken {
   @@id([identifier, token])
 }
 
+// TODO: split Routes out from the UserRoute relationship 
 model UserRoute {
   createdAt           DateTime      @map("created_at")
   description         String?
@@ -83,41 +84,43 @@ model UserRoute {
   @@unique([id, userId])
 }
 
+// TODO: split Segments out from the UserSegment relationship
 model UserSegment {
-  // Required fields from AthleteRouteSegment
-  activityType  String   @map("activity_type")
-  averageGrade  Float    @map("average_grade")
+  // Required fields from SummarySegment
+  activityType  String     @map("activity_type")
+  averageGrade  Float      @map("average_grade")
   city          String
-  climbCategory Int      @map("climb_category")
+  climbCategory Int        @map("climb_category")
   country       String
   distance      Float
-  effortCount   Int      @map("effort_count")
-  elevationHigh Float    @map("elevation_high")
-  elevationLow  Float    @map("elevation_low")
-  id            Int      @id
-  maximumGrade  Float    @map("maximum_grade")
+  effortCount   Int        @default(0) @map("effort_count")
+  elevationHigh Float      @map("elevation_high")
+  elevationLow  Float      @map("elevation_low")
+  id            Int        @id
+  maximumGrade  Float      @map("maximum_grade")
   name          String
-  prActivityId  Int?     @map("pr_activity_id")
-  prDate        DateTime @map("pr_date")
-  prElapsedTime Int      @map("pr_elapsed_time")
   private       Boolean
   state         String
-  userId        String   @map("user_id")
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId        String     @map("user_id")
+  user          User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  UserRoute     UserRoute? @relation(fields: [userRouteId], references: [id])
 
-  // Optional fields from AthleteSegment
-  athleteCount       Int?       @map("athlete_count")
-  createdAt          DateTime?  @map("created_at")
+  // Optional fields from DetailedSegment
+  athleteCount       Int?      @map("athlete_count")
+  createdAt          DateTime? @map("created_at")
   hazardous          Boolean?
-  polyline           Json?      @map("polyline")
-  mapResourceState   Int?       @map("map_resource_state")
-  starCount          Int?       @map("star_count")
+  mapResourceState   Int?      @map("map_resource_state")
+  polyline           Json?     @map("polyline")
+  prActivityId       Int?      @map("pr_activity_id")
+  prDate             DateTime? @map("pr_date")
+  prElapsedTime      Int?      @map("pr_elapsed_time")
+  starCount          Int?      @map("star_count")
   starred            Boolean?
-  summaryPolyline    Json?      @map("summary_polyline")
-  totalElevationGain Float?     @map("total_elevation_gain")
-  updatedAt          DateTime?  @map("updated_at")
-  UserRoute          UserRoute? @relation(fields: [userRouteId], references: [id])
-  userRouteId        String?
+  summaryPolyline    Json?     @map("summary_polyline")
+  totalElevationGain Float?    @map("total_elevation_gain")
+  updatedAt          DateTime? @map("updated_at")
+
+  userRouteId String?
 
   @@unique([id, userId])
 }

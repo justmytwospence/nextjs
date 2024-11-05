@@ -3,7 +3,7 @@
 import { createSessionLogger } from '@/lib/logger';
 import { prisma } from '@/lib/prisma';
 import polyline from '@mapbox/polyline';
-import type { AthleteRoute, AthleteRouteSegment, AthleteSegment } from "@/schemas/strava";
+import type { Route, DetailedSegment, SummarySegment } from "@/schemas/strava";
 import type { UserRoute, Account, Prisma } from "@prisma/client";
 import type { Session } from "next-auth";
 
@@ -70,7 +70,7 @@ export async function queryUserRoute(session: Session, routeId: string): Promise
   }
 }
 
-export async function upsertUserRoute(session: Session, route: AthleteRoute) {
+export async function upsertUserRoute(session: Session, route: Route) {
   const sessionLogger = createSessionLogger(session);
   sessionLogger.info(`Upserting route ${route.name}`);
 
@@ -145,7 +145,7 @@ export async function enrichUserRoute(session: Session, routeId: string, route: 
   }
 }
 
-export async function createUserSegment(session: Session, segment: AthleteRouteSegment) {
+export async function createUserSegment(session: Session, segment: SummarySegment) {
   const sessionLogger = createSessionLogger(session);
   try {
     sessionLogger.info(`Creating segment ${segment.name}`);
@@ -158,17 +158,14 @@ export async function createUserSegment(session: Session, segment: AthleteRouteS
         climbCategory: segment.climb_category,
         country: segment.country,
         distance: segment.distance,
-        effortCount: segment.athlete_pr_effort.effort_count,
         elevationHigh: segment.elevation_high,
         elevationLow: segment.elevation_low,
         id: segment.id,
         maximumGrade: segment.maximum_grade,
         name: segment.name,
-        prActivityId: segment.athlete_pr_effort.pr_activity_id,
-        prDate: segment.athlete_pr_effort.pr_date,
-        prElapsedTime: segment.athlete_pr_effort.pr_elapsed_time,
         private: segment.private,
         state: segment.state,
+
         userId: session.user.id,
       }
     });
@@ -181,7 +178,7 @@ export async function createUserSegment(session: Session, segment: AthleteRouteS
   }
 }
 
-export async function enrichUserSegment(session: Session, segment: AthleteSegment) {
+export async function enrichUserSegment(session: Session, segment: DetailedSegment) {
   const sessionLogger = createSessionLogger(session);
   sessionLogger.info(`Enriching segment ${segment.name}`);
 
@@ -200,20 +197,16 @@ export async function enrichUserSegment(session: Session, segment: AthleteSegmen
         country: segment.country,
         createdAt: new Date(segment.created_at),
         distance: segment.distance,
-        effortCount: segment.athlete_segment_stats.effort_count,
+        effortCount: segment.effort_count,
         elevationHigh: segment.elevation_high,
         elevationLow: segment.elevation_low,
         hazardous: segment.hazardous,
         id: segment.id,
-        mapResourceState: segment.map.resource_state,
         maximumGrade: segment.maximum_grade,
         name: segment.name,
         polyline: polyline.toGeoJSON(segment.map.polyline),
-        prDate: segment.athlete_segment_stats.pr_date,
-        prElapsedTime: segment.athlete_segment_stats.pr_elapsed_time,
         private: segment.private,
         starCount: segment.star_count,
-        starred: segment.starred,
         state: segment.state,
         totalElevationGain: segment.total_elevation_gain,
         updatedAt: new Date(segment.updated_at),
@@ -228,20 +221,16 @@ export async function enrichUserSegment(session: Session, segment: AthleteSegmen
         country: segment.country,
         createdAt: new Date(segment.created_at),
         distance: segment.distance,
-        effortCount: segment.athlete_segment_stats.effort_count,
+        effortCount: segment.effort_count,
         elevationHigh: segment.elevation_high,
         elevationLow: segment.elevation_low,
         hazardous: segment.hazardous,
         id: segment.id,
-        mapResourceState: segment.map.resource_state,
         maximumGrade: segment.maximum_grade,
         name: segment.name,
         polyline: polyline.toGeoJSON(segment.map.polyline),
-        prDate: segment.athlete_segment_stats.pr_date,
-        prElapsedTime: segment.athlete_segment_stats.pr_elapsed_time,
         private: segment.private,
         starCount: segment.star_count,
-        starred: segment.starred,
         state: segment.state,
         totalElevationGain: segment.total_elevation_gain,
         updatedAt: new Date(segment.updated_at),

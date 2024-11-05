@@ -2,12 +2,13 @@
 
 import { queryUserAccount } from '@/lib/db';
 import { createSessionLogger } from '@/lib/logger';
-import { AthleteRoute, AthleteRouteSchema, AthleteSegment, AthleteSegmentSchema } from '@/schemas/strava';
+import { RouteSchema, DetailedSegmentSchema } from '@/schemas/strava';
+import type { Route, DetailedSegment } from '@/schemas/strava';
 import tj from '@mapbox/togeojson';
 import { DOMParser } from '@xmldom/xmldom';
 import { Session } from 'next-auth';
 
-export async function fetchUserRoutes(session: Session, per_page: number = 10): Promise<AthleteRoute[]> {
+export async function fetchRoutes(session: Session, per_page: number = 10): Promise<Route[]> {
   const sessionLogger = createSessionLogger(session);
   sessionLogger.info(`Fetching ${per_page} routes from Strava`);
   try {
@@ -29,7 +30,7 @@ export async function fetchUserRoutes(session: Session, per_page: number = 10): 
     sessionLogger.info(`Received ${responseData.length} routes from Strava`);
 
     const stravaRoutes = responseData
-      .map(route => AthleteRouteSchema.safeParse(route))
+      .map(route => RouteSchema.safeParse(route))
       .filter(validationResult => validationResult.success)
       .map(validationResult => validationResult.data);
 
@@ -40,7 +41,7 @@ export async function fetchUserRoutes(session: Session, per_page: number = 10): 
   }
 }
 
-export async function fetchUserSegment(session: Session, segmentId: number): Promise<AthleteSegment> {
+export async function fetchDetailedSegment(session: Session, segmentId: number): Promise<DetailedSegment> {
   const sessionLogger = createSessionLogger(session);
   sessionLogger.info(`Fetching full segment ${segmentId} from Strava`);
   try {
@@ -59,7 +60,7 @@ export async function fetchUserSegment(session: Session, segmentId: number): Pro
     }
 
     const responseData = await response.json();
-    const segment = AthleteSegmentSchema.safeParse(responseData).data;
+    const segment = DetailedSegmentSchema.safeParse(responseData).data;
     if (!segment) {
       sessionLogger.error(`Failed to parse segment ${segmentId} from Strava`);
       throw new Error('Failed to parse segment');

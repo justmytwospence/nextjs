@@ -1,10 +1,10 @@
 import { auth } from "@/auth";
-import { fetchUserRoutes, fetchRouteGeoJson, fetchUserSegment } from "@/lib/strava";
+import { fetchRoutes, fetchRouteGeoJson, fetchDetailedSegment } from "@/lib/strava";
 import { enrichUserSegment, createUserSegment, enrichUserRoute, upsertUserRoute } from "@/lib/db";
 import { NextResponse } from "next/server";
 import { createSessionLogger } from '@/lib/logger';
 import type { Session } from "next-auth";
-import type { AthleteRoute, AthleteRouteSegment } from "@/schemas/strava";
+import type { Route, SummarySegment } from "@/schemas/strava";
 
 export async function GET() {
   const session = await auth();
@@ -29,12 +29,12 @@ export async function GET() {
   });
 }
 
-async function syncSegment(session: Session, segment: AthleteRouteSegment, send: (message: any) => Promise<void>) {
+async function syncSegment(session: Session, segment: SummarySegment, send: (message: any) => Promise<void>) {
   const sessionLogger = createSessionLogger(session);
   try {
     createUserSegment(session, segment);
-    const fullSegment = await fetchUserSegment(session, segment.id);
-    enrichUserSegment(session, fullSegment);
+    const detailedSegment = await fetchDetailedSegment(session, segment.id);
+    enrichUserSegment(session, detailedSegment);
   }
   catch (error) {
     const errorMessage = (error as Error).message || 'An unknown error occurred';
@@ -52,7 +52,7 @@ async function syncSegment(session: Session, segment: AthleteRouteSegment, send:
   }
 }
 
-async function syncRoute(session: Session, route: AthleteRoute, send: (message: any) => Promise<void>) {
+async function syncRoute(session: Session, route: Route, send: (message: any) => Promise<void>) {
   const sessionLogger = createSessionLogger(session);
   try {
     upsertUserRoute(session, route);
@@ -97,7 +97,7 @@ async function syncRoutes(session: Session, send: (message: any) => Promise<void
   try {
     sessionLogger.info('Starting route sync');
     await send({ type: 'start' });
-    const routes = await fetchUserRoutes(session);
+    const routes = await fetchRoutes(session);
     sessionLogger.info(`Fetched ${routes.length} routes from Strava`);
     await send({
       type: 'fetch',
