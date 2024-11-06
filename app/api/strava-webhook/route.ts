@@ -51,11 +51,12 @@ export async function POST(request: NextRequest) {
 
   try {
     const requestJson = await request.json();
+    baseLogger.info("requestJson: ", JSON.stringify(requestJson, null, 2));
     const validationResult = WebhookEventSchema.safeParse(requestJson);
 
+    baseLogger.info("requestJson: ", JSON.stringify(requestJson, null, 2));
     if (!validationResult.success) {
-      baseLogger.error("Invalid webhook event data", JSON.stringify(validationResult.error, null, 2));
-      baseLogger.debug("requestJson: ", JSON.stringify(requestJson, null, 2));
+      baseLogger.error("Invalid webhook event data: ", JSON.stringify(validationResult.error, null, 2));
       throw new Error("Invalid webhook event data");
     } else {
       processWebhookEvent(validationResult.data).catch(console.error);
