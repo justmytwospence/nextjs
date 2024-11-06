@@ -1,4 +1,4 @@
-import { Button } from '@/components/ui/button'
+import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,10 +16,10 @@ export default async function Topbar() {
   const session = await auth();
 
   const links = [
-    { href: '/routes', label: 'Routes' },
-    { href: '/activities', label: 'Activities' },
-    { href: '/route-comparison', label: 'Compare Routes' },
-    { href: '/segment-sniper', label: 'Segment Sniper' }
+    { href: "/routes", label: "Routes" },
+    { href: "/activities", label: "Activities" },
+    { href: "/route-comparison", label: "Compare Routes" },
+    { href: "/segment-sniper", label: "Segment Sniper" }
   ];
 
   return (
@@ -37,7 +37,7 @@ export default async function Topbar() {
               <Avatar className="h-8 w-8">
                 <AvatarImage src={session?.user?.image} alt="Profile" />
                 <AvatarFallback>
-                  {session?.user?.name?.split(' ').map(n => n[0]).join('') || '?'}
+                  {session?.user?.name?.split(" ").map(n => n[0]).join("") || "?"}
                 </AvatarFallback>
               </Avatar>
               <span className="sr-only">Toggle user menu</span>
@@ -50,7 +50,7 @@ export default async function Topbar() {
             <DropdownMenuItem>Support</DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onSelect={async () => {
-              'use server';
+              "use server";
               await signOut();
             }}>Logout</DropdownMenuItem>
           </DropdownMenuContent>
