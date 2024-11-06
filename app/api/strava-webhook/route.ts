@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
       baseLogger.error(`Invalid webhook event data: ${JSON.stringify(validationResult.error, null, 2)}`);
       throw new Error("Invalid webhook event data");
     } else {
-      processWebhookEvent(validationResult.data).catch(console.error);
+      await processWebhookEvent(validationResult.data).catch(baseLogger.error);
     }
 
     return new NextResponse(null, { status: 200 });
