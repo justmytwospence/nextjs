@@ -8,7 +8,8 @@ if (environment === 'production') {
   execSync('npx prisma migrate deploy', { stdio: 'inherit' });
 } else if (environment === 'preview') {
   console.log("Running staging migrations for preview environment...");
-  execSync('npx prisma migrate deploy reset --force', { stdio: 'inherit' });
+  execSync('npx prisma migrate reset --force', { stdio: 'inherit' });
+  execSync('npx prisma migrate deploy', { stdio: 'inherit' });
 } else {
   console.log("No migrations for this environment.");
 }
