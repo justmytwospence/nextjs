@@ -95,6 +95,7 @@ export default function SyncStravaButton() {
               ...prev,
               message: `Sync Failed: ${JSON.stringify(data.error, null, 2)}`,
             }));
+            setIsSyncing(false);
             reject(new Error(data.error));
             break;
         }
