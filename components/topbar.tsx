@@ -17,6 +17,7 @@ export default async function Topbar() {
 
   const links = [
     { href: '/routes', label: 'Routes' },
+    { href: '/activities', label: 'Activities' },
     { href: '/route-comparison', label: 'Compare Routes' },
     { href: '/segment-sniper', label: 'Segment Sniper' }
   ];
