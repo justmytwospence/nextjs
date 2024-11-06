@@ -1,4 +1,4 @@
-import { execSync } from 'child_process';
+const { execSync } = require('child_process');
 
 // Detect environment from Vercel environment variable
 const environment = process.env.VERCEL_ENV;
