@@ -6,7 +6,25 @@ import polyline from '@mapbox/polyline';
 import type { Route, DetailedSegment, SummarySegment } from "@/schemas/strava";
 import type { UserRoute, Account, Prisma } from "@prisma/client";
 import type { Session } from "next-auth";
+import type { SummaryActivity, DetailedActivity } from "@/schemas/strava";
 
+export async function insertApiQuery(
+  session: Session,
+  provider: string,
+  accessToken: string,
+  endpoint: string,
+  params: URLSearchParams,
+) {
+  return await prisma.apiQuery.create({
+    data: {
+      accessToken,
+      endpoint,
+      params: Object.fromEntries(params.entries()),
+      provider,
+      userId: session.user.id,
+    },
+  });
+}
 
 export async function queryUserAccount(session: Session, accountProvider: string): Promise<Account> {
   const sessionLogger = createSessionLogger(session);
@@ -244,5 +262,157 @@ export async function enrichUserSegment(session: Session, segment: DetailedSegme
   } finally {
     await prisma.$disconnect();
   }
-
 }
+
+export async function upsertUserActivity(session: Session, activity: SummaryActivity) {
+  const sessionLogger = createSessionLogger(session);
+  sessionLogger.info(`Upserting activity ${activity.name}`);
+
+  try {
+    await prisma.userActivity.upsert({
+      where: {
+        id_userId: {
+          id: activity.id.toString(),
+          userId: session.user.id
+        }
+      },
+      create: {
+        achievementCount: activity.achievement_count,
+        athleteCount: activity.athlete_count,
+        averageSpeed: activity.average_speed,
+        averageWatts: activity.average_watts,
+        commentCount: activity.comment_count,
+        commute: activity.commute,
+        deviceWatts: activity.device_watts,
+        distance: activity.distance,
+        elapsedTime: activity.elapsed_time,
+        elevationHigh: activity.elev_high,
+        elevationLow: activity.elev_low,
+        flagged: activity.flagged,
+        gearId: activity.gear_id,
+        hasKudoed: activity.has_kudoed,
+        hideFromHome: activity.hide_from_home || false,
+        id: activity.id.toString(),
+        kilojoules: activity.kilojoules,
+        kudosCount: activity.kudos_count,
+        manual: activity.manual,
+        maxSpeed: activity.max_speed,
+        maxWatts: activity.max_watts,
+        movingTime: activity.moving_time,
+        name: activity.name,
+        photoCount: activity.photo_count,
+        private: activity.private,
+        sportType: activity.sport_type,
+        startDate: new Date(activity.start_date),
+        startDateLocal: new Date(activity.start_date_local),
+        timezone: activity.timezone,
+        totalElevationGain: activity.total_elevation_gain,
+        totalPhotoCount: activity.total_photo_count,
+        trainer: activity.trainer,
+        type: activity.type,
+        uploadId: activity.upload_id.toString(),
+        weightedAverageWatts: activity.weighted_average_watts,
+        workoutType: activity.workout_type,
+        userId: session.user.id,
+
+        // If map data exists, store the polyline
+        summaryPolyline: activity.map?.summary_polyline ?
+          polyline.toGeoJSON(activity.map.summary_polyline) :
+          null,
+      },
+      update: {
+        achievementCount: activity.achievement_count,
+        athleteCount: activity.athlete_count,
+        averageSpeed: activity.average_speed,
+        averageWatts: activity.average_watts,
+        commentCount: activity.comment_count,
+        commute: activity.commute,
+        deviceWatts: activity.device_watts,
+        distance: activity.distance,
+        elapsedTime: activity.elapsed_time,
+        elevationHigh: activity.elev_high,
+        elevationLow: activity.elev_low,
+        flagged: activity.flagged,
+        gearId: activity.gear_id,
+        hasKudoed: activity.has_kudoed,
+        hideFromHome: activity.hide_from_home,
+        kilojoules: activity.kilojoules,
+        kudosCount: activity.kudos_count,
+        manual: activity.manual,
+        maxSpeed: activity.max_speed,
+        maxWatts: activity.max_watts,
+        movingTime: activity.moving_time,
+        name: activity.name,
+        photoCount: activity.photo_count,
+        private: activity.private,
+        sportType: activity.sport_type,
+        startDate: new Date(activity.start_date),
+        startDateLocal: new Date(activity.start_date_local),
+        timezone: activity.timezone,
+        totalElevationGain: activity.total_elevation_gain,
+        totalPhotoCount: activity.total_photo_count,
+        trainer: activity.trainer,
+        type: activity.type,
+        uploadId: activity.upload_id.toString(),
+        weightedAverageWatts: activity.weighted_average_watts,
+        workoutType: activity.workout_type,
+
+        // If map data exists, update the polyline
+        summaryPolyline: activity.map?.summary_polyline ?
+          polyline.toGeoJSON(activity.map.summary_polyline) :
+          undefined,
+      },
+    });
+
+    sessionLogger.info(`Activity ${activity.name} upserted successfully`);
+  } catch (error) {
+    throw error;
+  } finally {
+    await prisma.$disconnect();
+  }
+}
+
+export async function enrichUserActivity(session: Session, activity: DetailedActivity) {
+  const sessionLogger = createSessionLogger(session);
+  sessionLogger.info(`Enriching activity ${activity.name}`);
+
+  try {
+    await prisma.userActivity.update({
+      where: {
+        id_userId: {
+          id: activity.id.toString(),
+          userId: session.user.id
+        }
+      },
+      data: {
+        // Add detailed-only fields
+        description: activity.description,
+        deviceName: activity.device_name,
+        embedToken: activity.embed_token,
+        calories: activity.calories,
+
+        // Add detailed map data if available
+        polyline: activity.map?.polyline ?
+          polyline.toGeoJSON(activity.map.polyline) :
+          undefined,
+
+        // Add splits data
+        splitsMetric: activity.splits_metric as Prisma.InputJsonValue,
+        splitsStandard: activity.splits_standard as Prisma.InputJsonValue,
+
+        // Add photos data if available
+        photos: activity.photos as Prisma.InputJsonValue,
+
+        // Add laps data
+        laps: activity.laps as Prisma.InputJsonValue,
+      }
+    });
+
+    sessionLogger.info(`Activity ${activity.name} enriched successfully`);
+  } catch (error) {
+    throw error;
+  } finally {
+    await prisma.$disconnect();
+  }
+}
+

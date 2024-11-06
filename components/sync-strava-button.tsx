@@ -1,201 +1,208 @@
 'use client';
 
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Progress } from "@/components/ui/progress";
 import { Spinner } from "@/components/ui/spinner";
-import { useState, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { getStravaCapacity } from "@/app/actions/getCapacity";
+import type { Capacity } from "@/app/actions/getCapacity";
+
+type ProgressState = {
+  message: string;
+  details?: string;
+  currentItem: number;
+  totalItems: number;
+  failedItems: {
+    name: string;
+    error: string;
+  }[];
+  currentPage: number;
+}
 
 export default function SyncStravaButton() {
-  const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
+  const BATCH_LIMIT = 3;
+  const [isSyncing, setIsSyncing] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
-  const [progressSummary, setProgressSummary] = useState<{
-    currentRoute: string,
-    failed: number,
-    failedRoutes: Array<{ name: string, error: string }>,
-    message: string,
-    progress: number,
-    succeeded: number,
-    total: number
-  }>({
-    currentRoute: "",
-    failed: 0,
-    failedRoutes: [],
-    message: "",
-    progress: 0,
-    succeeded: 0,
-    total: 0,
+  const [capacity, setCapacity] = useState<Capacity>({
+    shortTerm: {
+      remaining: 0,
+      total: 0,
+      windowSeconds: 15
+    },
+    daily: {
+      remaining: 0,
+      total: 0
+    }
   });
 
-  const handleButtonClick = () => {
-    if (isLoading) {
-      setShowModal(true);
-    } else {
-      startSync();
-    }
+  const [progress, setProgress] = useState<ProgressState>({
+    message: "Starting Sync...",
+    currentItem: 1,
+    totalItems: 0,
+    failedItems: [],
+    currentPage: 1,
+  });
+
+  async function syncBatch(page: number = 1, pageSize: number = 2) {
+    return new Promise((resolve, reject) => {
+      const events = new EventSource(`/api/sync-batch?page=${page}&page_size=${pageSize}`);
+
+      events.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+
+        switch (data.type) {
+          case 'start':
+            setProgress(prev => ({
+              ...prev,
+              totalItems: data.n,
+            }))
+            break;
+          case 'update':
+            setProgress(prev => ({
+              ...prev,
+              message: data.message,
+              currentItem: prev.currentItem + 1,
+            }))
+            break;
+          case 'fail':
+            setProgress(prev => ({
+              ...prev,
+              failedItems: [
+                ...prev.failedItems, {
+                  name: data.route,
+                  error: data.error
+                }],
+            }))
+            break;
+          case 'complete':
+            events.close();
+            setProgress(prev => ({
+              ...prev,
+              message: "Sync Complete",
+            }))
+            resolve(true);
+          case 'error':
+            events.close();
+            setProgress(prev => ({
+              ...prev,
+              message: `Sync Failed: ${data.error}`,
+            }))
+            reject(new Error(data.error));
+        }
+      };
+
+      events.onerror = (error) => {
+        events.close();
+        reject(error);
+      };
+    });
   };
 
-  const startSync = useCallback(async () => {
-    setIsLoading(true);
-    setShowModal(true);
+  async function sync() {
+    const PAGE_SIZE = 2;
+    const BATCH_SIZE = 2 + (PAGE_SIZE * 2);
 
-    const events = new EventSource('/api/strava-sync');
+    setIsSyncing(true);
 
-    events.onmessage = (event) => {
-      const data = JSON.parse(event.data);
+    setProgress({
+      currentPage: 1,
+      currentItem: 1,
+      totalItems: 0,
+      message: "Sync starting...",
+      failedItems: []
+    });
 
-      switch (data.type) {
-        case 'fetch':
-          setProgressSummary(prev => ({
-            ...prev,
-            total: data.nRoutes,
-            message: `Fetching ${data.nRoutes} routes from Strava...`,
-          }));
-          break;
-        case 'route':
-          setProgressSummary(prev => ({
-            ...prev,
-            currentRoute: data.route,
-            message: `Syncing route ${data.route}...`,
-          }));
-          break;
-        case 'segment':
-          setProgressSummary(prev => ({
-            ...prev,
-            message: `Syncing segment ${data.segment}...`,
-          }));
-          break;
-        case 'success':
-          setProgressSummary(prev => ({
-            ...prev,
-            message: `Successfully synced ${data.route}`,
-            progress: prev.progress + 1,
-            succeeded: prev.succeeded + 1
-          }));
-          break;
-        case 'fail':
-          setProgressSummary(prev => ({
-            ...prev,
-            message: `Failed to sync ${data.route}: ${data.error}`,
-            progress: prev.progress + 1,
-            failed: prev.failed + 1,
-            failedRoutes: [
-              ...prev.failedRoutes,
-              {
-                name: data.route,
-                error: data.error
-              }
-            ]
-          }));
-          break;
-        case 'complete':
-          setProgressSummary(prev => ({
-            ...prev,
-            message: `Synced ${data.nRoutes} routes from Strava`,
-          }));
-          events.close();
-          setIsLoading(false);
-          router.refresh();
-          break;
-        case 'error':
-          setProgressSummary(prev => ({
-            ...prev,
-            message: `An error occurred during sync: ${data.error}`,
-          }));
-          setShowModal(true);  // Ensure the modal is open to display the error message
-          events.close();
-          setIsLoading(false);
-          router.refresh();
-          break;
+    let currentPage = 1;
+    while (currentPage <= BATCH_LIMIT) {
+      console.log(progress)
+      const capacity = await getStravaCapacity();
+      setCapacity(capacity);
+      setProgress(prev => ({
+        ...prev,
+        currentItem: prev.currentItem++,
+      }));
+      if (capacity.shortTerm.remaining >= BATCH_SIZE && capacity.daily.remaining >= BATCH_SIZE) {
+        await syncBatch(currentPage, PAGE_SIZE);
+        currentPage++;
+        setProgress(prev => ({ ...prev, currentPage }));
       }
-    };
-
-  }, []);
-
-  const PopoverProgress = ({ progressSummary }) => progressSummary ? (
-    <div className="space-y-2">
-      {progressSummary.total > 0 && (
-        <Progress value={(progressSummary.progress / progressSummary.total) * 100} />
-      )}
-      <p className="text-sm text-muted-foreground">
-        {progressSummary.message}
-      </p>
-    </div>
-  ) : null;
-
-  const ModalProgress = ({ progressSummary }) => progressSummary ? (
-    <div className="space-y-2">
-      {progressSummary.total > 0 && (
-        <Progress value={(progressSummary.progress / progressSummary.total) * 100} />
-      )}
-      <p className="text-sm text-muted-foreground">
-        {progressSummary.message}
-      </p>
-      {progressSummary.failedRoutes.length > 0 && (
-        <div className="mt-4">
-          <p className="text-sm font-medium text-destructive">Failed routes:</p>
-          <ul className="text-sm text-muted-foreground list-disc pl-4">
-            {progressSummary.failedRoutes.map((failedRoute, i) => (
-              <li key={i}>{failedRoute.name}: {failedRoute.error}</li>
-            ))}
-          </ul>
-        </div>
-      )}
-    </div>
-  ) : null;
+    }
+    setIsSyncing(false);
+  };
 
   return (
     <>
-      <Popover open={isHovered}>
-        <div
-          onMouseEnter={() => setIsHovered(true)}
-          onMouseLeave={() => setIsHovered(false)}
-        >
+      <Popover open={isHovered && (isSyncing)}>
+        <div onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
           <PopoverTrigger asChild>
             <Button
               className="ml-auto"
-              onClick={handleButtonClick}
-            >
-              {isLoading ? (
+              onClick={() => {
+                if (isSyncing) {
+                  setShowModal(true);
+                } else {
+                  sync();
+                  setShowModal(true);
+                }
+              }}
+              disabled={isSyncing}>
+              {isSyncing ? (
                 <>
                   <Spinner className="mr-2 h-4 w-4" />
                   Syncing...
                 </>
-              ) : (
-                "Sync Strava"
-              )}
+              ) : ("Sync Strava")}
             </Button>
           </PopoverTrigger>
-          {isLoading && (
-            <PopoverContent className="w-80" sideOffset={5}>
-              <PopoverProgress progressSummary={progressSummary} />
-            </PopoverContent>
-          )}
+          <PopoverContent className="w-80" sideOffset={5}>
+            <div className="space-y-2">
+              {progress.totalItems > 0 && (
+                <Progress value={(progress.currentItem / progress.totalItems) * 100} />
+              )}
+              <p className="text-sm text-muted-foreground">{progress.message}</p>
+              <p className="text-xs text-muted-foreground">
+                API Capacity: {capacity.shortTerm.remaining} short-term, {capacity.daily.remaining} today
+              </p>
+            </div>
+          </PopoverContent>
         </div>
       </Popover>
 
-      <Dialog open={showModal} onOpenChange={setShowModal}>
+      <Dialog open={showModal} onOpenChange={() => setShowModal(false)}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {isLoading ? "Syncing Strava Routes" : "Sync Complete"}
+              {isSyncing
+                ? `Syncing page ${progress.currentPage} / ${BATCH_LIMIT}`
+                : "Sync Complete"}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            <ModalProgress progressSummary={progressSummary} />
+            <div className="space-y-2">
+              {progress.totalItems > 0 && (
+                <Progress value={(progress.currentItem / progress.totalItems) * 100} />
+              )}
+              <p className="text-sm text-muted-foreground">{progress.message}</p>
+              {progress.details && (
+                <p className="text-sm text-muted-foreground">{progress.details}</p>
+              )}
+              {progress.failedItems.length > 0 && (
+                <div className="mt-4">
+                  <p className="text-sm font-medium text-destructive">Failed items:</p>
+                  <ul className="text-sm text-muted-foreground list-disc pl-4">
+                    {progress.failedItems.map((item, i) => (
+                      <li key={i}>{item.name}: {item.error}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              <p className="text-xs text-muted-foreground">
+                API Capacity: {capacity.shortTerm.remaining} short-term, {capacity.daily.remaining} today
+              </p>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
