@@ -63,7 +63,7 @@ async function main() {
         },
         createdAt: new Date(),
         updatedAt: new Date(),
-        userId: "cm32jzbl80000ruhq1wxmz1em",
+        userId: "user_1",
       },
       {
         id: 'route_2',
@@ -101,7 +101,7 @@ async function main() {
         },
         createdAt: new Date(),
         updatedAt: new Date(),
-        userId: "cm32jzbl80000ruhq1wxmz1em",
+        userId: "user_1",
       },
     ],
   });
