@@ -2,7 +2,7 @@
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import LazyMap from "@/components/lazy-map";
-import { queryUserRouteAction } from "@/app/actions/queryRoute";
+import { queryUserRouteAction } from "@/app/actions/queryUserRoute";
 import ElevationChart from './elevation-chart';
 
 export default function RouteComparisonColumn({ routes, selectedRoute, setSelectedRoute }) {
