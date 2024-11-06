@@ -18,7 +18,9 @@ export default async function processWebhookEvent(event: WebhookEvent) {
       }
       break;
     case "athlete":
+      baseLogger.info(`Received athlete event: ${JSON.stringify(event, null, 2)}`);
       if (event.updates?.authorized === "false") {
+        baseLogger.info(`Deauthorizing user with stravaId: ${event.object_id}`);
         await prisma.user.delete({
           where: {
             id: String(event.object_id)

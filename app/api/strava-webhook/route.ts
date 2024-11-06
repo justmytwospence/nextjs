@@ -54,7 +54,6 @@ export async function POST(request: NextRequest) {
     baseLogger.info(`requestJson: ${JSON.stringify(requestJson, null, 2)}`);
     const validationResult = WebhookEventSchema.safeParse(requestJson);
 
-    baseLogger.info("requestJson: ", JSON.stringify(requestJson, null, 2));
     if (!validationResult.success) {
       baseLogger.error(`Invalid webhook event data: ${JSON.stringify(validationResult.error, null, 2)}`);
       throw new Error("Invalid webhook event data");
