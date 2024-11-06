@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const requestJson = await request.json();
-    baseLogger.info("requestJson: ", JSON.stringify(requestJson, null, 2));
+    baseLogger.info(`requestJson: ${JSON.stringify(requestJson, null, 2)}`);
     const validationResult = WebhookEventSchema.safeParse(requestJson);
 
     baseLogger.info("requestJson: ", JSON.stringify(requestJson, null, 2));
