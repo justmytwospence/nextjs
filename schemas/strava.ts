@@ -289,9 +289,9 @@ export const RouteSchema = z.object({
   private: z.boolean(), // Whether the route is private
   segments: z.array(SummarySegmentSchema).nullish(), // Segments traversed by this route
   starred: z.boolean(), // Whether the route is starred
-  sub_type: z.number().int().min(1).max(5), // Sub-type of the route
+  sub_type: z.number().int().min(1), // Sub-type of the route
   timestamp: z.number().int(), // Epoch timestamp when the route was created
-  type: z.number().int().min(1).max(5), // Route type (1 for ride, 2 for run)
+  type: z.number().int().min(1), // Route type (1 for ride, 2 for run)
   updated_at: z.string().datetime(), // Last updated date
   waypoints: WaypointSchema.array(), // Waypoints along the route
 });
@@ -415,7 +415,7 @@ export const DetailedSegmentSchema = z.object({
   athlete_segment_stats: SummarySegmentEffortSchema.optional(), // Segment effort details if available
   average_grade: z.number(), // Average grade in percent
   city: z.string().nullable(), // Segment's city
-  climb_category: z.number().int().min(0).max(5), // Climb difficulty rating (0-5)
+  climb_category: z.number().int().min(0), // Climb difficulty rating (0-5)
   country: z.string().nullable(), // Segment's country
   created_at: z.string().datetime().optional(), // Date when the segment was created
   distance: z.number(), // Segment distance in meters
