@@ -18,12 +18,12 @@ model User {
   image         String?
   name          String?
 
-  segments   UserSegment[]
-  activities UserActivity[]
-  routes     UserRoute[]
   accounts   Account[]
-  sessions   Session[]
+  activities UserActivity[]
   apiQueries ApiQuery[]
+  routes     UserRoute[]
+  segments   UserSegment[]
+  sessions   Session[]
 }
 
 model Account {
