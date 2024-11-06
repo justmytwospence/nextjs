@@ -1,7 +1,14 @@
 #!/bin/bash
 
-if [ "$VERCEL_GIT_COMMIT_REF" != "main" ] && [ "$VERCEL_GIT_COMMIT_REF" != "staging" ]; then
-  exit 1
+echo "VERCEL_ENV: $VERCEL_ENV"
+
+if [[ "$VERCEL_ENV" == "production" ]] ; then
+  # Proceed with the build
+  echo "✅ - Build can proceed"
+  exit 1;
+
 else
-  exit 0
+  # Don't build
+  echo "🛑 - Build cancelled"
+  exit 0;
 fi
