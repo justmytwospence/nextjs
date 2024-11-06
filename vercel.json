@@ -1,5 +1,3 @@
 {
-  "build": {
-    "ignoreCommand": "./ignore-build.sh"
-  }
+  "ignoreCommand": "./ignore-build.sh"
 }
