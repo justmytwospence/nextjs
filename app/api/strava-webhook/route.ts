@@ -50,15 +50,16 @@ export async function POST(request: NextRequest) {
   // }
 
   try {
-    const rawJson = await request.json();
-    const validationResult = WebhookEventSchema.safeParse(rawJson.data);
+    const requestJson = await request.json();
+    const validationResult = WebhookEventSchema.safeParse(requestJson);
 
     if (!validationResult.success) {
+      baseLogger.error("Invalid webhook event data", JSON.stringify(validationResult.error, null, 2));
+      baseLogger.debug("requestJson: ", JSON.stringify(requestJson, null, 2));
       throw new Error("Invalid webhook event data");
+    } else {
+      processWebhookEvent(validationResult.data).catch(console.error);
     }
-
-    const webhookEvent = validationResult.data
-    processWebhookEvent(webhookEvent).catch(console.error);
 
     return new NextResponse(null, { status: 200 });
   } catch (error) {
