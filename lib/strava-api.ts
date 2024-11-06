@@ -21,7 +21,7 @@ import { z } from 'zod';
  * Makes an authenticated request to the Strava API
  * @private
  */
-async function makeStravaRequest<T>(
+async function makeStravaRequest(
   session: Session,
   endpoint: string,
   params: URLSearchParams = new URLSearchParams()

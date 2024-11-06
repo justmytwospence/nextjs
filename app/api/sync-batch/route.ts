@@ -22,7 +22,7 @@ export async function GET(request: Request) {
   const writer = stream.writable.getWriter();
   const encoder = new TextEncoder();
 
-  async function send(message: any) {
+  async function send(message: Message) {
     await writer.write(encoder.encode(`data: ${JSON.stringify(message)}\n\n`));
   }
 
@@ -80,27 +80,21 @@ async function syncBatch(session: Session, searchParams: URLSearchParams, send) 
         await enrichUserRoute(session, route.id_str, routeJson);
         await send({ message: `Successfully synced route ${route.name}` });
       } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         await send({
           type: 'fail',
-          message: `Failed to sync route ${route.name}: ${error.message}`,
+          message: `Failed to sync route ${route.name}: ${errorMessage}`,
           route: route.name,
         });
       }
     }
     await send({ type: 'complete' });
   } catch (error) {
-    sessionLogger.error('Sync failed:', error);
-    if (error.message === 'Too Many Requests') {
-      await send({
-        type: 'error',
-        error: error.message,
-        details: 'Rate limit exceeded. Please try again later.'
-      });
-    } else {
-      await send({
-        type: 'error',
-        error: error.message
-      });
-    }
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    sessionLogger.error(`Sync failed: ${errorMessage}`);
+    await send({
+      type: 'error',
+      error: errorMessage,
+    });
   }
 }

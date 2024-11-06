@@ -23,7 +23,7 @@ model User {
   routes     UserRoute[]
   accounts   Account[]
   sessions   Session[]
-  ApiQuery   ApiQuery[]
+  apiQueries ApiQuery[]
 }
 
 model Account {
@@ -101,9 +101,9 @@ model UserSegment {
 
   activityType  String  @map("activity_type")
   averageGrade  Float   @map("average_grade")
-  city          String
+  city          String?
   climbCategory Int     @map("climb_category")
-  country       String
+  country       String?
   distance      Float
   effortCount   Int     @default(0) @map("effort_count")
   elevationHigh Float   @map("elevation_high")

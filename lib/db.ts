@@ -2,11 +2,11 @@
 
 import { createSessionLogger } from '@/lib/logger';
 import { prisma } from '@/lib/prisma';
+import type { DetailedActivity, Route, SummaryActivity } from "@/schemas/strava";
 import polyline from '@mapbox/polyline';
-import type { Route, DetailedSegment, SummarySegment } from "@/schemas/strava";
-import type { UserRoute, Account, Prisma } from "@prisma/client";
+import { Prisma } from '@prisma/client';
+import type { Account, UserActivity, UserRoute } from "@prisma/client";
 import type { Session } from "next-auth";
-import type { SummaryActivity, DetailedActivity } from "@/schemas/strava";
 
 export async function insertApiQuery(
   session: Session,
@@ -163,107 +163,6 @@ export async function enrichUserRoute(session: Session, routeId: string, route: 
   }
 }
 
-export async function createUserSegment(session: Session, segment: SummarySegment) {
-  const sessionLogger = createSessionLogger(session);
-  try {
-    sessionLogger.info(`Creating segment ${segment.name}`);
-
-    await prisma.userSegment.create({
-      data: {
-        activityType: segment.activity_type,
-        averageGrade: segment.average_grade,
-        city: segment.city,
-        climbCategory: segment.climb_category,
-        country: segment.country,
-        distance: segment.distance,
-        elevationHigh: segment.elevation_high,
-        elevationLow: segment.elevation_low,
-        id: segment.id,
-        maximumGrade: segment.maximum_grade,
-        name: segment.name,
-        private: segment.private,
-        state: segment.state,
-
-        userId: session.user.id,
-      }
-    });
-    sessionLogger.info(`Segment ${segment.name} created successfully`);
-  } catch (error) {
-    sessionLogger.error(`Failed to create segment ${segment.name}`);
-    throw error;
-  } finally {
-    await prisma.$disconnect();
-  }
-}
-
-export async function enrichUserSegment(session: Session, segment: DetailedSegment) {
-  const sessionLogger = createSessionLogger(session);
-  sessionLogger.info(`Enriching segment ${segment.name}`);
-
-  try {
-    await prisma.userSegment.upsert({
-      where: {
-        id: segment.id,
-        userId: session.user.id
-      },
-      create: {
-        activityType: segment.activity_type,
-        athleteCount: segment.athlete_count,
-        averageGrade: segment.average_grade,
-        city: segment.city,
-        climbCategory: segment.climb_category,
-        country: segment.country,
-        createdAt: new Date(segment.created_at),
-        distance: segment.distance,
-        effortCount: segment.effort_count,
-        elevationHigh: segment.elevation_high,
-        elevationLow: segment.elevation_low,
-        hazardous: segment.hazardous,
-        id: segment.id,
-        maximumGrade: segment.maximum_grade,
-        name: segment.name,
-        polyline: polyline.toGeoJSON(segment.map.polyline),
-        private: segment.private,
-        starCount: segment.star_count,
-        state: segment.state,
-        totalElevationGain: segment.total_elevation_gain,
-        updatedAt: new Date(segment.updated_at),
-        userId: session.user.id,
-      },
-      update: {
-        activityType: segment.activity_type,
-        athleteCount: segment.athlete_count,
-        averageGrade: segment.average_grade,
-        city: segment.city,
-        climbCategory: segment.climb_category,
-        country: segment.country,
-        createdAt: new Date(segment.created_at),
-        distance: segment.distance,
-        effortCount: segment.effort_count,
-        elevationHigh: segment.elevation_high,
-        elevationLow: segment.elevation_low,
-        hazardous: segment.hazardous,
-        id: segment.id,
-        maximumGrade: segment.maximum_grade,
-        name: segment.name,
-        polyline: polyline.toGeoJSON(segment.map.polyline),
-        private: segment.private,
-        starCount: segment.star_count,
-        state: segment.state,
-        totalElevationGain: segment.total_elevation_gain,
-        updatedAt: new Date(segment.updated_at),
-        userId: session.user.id,
-      }
-    });
-
-    sessionLogger.info(`Segment ${segment.name} enriched successfully`);
-  } catch (error) {
-    throw error;
-  } finally {
-    await prisma.$disconnect();
-  }
-}
-
 export async function upsertUserActivity(session: Session, activity: SummaryActivity) {
   const sessionLogger = createSessionLogger(session);
   sessionLogger.info(`Upserting activity ${activity.name}`);
@@ -413,6 +312,28 @@ export async function enrichUserActivity(session: Session, activity: DetailedAct
     throw error;
   } finally {
     await prisma.$disconnect();
+  }
+}
+
+export async function queryUserActivities(session: Session): Promise<UserActivity[]> {
+  const sessionLogger = createSessionLogger(session);
+  try {
+    sessionLogger.info('Querying user activities for user', { userId: session.user.id });
+    const activities = await prisma.userActivity.findMany({
+      where: {
+        userId: session.user.id,
+        summaryPolyline: {
+          not: Prisma.JsonNullValueFilter.JsonNull
+        }
+      },
+      orderBy: {
+        startDateLocal: 'desc'
+      }
+    });
+    sessionLogger.info(`Found ${activities.length} activities`);
+    return activities;
+  } catch (error) {
+    throw error;
   }
 }
 

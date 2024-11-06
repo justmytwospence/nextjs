@@ -25,8 +25,8 @@ export default async function processWebhookEvent(event: WebhookEvent) {
           },
           include: {
             accounts: true,
-            UserRoute: true,
-            AthleteSegment: true,
+            routes: true,
+            segments: true,
           },
         });
         baseLogger.info(`Deleted user and associated data for stravaId: ${event.object_id}`);

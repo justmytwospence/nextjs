@@ -646,4 +646,5 @@ export const DetailedActivitySchema = z.object({
 export type DetailedActivity = z.infer<typeof DetailedActivitySchema>;
 export type DetailedSegment = z.infer<typeof DetailedSegmentSchema>;
 export type Route = z.infer<typeof RouteSchema>;
+export type SummaryActivity = z.infer<typeof SummaryActivitySchema>;
 export type SummarySegment = z.infer<typeof SummarySegmentSchema>;

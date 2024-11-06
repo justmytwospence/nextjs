@@ -4,7 +4,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { useEffect } from 'react';
 import { MapContainer, TileLayer, useMap } from 'react-leaflet';
-import { UserRoute } from "@prisma/client";
+import { UserRoute, UserActivity } from "@prisma/client";
 
 const GeoJSONLayer = ({ polyline }) => {
   const map = useMap();
@@ -27,7 +27,7 @@ const GeoJSONLayer = ({ polyline }) => {
   return null;
 };
 
-const Map = ({ route, interactive = true }: { route: UserRoute; interactive?: boolean }) => {
+const Map = ({ route, interactive = true }: { route: UserRoute | UserActivity; interactive?: boolean }) => {
   return (
     <MapContainer
       className="map-container"
