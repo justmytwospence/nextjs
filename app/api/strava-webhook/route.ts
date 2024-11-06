@@ -32,12 +32,11 @@ export async function GET(request: NextRequest) {
   const hub_verify_token = searchParams.get("hub.verify_token");
   const hub_challenge = searchParams.get("hub.challenge");
 
-  if (!isStravaOrigin(request) && hub_verify_token == process.env.STRAVA_WEBHOOK_VERIFY_TOKEN) {
-    return new NextResponse(null, { status: 403 });
-  }
+  // if (!isStravaOrigin(request) && hub_verify_token == process.env.STRAVA_WEBHOOK_VERIFY_TOKEN) {
+  //   return new NextResponse(null, { status: 403 });
+  // }
 
-
-  if (hub_mode === "subscribe" && hub_verify_token === "STRAVA") {
+  if (hub_mode === "subscribe" && hub_verify_token === process.env.STRAVA_WEBHOOK_VERIFY_TOKEN) {
     return NextResponse.json({ "hub.challenge": hub_challenge });
   } else {
     return new NextResponse(null, { status: 403 });
