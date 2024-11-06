@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
 
     baseLogger.info("requestJson: ", JSON.stringify(requestJson, null, 2));
     if (!validationResult.success) {
-      baseLogger.error("Invalid webhook event data: ", JSON.stringify(validationResult.error, null, 2));
+      baseLogger.error(`Invalid webhook event data: ${JSON.stringify(validationResult.error, null, 2)}`);
       throw new Error("Invalid webhook event data");
     } else {
       processWebhookEvent(validationResult.data).catch(console.error);
@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
 
     return new NextResponse(null, { status: 200 });
   } catch (error) {
-    console.error("Webhook processing error:", error);
+    baseLogger.error(`Webhook processing error: ${error}`);
     return new NextResponse(null, { status: 400 });
   }
 }
