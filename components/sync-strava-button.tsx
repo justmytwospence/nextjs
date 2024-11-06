@@ -8,6 +8,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { useState } from "react";
 import { getStravaCapacity } from "@/app/actions/getCapacity";
 import type { Capacity } from "@/app/actions/getCapacity";
+import { useRouter } from "next/navigation";
 
 type ProgressState = {
   message: string;
@@ -22,7 +23,8 @@ type ProgressState = {
 }
 
 export default function SyncStravaButton() {
-  const BATCH_LIMIT = 3;
+  const BATCH_LIMIT = 10;
+  const router = useRouter();
   const [isSyncing, setIsSyncing] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
@@ -85,12 +87,13 @@ export default function SyncStravaButton() {
               message: "Sync Complete",
             }));
             resolve(true);
+            router.refresh();
             break;
           case 'error':
             events.close();
             setProgress(prev => ({
               ...prev,
-              message: `Sync Failed: ${data.error}`,
+              message: `Sync Failed: ${JSON.stringify(data.error, null, 2)}`,
             }));
             reject(new Error(data.error));
             break;
@@ -106,7 +109,7 @@ export default function SyncStravaButton() {
   };
 
   async function sync() {
-    const PAGE_SIZE = 2;
+    const PAGE_SIZE = 20;
     const BATCH_SIZE = 2 + (PAGE_SIZE * 2);
 
     setIsSyncing(true);
@@ -178,7 +181,7 @@ export default function SyncStravaButton() {
                 : "Sync Complete"}
             </DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 py-4">
+          <div className="space-y-4 py-4 max-h-[60vh] overflow-y-auto">
             <div className="space-y-2">
               {progress.totalItems > 0 && (
                 <Progress value={(progress.currentItem / progress.totalItems) * 100} />
