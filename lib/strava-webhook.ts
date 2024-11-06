@@ -1,5 +1,5 @@
 import { WebhookEvent } from "@/schemas/strava-webhook-events";
-import { prisma } from "./prisma";
+import { prisma } from "@/lib/prisma";
 import { baseLogger } from "@/lib/logger";
 
 export default async function processWebhookEvent(event: WebhookEvent) {
