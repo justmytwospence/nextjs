@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { useState, type ReactNode } from "react";
 import LazyMap from "@/components/lazy-map";
@@ -24,20 +24,20 @@ import {
 import PleaseSync from "@/components/please-sync";
 
 export default function ActivitiesClient({ initialActivities }: { initialActivities: UserActivity[] }) {
-  const [selectedType, setSelectedType] = useState('all');
+  const [selectedType, setSelectedType] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 30;
 
   const activityTypes: { [key: string]: string } = {
-    'Ride': 'Ride',
-    'Run': 'Run',
+    "Ride": "Ride",
+    "Run": "Run",
   }
 
   if (initialActivities.length === 0) {
     return (<PleaseSync />)
   }
 
-  const filteredActivities = selectedType === 'all'
+  const filteredActivities = selectedType === "all"
     ? initialActivities
     : initialActivities.filter(activity => activity.type === selectedType);
 

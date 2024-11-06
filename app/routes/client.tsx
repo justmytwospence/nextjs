@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { useState, type ReactNode } from "react";
 import LazyMap from "@/components/lazy-map";
@@ -24,23 +24,23 @@ import {
 import PleaseSync from "@/components/please-sync";
 
 export default function RoutesClient({ initialRoutes }: { initialRoutes: UserRoute[] }) {
-  const [selectedType, setSelectedType] = useState('all');
+  const [selectedType, setSelectedType] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 30;
 
   const routeTypes: { [key: string]: string } = {
-    1: 'Ride',
-    2: 'Trail Run',
-    5: 'Run',
+    1: "Ride",
+    2: "Trail Run",
+    5: "Run",
   }
 
   if (initialRoutes.length === 0) {
     return (<PleaseSync />)
   }
 
-  const filteredRoutes = selectedType === 'all'
+  const filteredRoutes = selectedType === "all"
     ? initialRoutes
-    : initialRoutes.filter(route => (route.type ?? '').toString() === selectedType);
+    : initialRoutes.filter(route => (route.type ?? "").toString() === selectedType);
 
   const totalPages = Math.ceil(filteredRoutes.length / itemsPerPage);
   const paginatedRoutes = filteredRoutes.slice(
@@ -106,7 +106,7 @@ export default function RoutesClient({ initialRoutes }: { initialRoutes: UserRou
           <TabsList className="h-10">
             <TabsTrigger value="all">All</TabsTrigger>
             {Array.from(new Set(Object.values(routeTypes))).map((label: string) => {
-              const type = Object.keys(routeTypes).find(key => routeTypes[key] === label) ?? 'all';
+              const type = Object.keys(routeTypes).find(key => routeTypes[key] === label) ?? "all";
               return (
                 <TabsTrigger key={type} value={type}>
                   {label}

@@ -1,9 +1,9 @@
 "use client";
 
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
-import { useEffect } from 'react';
-import { MapContainer, TileLayer, useMap } from 'react-leaflet';
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
+import { useEffect } from "react";
+import { MapContainer, TileLayer, useMap } from "react-leaflet";
 import { UserRoute, UserActivity } from "@prisma/client";
 
 const GeoJSONLayer = ({ polyline }) => {
@@ -31,7 +31,7 @@ const Map = ({ route, interactive = true }: { route: UserRoute | UserActivity; i
   return (
     <MapContainer
       className="map-container"
-      style={{ height: '100%', width: '100%' }}
+      style={{ height: "100%", width: "100%" }}
       center={[51.505, -0.09]}
       zoom={13}
       zoomControl={interactive}
@@ -40,7 +40,7 @@ const Map = ({ route, interactive = true }: { route: UserRoute | UserActivity; i
       attributionControl={interactive}
       doubleClickZoom={interactive}
     >
-      <TileLayer url='https://tile.jawg.io/jawg-terrain/{z}/{x}/{y}{r}.png?access-token=bDE5WHMnFV1P973D59QWuGaq6hebBcjPSyud6vVGYqqi2r4kZyaShdbC3SF2Bc7y' />
+      <TileLayer url="https://tile.jawg.io/jawg-terrain/{z}/{x}/{y}{r}.png?access-token=bDE5WHMnFV1P973D59QWuGaq6hebBcjPSyud6vVGYqqi2r4kZyaShdbC3SF2Bc7y" />
       {route.summaryPolyline && <GeoJSONLayer polyline={route.summaryPolyline} />}
     </MapContainer>
   );

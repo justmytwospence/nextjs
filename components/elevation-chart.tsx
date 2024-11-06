@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from 'react';
+import { useState } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { computeDistanceMiles, computeGradient } from '../lib/geo';
-import { CategoryScale, Chart as ChartJS, Filler, LinearScale, LineElement, PointElement, Title, Tooltip } from 'chart.js';
-import React from 'react';
-import { Line } from 'react-chartjs-2';
-import { Spinner } from '@/components/ui/spinner';
+import { computeDistanceMiles, computeGradient } from "../lib/geo";
+import { CategoryScale, Chart as ChartJS, Filler, LinearScale, LineElement, PointElement, Title, Tooltip } from "chart.js";
+import React from "react";
+import { Line } from "react-chartjs-2";
+import { Spinner } from "@/components/ui/spinner";
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Filler);
 
@@ -17,8 +17,8 @@ export default function ElevationChart({ route, maxGradient }) {
     return <Spinner className="w-6 h-6 text-blue-500" />;
   }
 
-  const polyline = route.polyline || route.summaryPolyline
-  const geom = polyline.features[0].geometry
+  const polyline = route.polyline || route.summaryPolyline;
+  const geom = polyline.features[0].geometry;
   const distance = computeDistanceMiles(geom);
   const elevationData = geom.coordinates.map(point => point[2] * 3.28084);
   const gradientData = computeGradient(geom);
@@ -27,26 +27,26 @@ export default function ElevationChart({ route, maxGradient }) {
     labels: distance,
     datasets: [
       {
-        label: 'Elevation (ft)',
+        label: "Elevation (ft)",
         data: elevationData,
-        borderColor: 'blue',
-        backgroundColor: 'rgba(75, 192, 192, 0.2)',
-        yAxisID: 'elevation',
+        borderColor: "blue",
+        backgroundColor: "rgba(75, 192, 192, 0.2)",
+        yAxisID: "elevation",
         pointRadius: 0,
         borderWidth: isLarge ? 2 : 1
       },
       {
-        label: 'Gradient (%)',
+        label: "Gradient (%)",
         data: gradientData,
-        borderColor: 'gray',
-        backgroundColor: 'rgba(128, 128, 128, 0.5)', // Transparent gray
-        yAxisID: 'gradient',
+        borderColor: "gray",
+        backgroundColor: "rgba(128, 128, 128, 0.5)", // Transparent gray
+        yAxisID: "gradient",
         pointRadius: 0,
         fill: true,
         borderWidth: isLarge ? 2 : 1,
         segment: {
-          borderColor: ctx => ctx.p0.parsed.y > maxGradient ? 'red' : 'gray',
-          backgroundColor: ctx => ctx.p0.parsed.y > maxGradient ? 'rgba(255, 0, 0, 0.5)' : 'rgba(128, 128, 128, 0.5)',
+          borderColor: ctx => ctx.p0.parsed.y > maxGradient ? "red" : "gray",
+          backgroundColor: ctx => ctx.p0.parsed.y > maxGradient ? "rgba(255, 0, 0, 0.5)" : "rgba(128, 128, 128, 0.5)",
         },
       },
     ],
@@ -63,7 +63,7 @@ export default function ElevationChart({ route, maxGradient }) {
     plugins: {
       title: {
         display: true,
-        text: 'Elevation and Gradient Profile',
+        text: "Elevation and Gradient Profile",
       },
     },
     hover: {
@@ -74,23 +74,23 @@ export default function ElevationChart({ route, maxGradient }) {
     },
     scales: {
       x: {
-        type: 'linear' as const,
+        type: "linear" as const,
         min: 0,
         ticks: {
           stepSize: 1,
         },
         title: {
           display: true,
-          text: 'Miles'
+          text: "Miles"
         },
       },
       elevation: {
-        type: 'linear' as const,
+        type: "linear" as const,
         display: true,
-        position: 'left' as const,
+        position: "left" as const,
         title: {
           display: true,
-          text: 'Elevation (ft)',
+          text: "Elevation (ft)",
         },
         ticks: {
           stepSize: 500,
@@ -101,19 +101,19 @@ export default function ElevationChart({ route, maxGradient }) {
         },
       },
       gradient: {
-        type: 'linear' as const,
+        type: "linear" as const,
         display: true,
-        position: 'right' as const,
+        position: "right" as const,
         min: gradientMin,
         max: gradientMax,
         title: {
           display: true,
-          text: 'Gradient (%)',
+          text: "Gradient (%)",
         },
         ticks: {
           stepSize: 0.01,
           callback: function (value) {
-            return (value * 100).toFixed(0) + '%'; // Format as percentage
+            return (value * 100).toFixed(0) + "%"; // Format as percentage
           },
         },
         grid: {
