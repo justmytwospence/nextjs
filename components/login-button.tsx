@@ -36,8 +36,8 @@ export function SignOut({ session }) {
 
 export default async function LoginButton({ redirectUrl }) {
   const session = await auth();
-  const logger = createSessionLogger(session);
-  logger.info("Session", session);
+  const sessionLogger = createSessionLogger(session);
+  sessionLogger.info(`Session: ${JSON.stringify(session, null, 2)}`);
   if (session) {
     return <SignOut session={session} />;
   }
