@@ -1,7 +1,7 @@
 import { NextResponse, NextRequest } from "next/server";
 import { WebhookEventSchema } from "@/schemas/strava-webhook-events";
 import processWebhookEvent from "@/lib/strava-webhook";
-
+import { baseLogger } from "@/lib/logger";
 const STRAVA_DOMAIN = "www.strava.com";
 
 function isStravaOrigin(request: NextRequest): boolean {
@@ -31,6 +31,7 @@ export async function GET(request: NextRequest) {
   const hub_mode = searchParams.get("hub.mode");
   const hub_verify_token = searchParams.get("hub.verify_token");
   const hub_challenge = searchParams.get("hub.challenge");
+  baseLogger.info(`Received Strava webhook GET request with params: ${hub_mode}, ${hub_verify_token}, ${hub_challenge}`);
 
   // if (!isStravaOrigin(request) && hub_verify_token == process.env.STRAVA_WEBHOOK_VERIFY_TOKEN) {
   //   return new NextResponse(null, { status: 403 });
