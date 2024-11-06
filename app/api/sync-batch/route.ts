@@ -1,17 +1,17 @@
 import { auth } from "@/auth";
 import { NextResponse } from "next/server";
-import { createSessionLogger } from '@/lib/logger';
-import { enrichUserActivity, enrichUserRoute, upsertUserActivity, upsertUserRoute } from '@/lib/db';
-import { fetchActivities, fetchDetailedActivity, fetchRouteGeoJson, fetchRoutes } from '@/lib/strava-api';
+import { createSessionLogger } from "@/lib/logger";
+import { enrichUserActivity, enrichUserRoute, upsertUserActivity, upsertUserRoute } from "@/lib/db";
+import { fetchActivities, fetchDetailedActivity, fetchRouteGeoJson, fetchRoutes } from "@/lib/strava-api";
 import { Session } from "next-auth";
-import { HttpError } from '@/lib/errors';
+import { HttpError } from "@/lib/errors";
 
 type Message =
-  | { type: 'start', message: string, n: number }
-  | { type: 'update', message: string }
-  | { type: 'fail', route: string, error: string }
-  | { type: 'complete' }
-  | { type: 'error', error: string };
+  | { type: "start", message: string, n: number }
+  | { type: "update", message: string }
+  | { type: "fail", route: string, error: string }
+  | { type: "complete" }
+  | { type: "error", error: string };
 
 export async function GET(request: Request) {
   const session = await auth();
@@ -32,9 +32,9 @@ export async function GET(request: Request) {
 
   return new NextResponse(stream.readable, {
     headers: {
-      'Content-Type': 'text/event-stream',
-      'Cache-Control': 'no-cache',
-      'Connection': 'keep-alive',
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache",
+      "Connection": "keep-alive",
     },
   });
 }
@@ -42,21 +42,21 @@ export async function GET(request: Request) {
 async function syncBatch(session: Session, searchParams: URLSearchParams, send) {
   const sessionLogger = createSessionLogger(session);
 
-  const perPage = parseInt(searchParams.get('page_size') || '2');
-  const page = parseInt(searchParams.get('page') || '1');
+  const perPage = parseInt(searchParams.get("page_size") || "2");
+  const page = parseInt(searchParams.get("page") || "1");
 
   try {
     // Sync activities
     const summaryActivities = await fetchActivities(session, perPage, page);
     await send({
-      type: 'start',
+      type: "start",
       message: `Syncing ${summaryActivities.length} fetched from Strava...`,
       n: summaryActivities.length
     });
     for (const summaryActivity of summaryActivities) {
       try {
         await send({
-          type: 'update',
+          type: "update",
           message: `Syncing activity ${summaryActivity.name}...`,
         });
         await upsertUserActivity(session, summaryActivity);
@@ -66,9 +66,9 @@ async function syncBatch(session: Session, searchParams: URLSearchParams, send) 
         if (error instanceof HttpError && error.status === 429) {
           throw error;
         }
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        const errorMessage = error instanceof Error ? error.message : "Unknown error";
         await send({
-          type: 'fail',
+          type: "fail",
           message: `Failed to sync route ${summaryActivity.name}: ${errorMessage}`,
           route: summaryActivity.name,
         });
@@ -77,14 +77,14 @@ async function syncBatch(session: Session, searchParams: URLSearchParams, send) 
       // Sync routes
       const routes = await fetchRoutes(session, perPage, page);
       await send({
-        type: 'start',
+        type: "start",
         message: `Syncing ${routes.length} routes fetched from Strava`,
         n: routes.length
       });
       for (const route of routes) {
         try {
           await send({
-            type: 'update',
+            type: "update",
             message: `Syncing route ${route.name}...`
           });
           await upsertUserRoute(session, route);
@@ -95,21 +95,21 @@ async function syncBatch(session: Session, searchParams: URLSearchParams, send) 
           if (error instanceof HttpError && error.status === 429) {
             throw error;
           }
-          const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+          const errorMessage = error instanceof Error ? error.message : "Unknown error";
           await send({
-            type: 'fail',
+            type: "fail",
             message: `Failed to sync route ${route.name}: ${errorMessage}`,
             route: route.name,
           });
         }
       }
-      await send({ type: 'complete' });
+      await send({ type: "complete" });
     }
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
     sessionLogger.error(`Sync failed: ${errorMessage}`);
     await send({
-      type: 'error',
+      type: "error",
       error: errorMessage,
     });
   }

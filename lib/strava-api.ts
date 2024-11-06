@@ -8,15 +8,15 @@
  * request validation, and response parsing.
  */
 
-import tj from '@mapbox/togeojson';
-import type { Route, DetailedSegment, DetailedActivity, SummaryActivity } from '@/schemas/strava';
-import { DOMParser } from '@xmldom/xmldom';
-import { RoutesSchema, DetailedSegmentSchema, DetailedActivitySchema, SummaryActivitySchema } from '@/schemas/strava';
-import { Session } from 'next-auth';
-import { createSessionLogger } from '@/lib/logger';
-import { queryUserAccount, insertApiQuery } from '@/lib/db';
-import { z } from 'zod';
-import { HttpError } from '@/lib/errors';
+import tj from "@mapbox/togeojson";
+import type { Route, DetailedSegment, DetailedActivity, SummaryActivity } from "@/schemas/strava";
+import { DOMParser } from "@xmldom/xmldom";
+import { RoutesSchema, DetailedSegmentSchema, DetailedActivitySchema, SummaryActivitySchema } from "@/schemas/strava";
+import { Session } from "next-auth";
+import { createSessionLogger } from "@/lib/logger";
+import { queryUserAccount, insertApiQuery } from "@/lib/db";
+import { z } from "zod";
+import { HttpError } from "@/lib/errors";
 
 /**
  * Makes an authenticated request to the Strava API
@@ -28,11 +28,11 @@ async function makeStravaRequest(
   params: URLSearchParams = new URLSearchParams()
 ): Promise<Response> {
   const sessionLogger = createSessionLogger(session);
-  const userAccount = await queryUserAccount(session, 'strava');
+  const userAccount = await queryUserAccount(session, "strava");
 
   if (!userAccount?.access_token) {
-    sessionLogger.error('No Strava access token found');
-    throw new Error('No Strava access token found');
+    sessionLogger.error("No Strava access token found");
+    throw new Error("No Strava access token found");
   }
 
   await insertApiQuery(session, "strava", userAccount?.access_token, endpoint, params);
@@ -74,7 +74,7 @@ export async function fetchRoutes(session: Session, per_page: number = 10, page:
     per_page: per_page.toString(),
     page: page.toString()
   });
-  const response = await makeStravaRequest(session, '/athlete/routes', params);
+  const response = await makeStravaRequest(session, "/athlete/routes", params);
   const responseData = await response.json();
   sessionLogger.info(`Strava response data: ${JSON.stringify(responseData, null, 2)}`);
   const validatedData = RoutesSchema.safeParse(responseData)
@@ -103,7 +103,7 @@ export async function fetchDetailedSegment(session: Session, segmentId: number):
 
   if (!segment) {
     sessionLogger.error(`Failed to parse segment ${segmentId} from Strava`);
-    throw new Error('Failed to parse segment');
+    throw new Error("Failed to parse segment");
   } else {
     sessionLogger.info(`Successfully fetched segment ${segmentId} as ${segment?.name} from Strava`);
   }
@@ -125,7 +125,7 @@ export async function fetchRouteGeoJson(session: Session, routeId: string): Prom
 
   switch (response.status) {
     case 429:
-      throw new Error('Too Many Requests');
+      throw new Error("Too Many Requests");
     case 200:
       break;
     default:
@@ -157,7 +157,7 @@ export async function fetchActivities(session: Session, per_page: number = 10, p
     per_page: per_page.toString(),
     page: page.toString()
   });
-  const response = await makeStravaRequest(session, '/athlete/activities', params);
+  const response = await makeStravaRequest(session, "/athlete/activities", params);
   const responseData = await response.json();
   sessionLogger.debug(`rawData: ${JSON.stringify(responseData, null, 2)}`);
   const validatedData = z.array(SummaryActivitySchema).safeParse(responseData)

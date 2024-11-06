@@ -1,10 +1,10 @@
 "use server";
 
-import { createSessionLogger } from '@/lib/logger';
-import { prisma } from '@/lib/prisma';
+import { createSessionLogger } from "@/lib/logger";
+import { prisma } from "@/lib/prisma";
 import type { DetailedActivity, Route, SummaryActivity } from "@/schemas/strava";
-import polyline from '@mapbox/polyline';
-import { Prisma } from '@prisma/client';
+import polyline from "@mapbox/polyline";
+import { Prisma } from "@prisma/client";
 import type { Account, UserActivity, UserRoute } from "@prisma/client";
 import type { Session } from "next-auth";
 
@@ -40,7 +40,7 @@ export async function queryUserAccount(session: Session, accountProvider: string
     });
 
     if (!account) {
-      sessionLogger.warn('No account found', { provider: accountProvider });
+      sessionLogger.warn("No account found", { provider: accountProvider });
       throw new Error(`No ${accountProvider} account found for this user`);
     }
 
@@ -53,7 +53,7 @@ export async function queryUserAccount(session: Session, accountProvider: string
 export async function queryUserRoutes(session: Session): Promise<UserRoute[]> {
   const sessionLogger = createSessionLogger(session);
   try {
-    sessionLogger.info('Querying user routes for user', { userId: session.user.id });
+    sessionLogger.info("Querying user routes for user", { userId: session.user.id });
     const routes = await prisma.userRoute.findMany({
       where: {
         userId: session.user.id
@@ -68,11 +68,11 @@ export async function queryUserRoutes(session: Session): Promise<UserRoute[]> {
 
 export async function queryUserRoute(session: Session, routeId: string): Promise<UserRoute | null> {
   if (!session) {
-    throw new Error('Session is required to query route');
+    throw new Error("Session is required to query route");
   }
   const sessionLogger = createSessionLogger(session);
   try {
-    sessionLogger.info('Querying user route');
+    sessionLogger.info("Querying user route");
     const route = await prisma.userRoute.findUnique({
       where: {
         id_userId: {
@@ -318,7 +318,7 @@ export async function enrichUserActivity(session: Session, activity: DetailedAct
 export async function queryUserActivities(session: Session): Promise<UserActivity[]> {
   const sessionLogger = createSessionLogger(session);
   try {
-    sessionLogger.info('Querying user activities for user', { userId: session.user.id });
+    sessionLogger.info("Querying user activities for user", { userId: session.user.id });
     const activities = await prisma.userActivity.findMany({
       where: {
         userId: session.user.id,
@@ -327,7 +327,7 @@ export async function queryUserActivities(session: Session): Promise<UserActivit
         }
       },
       orderBy: {
-        startDateLocal: 'desc'
+        startDateLocal: "desc"
       }
     });
     sessionLogger.info(`Found ${activities.length} activities`);

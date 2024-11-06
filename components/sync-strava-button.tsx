@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -56,21 +56,21 @@ export default function SyncStravaButton() {
         const data = JSON.parse(event.data);
 
         switch (data.type) {
-          case 'start':
+          case "start":
             setProgress(prev => ({
               ...prev,
               totalItems: data.n,
               currentItem: 0,  // Reset to 0 when starting
             }));
             break;
-          case 'update':
+          case "update":
             setProgress(prev => ({
               ...prev,
               message: data.message,
               currentItem: prev.currentItem + 1,
             }));
             break;
-          case 'fail':
+          case "fail":
             setProgress(prev => ({
               ...prev,
               currentItem: prev.currentItem + 1,
@@ -80,7 +80,7 @@ export default function SyncStravaButton() {
               ],
             }));
             break;
-          case 'complete':
+          case "complete":
             events.close();
             setProgress(prev => ({
               ...prev,
@@ -89,7 +89,7 @@ export default function SyncStravaButton() {
             resolve(true);
             router.refresh();
             break;
-          case 'error':
+          case "error":
             events.close();
             setProgress(prev => ({
               ...prev,
