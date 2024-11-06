@@ -32,9 +32,9 @@ export async function GET(request: NextRequest) {
   const hub_verify_token = searchParams.get("hub.verify_token");
   const hub_challenge = searchParams.get("hub.challenge");
 
-  // if (!isStravaOrigin(request) && hub_verify_token == process.env.STRAVA_WEBHOOK_VERIFY_TOKEN) {
-  //   return new NextResponse(null, { status: 403 });
-  // }
+  if (!isStravaOrigin(request) && hub_verify_token == process.env.STRAVA_WEBHOOK_VERIFY_TOKEN) {
+    return new NextResponse(null, { status: 403 });
+  }
 
   if (hub_mode === "subscribe" && hub_verify_token === process.env.STRAVA_WEBHOOK_VERIFY_TOKEN) {
     return NextResponse.json({ "hub.challenge": hub_challenge });
@@ -44,9 +44,9 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  if (!isStravaOrigin(request)) {
-    return new NextResponse(null, { status: 403 });
-  }
+  // if (!isStravaOrigin(request)) {
+  //   return new NextResponse(null, { status: 403 });
+  // }
 
   try {
     const rawJson = await request.json();
