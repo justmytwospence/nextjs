@@ -1,5 +1,8 @@
 import { z } from "zod";
 
+// LatLng - A pair of latitude/longitude coordinates
+export const LatLngSchema = z.array(z.number());
+
 // Basic activity type enumeration
 export const ActivityTypeSchema = z.enum([
   "AlpineSki", "BackcountrySki", "Canoeing", "Crossfit", "EBikeRide",
@@ -128,11 +131,11 @@ export const ExplorerSegmentSchema = z.object({
   climb_category_desc: z.enum(["NC", "4", "3", "2", "1", "HC"]), // Description of the climb category
   distance: z.number(), // Distance of the segment in meters
   elev_difference: z.number(), // Elevation difference in meters
-  end_latlng: z.array(z.number()).length(2), // Ending latitude and longitude
+  end_latlng: LatLngSchema, // Ending latitude and longitude
   id: z.number().int(), // Unique identifier for the segment
   name: z.string(), // Name of the segment
   points: z.string(), // Polyline points for the segment
-  start_latlng: z.array(z.number()).length(2), // Starting latitude and longitude
+  start_latlng: LatLngSchema, // Starting latitude and longitude
 });
 
 // Returned by GET /segments/explore
@@ -156,7 +159,7 @@ export const MetaActivitySchema = z.object({
 export const LapSchema = z.object({
   activity: MetaActivitySchema, // Associated activity information
   athlete: MetaAthleteSchema, // Athlete who completed the lap
-  average_cadence: z.number(), // Average cadence during the lap
+  average_cadence: z.number().optional(), // Average cadence during the lap
   average_speed: z.number(), // Average speed during the lap
   distance: z.number(), // Distance covered in meters
   elapsed_time: z.number().int(), // Elapsed time in seconds
@@ -166,7 +169,7 @@ export const LapSchema = z.object({
   max_speed: z.number(), // Maximum speed in meters per second
   moving_time: z.number().int(), // Moving time in seconds
   name: z.string(), // Name of the lap
-  pace_zone: z.number().int(), // Pace zone during the lap
+  pace_zone: z.number().int().optional(), // Pace zone during the lap
   split: z.number().int(), // Split number
   start_date: z.string().datetime(), // Start date of the lap
   start_date_local: z.string().datetime(), // Local start date
@@ -183,24 +186,29 @@ export const MetaClubSchema = z.object({
 
 // Summary of a photo
 export const PhotosSummaryPrimarySchema = z.object({
-  id: z.number().int(), // Unique ID for the photo
+  id: z.number().int().optional(), // Unique ID for the photo
   source: z.number().int(), // Source identifier
   unique_id: z.string(), // Unique identifier
-  urls: z.string(), // URL of the photo
+  urls: z.record(z.string().url()), // URLs of the photo
 });
 
 // Summary of photos associated with an activity
 export const PhotosSummarySchema = z.object({
   count: z.number().int(), // Number of photos
-  primary: PhotosSummaryPrimarySchema, // Primary photo information
+  primary: PhotosSummaryPrimarySchema.nullable(), // Primary photo information
 });
 
 // Map details including polylines
 export const PolylineMapSchema = z.object({
   id: z.string(), // Identifier for the map
-  polyline: z.string().nullable(), // Full polyline of the map
+  polyline: z.string(), // Full polyline of the map
   summary_polyline: z.string().nullable(), // Summary polyline of the map
-});
+})
+  .partial()
+  .refine(
+    data => data.polyline !== null || data.summary_polyline !== null, {
+    message: "Either polyline or summary_polyline must be provided",
+  });
 
 // Range structure with minimum and maximum values
 export const ZoneRangeSchema = z.object({
@@ -217,7 +225,7 @@ export const SummaryAthleteSchema = z.object({
 
 // SummaryPRSegmentEffort - Information about a personal record effort on a segment
 export const SummaryPRSegmentEffortSchema = z.object({
-  effort_count: z.number().int(), // Number of times athlete attempted the segment
+  effort_count: z.number().int().optional(), // Number of times athlete attempted the segment
   pr_activity_id: z.number().int(), // Activity ID for the PR effort
   pr_date: z.string().datetime(), // Date when PR was set
   pr_elapsed_time: z.number().int(), // PR elapsed time in seconds
@@ -238,26 +246,23 @@ export const SummarySegmentEffortSchema = z.object({
 // Returned by /segments/starred endpoint
 export const SummarySegmentSchema = z.object({
   activity_type: z.enum(["Ride", "Run"]), // Type of activity (Ride or Run)
-  athlete_pr_effort: SummaryPRSegmentEffortSchema.nullable(), // PR effort details if applicable
-  athlete_segment_stats: SummarySegmentEffortSchema.nullable(), // Segment effort details if available
+  athlete_pr_effort: SummaryPRSegmentEffortSchema.optional(), // PR effort details if applicable
+  athlete_segment_stats: SummarySegmentEffortSchema.optional(), // Segment effort details if available
   average_grade: z.number(), // Average grade in percent
-  city: z.string(), // Segment's city
+  city: z.string().nullable(), // Segment's city
   climb_category: z.number().int().min(0).max(5), // Climb difficulty rating (0-5)
-  country: z.string(), // Segment's country
+  country: z.string().nullable(), // Segment's country
   distance: z.number(), // Segment distance in meters
   elevation_high: z.number(), // Highest elevation in meters
   elevation_low: z.number(), // Lowest elevation in meters
-  end_latlng: z.array(z.number()).length(2), // End coordinates (lat/lng)
+  end_latlng: LatLngSchema, // End coordinates (lat/lng)
   id: z.number().int(), // Unique identifier of the segment
   maximum_grade: z.number(), // Maximum grade in percent
   name: z.string(), // Segment name
   private: z.boolean(), // Whether the segment is private
-  start_latlng: z.array(z.number()).length(2), // Start coordinates (lat/lng)
+  start_latlng: LatLngSchema, // Start coordinates (lat/lng)
   state: z.string(), // Segment's state or region
 });
-
-// LatLng - A pair of latitude/longitude coordinates
-export const LatLngSchema = z.array(z.number()).length(2);
 
 // Waypoint - Details of a waypoint along a route
 export const WaypointSchema = z.object({
@@ -277,19 +282,20 @@ export const RouteSchema = z.object({
   distance: z.number(), // Route distance in meters
   elevation_gain: z.number(), // Total elevation gain in meters
   estimated_moving_time: z.number().int(), // Estimated moving time in seconds
-  id: z.number().int(), // Unique identifier of the route
+  id: z.number(), // Unique identifier of the route
   id_str: z.string(), // Route ID in string format
   map: PolylineMapSchema, // Map details of the route
   name: z.string(), // Route name
   private: z.boolean(), // Whether the route is private
-  segments: z.array(SummarySegmentSchema), // Segments traversed by this route
+  segments: z.array(SummarySegmentSchema).nullish(), // Segments traversed by this route
   starred: z.boolean(), // Whether the route is starred
   sub_type: z.number().int().min(1).max(5), // Sub-type of the route
   timestamp: z.number().int(), // Epoch timestamp when the route was created
-  type: z.number().int().min(1).max(2), // Route type (1 for ride, 2 for run)
+  type: z.number().int().min(1).max(5), // Route type (1 for ride, 2 for run)
   updated_at: z.string().datetime(), // Last updated date
   waypoints: WaypointSchema.array(), // Waypoints along the route
 });
+export const RoutesSchema = z.array(RouteSchema);
 
 // Split - Information about a split in an activity
 export const SplitSchema = z.object({
@@ -319,7 +325,7 @@ export const StreamSetSchema = z.object({
   distance: z.array(z.number()), // Sequence of distance values in meters
   grade_smooth: z.array(z.number()), // Sequence of smooth grade values in percent
   heartrate: z.array(z.number().int()), // Sequence of heart rate values
-  latlng: z.array(z.array(z.number()).length(2)), // Sequence of lat/lng values
+  latlng: LatLngSchema, // Sequence of lat/lng values
   moving: z.array(z.boolean()), // Sequence of moving statuses
   temp: z.array(z.number().int()), // Sequence of temperature values in Celsius
   time: z.array(z.number().int()), // Sequence of time values in seconds
@@ -403,55 +409,55 @@ export const DetailedGearSchema = z.object({
 // Returned by /segments/{id} endpoint
 // Detailed information about a segment
 export const DetailedSegmentSchema = z.object({
-  activity_type: z.enum(["Ride", "Run"]), // Type of activity (Ride or Run)
-  athlete_count: z.number().int(), // Number of unique athletes with efforts
-  athlete_pr_effort: SummaryPRSegmentEffortSchema.nullable(), // PR effort details if applicable
-  athlete_segment_stats: SummarySegmentEffortSchema.nullable(), // Segment effort details if available
+  activity_type: z.enum(["Ride", "Run", "Hike"]), // Type of activity (Ride or Run)
+  athlete_count: z.number().int().optional(), // Number of unique athletes with efforts
+  athlete_pr_effort: SummaryPRSegmentEffortSchema.optional(), // PR effort details if applicable
+  athlete_segment_stats: SummarySegmentEffortSchema.optional(), // Segment effort details if available
   average_grade: z.number(), // Average grade in percent
-  city: z.string(), // Segment's city
+  city: z.string().nullable(), // Segment's city
   climb_category: z.number().int().min(0).max(5), // Climb difficulty rating (0-5)
-  country: z.string(), // Segment's country
-  created_at: z.string().datetime(), // Date when the segment was created
+  country: z.string().nullable(), // Segment's country
+  created_at: z.string().datetime().optional(), // Date when the segment was created
   distance: z.number(), // Segment distance in meters
-  effort_count: z.number().int(), // Total number of efforts on this segment
+  effort_count: z.number().int().optional(), // Total number of efforts on this segment
   elevation_high: z.number(), // Highest elevation in meters
   elevation_low: z.number(), // Lowest elevation in meters
   end_latlng: LatLngSchema, // End coordinates (lat/lng)
   hazardous: z.boolean(), // If the segment is considered hazardous
   id: z.number().int(), // Unique identifier of the segment
-  map: PolylineMapSchema, // Map details
+  map: PolylineMapSchema.optional(), // Map details
   maximum_grade: z.number(), // Maximum grade in percent
   name: z.string(), // Segment name
   private: z.boolean(), // Whether the segment is private
-  star_count: z.number().int(), // Number of stars for this segment
+  star_count: z.number().int().optional(), // Number of stars for this segment
   start_latlng: LatLngSchema, // Start coordinates (lat/lng)
-  state: z.string(), // Segment's state or region
-  total_elevation_gain: z.number(), // Total elevation gain in meters
-  updated_at: z.string().datetime(), // Date when the segment was last updated
+  state: z.string().nullable(), // Segment's state or region
+  total_elevation_gain: z.number().optional(), // Total elevation gain in meters
+  updated_at: z.string().datetime().optional(), // Date when the segment was last updated
 });
 
 // Returned by GET /segment_efforts/{id}
 // Returns details of a segment effort
 export const DetailedSegmentEffortSchema = z.object({
   activity: z.object({ id: z.number().int() }), // Associated activity details
-  activity_id: z.number().int(), // Activity ID related to this effort
+  activity_id: z.number().int().optional(), // Activity ID related to this effort
   athlete: z.object({ id: z.number().int() }), // Athlete details
-  average_cadence: z.number().nullable(), // Average cadence during effort
-  average_heartrate: z.number().nullable(), // Average heart rate during effort
-  average_watts: z.number().nullable(), // Average watts during effort
-  device_watts: z.boolean().nullable(), // If wattage is from a power meter
+  average_cadence: z.number().nullable().optional(), // Average cadence during effort
+  average_heartrate: z.number().optional(), // Average heart rate during effort
+  average_watts: z.number().nullable().optional(), // Average watts during effort
+  device_watts: z.boolean().nullable().optional(), // If wattage is from a power meter
   distance: z.number(), // Effort distance in meters
   elapsed_time: z.number().int(), // Elapsed time of the effort
   end_index: z.number().int(), // End index in activity's stream
-  hidden: z.boolean(), // If this effort should be hidden in the activity
+  hidden: z.boolean().optional(), // If this effort should be hidden in the activity
   id: z.number().int(), // Unique identifier of the effort
-  is_kom: z.boolean(), // If this is the current best on leaderboard
-  kom_rank: z.number().int().nullable(), // Rank on the global leaderboard if in top 10
-  max_heartrate: z.number().nullable(), // Max heart rate during effort
+  is_kom: z.boolean().optional(), // If this is the current best on leaderboard
+  kom_rank: z.number().int().nullable().optional(), // Rank on the global leaderboard if in top 10, can be null
+  max_heartrate: z.number().optional(), // Max heart rate during effort
   moving_time: z.number().int(), // Moving time during the effort
   name: z.string(), // Segment name for this effort
   pr_rank: z.number().int().nullable(), // Rank on athlete's leaderboard if in top 3
-  segment: DetailedSegmentSchema, // Detailed segment information
+  segment: DetailedSegmentSchema.optional(), // Detailed segment information
   start_date: z.string().datetime(), // Start date of the effort
   start_date_local: z.string().datetime(), // Local start date of the effort
   start_index: z.number().int(), // Start index in activity's stream
@@ -518,28 +524,28 @@ export const SummaryActivitySchema = z.object({
   achievement_count: z.number().int(), // Number of achievements gained
   athlete: MetaAthleteSchema, // Basic athlete information
   athlete_count: z.number().int(), // Number of athletes involved in the activity
-  average_speed: z.number().nullable(), // Average speed in meters/second
-  average_watts: z.number().nullable(), // Average power output in watts (rides only)
+  average_speed: z.number().optional(), // Average speed in meters/second
+  average_watts: z.number().optional(), // Average power output in watts (rides only)
   comment_count: z.number().int(), // Number of comments
   commute: z.boolean(), // Whether it's marked as a commute
-  device_watts: z.boolean().nullable(), // Whether watts are from a power meter
+  device_watts: z.boolean().optional(), // Whether watts are from a power meter
   distance: z.number(), // Distance in meters
   elapsed_time: z.number().int(), // Elapsed time in seconds
   elev_high: z.number().nullable(), // Highest elevation in meters, nullable if unknown
   elev_low: z.number().nullable(), // Lowest elevation in meters, nullable if unknown
-  end_latlng: z.array(z.number()).length(2).nullable(), // Ending latitude and longitude
+  end_latlng: z.array(z.number()).optional(), // Ending latitude and longitude
   external_id: z.string().nullable(), // Identifier provided at upload time
   flagged: z.boolean(), // Whether it is flagged
   gear_id: z.string().nullable(), // Gear ID used for the activity
   has_kudoed: z.boolean(), // Whether the logged-in athlete has kudoed this activity
-  hide_from_home: z.boolean(), // If the activity is muted
+  hide_from_home: z.boolean().optional(), // If the activity is muted
   id: z.number().int(), // Unique identifier for the activity
-  kilojoules: z.number().nullable(), // Work done in kilojoules (rides only)
+  kilojoules: z.number().optional(), // Work done in kilojoules (rides only)
   kudos_count: z.number().int(), // Number of kudos received
   manual: z.boolean(), // Whether it was created manually
   map: PolylineMapSchema, // Map details
   max_speed: z.number().nullable(), // Maximum speed in meters/second
-  max_watts: z.number().int().nullable(), // Maximum watts recorded (rides only)
+  max_watts: z.number().int().optional(), // Maximum watts recorded (rides only)
   moving_time: z.number().int(), // Moving time in seconds
   name: z.string(), // Name of the activity
   photo_count: z.number().int(), // Number of Instagram photos
@@ -547,7 +553,7 @@ export const SummaryActivitySchema = z.object({
   sport_type: SportTypeSchema, // Sport type of the activity
   start_date: z.string().datetime(), // Start date in UTC
   start_date_local: z.string().datetime(), // Start date in local timezone
-  start_latlng: z.array(z.number()).length(2).nullable(), // Starting latitude and longitude
+  start_latlng: z.array(z.number()).optional(), // Starting latitude and longitude
   timezone: z.string(), // Timezone of the activity
   total_elevation_gain: z.number(), // Total elevation gain in meters
   total_photo_count: z.number().int(), // Total photos (Instagram + Strava)
@@ -555,8 +561,8 @@ export const SummaryActivitySchema = z.object({
   type: ActivityTypeSchema, // Activity type (deprecated, prefer sport_type)
   upload_id: z.number().int(), // Identifier of the upload that created this activity
   upload_id_str: z.string().nullable(), // String format of upload ID
-  weighted_average_watts: z.number().int().nullable(), // Similar to Normalized Power (rides)
-  workout_type: z.number().int().nullable(), // Type of workout
+  weighted_average_watts: z.number().int().optional(), // Similar to Normalized Power (rides)
+  workout_type: z.number().int().optional(), // Type of workout
 });
 
 // SummaryClub - Basic club details
@@ -585,15 +591,15 @@ export const DetailedActivitySchema = z.object({
   achievement_count: z.number().int(), // Number of achievements gained
   athlete: MetaAthleteSchema, // Basic athlete information
   athlete_count: z.number().int(), // Number of athletes involved in the activity
-  average_speed: z.number().nullable(), // Average speed in meters/second
-  average_watts: z.number().nullable(), // Average power output in watts (rides only)
-  best_efforts: z.array(DetailedSegmentEffortSchema), // Collection of best efforts
+  average_speed: z.number().optional(), // Average speed in meters/second
+  average_watts: z.number().optional(), // Average power output in watts (rides only)
+  best_efforts: z.array(DetailedSegmentEffortSchema).optional(), // Collection of best efforts
   calories: z.number().nullable(), // Kilocalories consumed during the activity
   comment_count: z.number().int(), // Number of comments
   commute: z.boolean(), // Whether it's marked as a commute
   description: z.string().nullable(), // Description of the activity
   device_name: z.string().nullable(), // Device name used to record the activity
-  device_watts: z.boolean().nullable(), // Whether watts are from a power meter
+  device_watts: z.boolean().optional(), // Whether watts are from a power meter
   distance: z.number(), // Distance in meters
   elapsed_time: z.number().int(), // Elapsed time in seconds
   elev_high: z.number().nullable(), // Highest elevation in meters
@@ -602,26 +608,26 @@ export const DetailedActivitySchema = z.object({
   end_latlng: LatLngSchema.nullable(), // Ending latitude and longitude
   external_id: z.string().nullable(), // Identifier provided at upload time
   flagged: z.boolean(), // Whether it is flagged
-  gear: SummaryGearSchema.nullable(), // Gear summary
+  gear: SummaryGearSchema.optional(), // Gear summary
   gear_id: z.string().nullable(), // Gear ID used for the activity
   has_kudoed: z.boolean(), // Whether the logged-in athlete has kudoed this activity
   hide_from_home: z.boolean(), // If the activity is muted
   id: z.number().int(), // Unique identifier of the activity
-  kilojoules: z.number().nullable(), // Work done in kilojoules (rides only)
+  kilojoules: z.number().optional(), // Work done in kilojoules (rides only)
   kudos_count: z.number().int(), // Number of kudos received
   laps: z.array(LapSchema), // Collection of laps
   manual: z.boolean(), // Whether it was created manually
   map: PolylineMapSchema, // Map details
   max_speed: z.number().nullable(), // Maximum speed in meters/second
-  max_watts: z.number().int().nullable(), // Maximum watts recorded (rides only)
+  max_watts: z.number().int().optional(), // Maximum watts recorded (rides only)
   moving_time: z.number().int(), // Moving time in seconds
   name: z.string(), // Name of the activity
   photo_count: z.number().int(), // Number of Instagram photos
-  photos: PhotosSummarySchema.nullable(), // Photos summary
+  photos: PhotosSummarySchema.nullable().optional(), // Photos summary
   private: z.boolean(), // Whether it is private
-  segment_efforts: z.array(DetailedSegmentEffortSchema), // Segment efforts
-  splits_metric: z.array(SplitSchema), // Splits in metric units (for runs)
-  splits_standard: z.array(SplitSchema), // Splits in imperial units (for runs)
+  segment_efforts: z.array(DetailedSegmentEffortSchema).optional(), // Segment efforts
+  splits_metric: z.array(SplitSchema).optional(), // Splits in metric units (for runs)
+  splits_standard: z.array(SplitSchema).optional(), // Splits in imperial units (for runs)
   sport_type: SportTypeSchema, // Sport type of the activity
   start_date: z.string().datetime(), // Start date in UTC
   start_date_local: z.string().datetime(), // Start date in local timezone
@@ -633,8 +639,8 @@ export const DetailedActivitySchema = z.object({
   type: ActivityTypeSchema, // Activity type (deprecated, prefer sport_type)
   upload_id: z.number().int(), // Identifier of the upload that created this activity
   upload_id_str: z.string().nullable(), // String format of upload ID
-  weighted_average_watts: z.number().int().nullable(), // Similar to Normalized Power (rides)
-  workout_type: z.number().int().nullable(), // Type of workout
+  weighted_average_watts: z.number().int().optional(), // Similar to Normalized Power (rides)
+  workout_type: z.number().int().optional(), // Type of workout
 });
 
 export type DetailedActivity = z.infer<typeof DetailedActivitySchema>;
