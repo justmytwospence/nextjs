@@ -21,14 +21,15 @@ export default async function processWebhookEvent(event: WebhookEvent) {
       baseLogger.info(`Received athlete event: ${JSON.stringify(event, null, 2)}`);
       if (event.updates?.authorized === "false") {
         baseLogger.info(`Deauthorizing user with stravaId: ${event.object_id}`);
-        await prisma.user.delete({
+        await prisma.account.delete({
           where: {
-            id: String(event.object_id)
+            provider_providerAccountId: {
+              provider: "strava",
+              providerAccountId: String(event.object_id),
+            },
           },
           include: {
-            accounts: true,
-            routes: true,
-            segments: true,
+            user: true,
           },
         });
         baseLogger.info(`Deleted user and associated data for stravaId: ${event.object_id}`);
