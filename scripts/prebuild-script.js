@@ -5,10 +5,10 @@ const environment = process.env.VERCEL_ENV;
 
 if (environment === 'production') {
   console.log("Running production migrations...");
-  execSync('npm prisma migrate deploy', { stdio: 'inherit' });
+  execSync('npx prisma migrate deploy', { stdio: 'inherit' });
 } else if (environment === 'preview') {
   console.log("Running staging migrations for preview environment...");
-  execSync('npm prisma migrate deploy reset --force', { stdio: 'inherit' });
+  execSync('npx prisma migrate deploy reset --force', { stdio: 'inherit' });
 } else {
   console.log("No migrations for this environment.");
 }
