@@ -5,9 +5,6 @@
   "scripts": {
     "build": "node scripts/prebuild-script.js && next build",
     "dev": "next dev",
-    "migrate:dev": "prisma migrate dev",
-    "migrate:prod": "prisma migrate deploy",
-    "migrate:staging": "prisma migrate deploy reset --force",
     "postinstall": "prisma generate"
   },
   "dependencies": {
