@@ -16,6 +16,7 @@ import { Session } from 'next-auth';
 import { createSessionLogger } from '@/lib/logger';
 import { queryUserAccount, insertApiQuery } from '@/lib/db';
 import { z } from 'zod';
+import { HttpError } from '@/lib/errors';
 
 /**
  * Makes an authenticated request to the Strava API
@@ -50,13 +51,9 @@ async function makeStravaRequest(
 
   sessionLogger.debug(`Strava response: ${response.status} ${response.statusText}`);
 
-  if (response.status === 429) {
-    throw new Error('Too Many Requests');
-  }
-
   if (!response.ok) {
-    sessionLogger.error(`Failed to fetch from Strava: ${response.statusText}`);
-    throw new Error(response.statusText);
+    sessionLogger.error(`Failed to fetch from Strava: ${response.status} ${response.statusText}`);
+    throw new HttpError(response.status, response.statusText);
   }
 
   return response

@@ -4,6 +4,7 @@ import { createSessionLogger } from '@/lib/logger';
 import { enrichUserActivity, enrichUserRoute, upsertUserActivity, upsertUserRoute } from '@/lib/db';
 import { fetchActivities, fetchDetailedActivity, fetchRouteGeoJson, fetchRoutes } from '@/lib/strava-api';
 import { Session } from "next-auth";
+import { HttpError } from '@/lib/errors';
 
 type Message =
   | { type: 'start', message: string, n: number }
@@ -53,42 +54,57 @@ async function syncBatch(session: Session, searchParams: URLSearchParams, send) 
       n: summaryActivities.length
     });
     for (const summaryActivity of summaryActivities) {
-      await send({
-        type: 'update',
-        message: `Syncing activity ${summaryActivity.name}...`,
-      });
-      await upsertUserActivity(session, summaryActivity);
-      const detailedActivity = await fetchDetailedActivity(session, summaryActivity.id);
-      await enrichUserActivity(session, detailedActivity);
-    }
-
-    // Sync routes
-    const routes = await fetchRoutes(session, perPage, page);
-    await send({
-      type: 'start',
-      message: `Syncing ${routes.length} routes fetched from Strava`,
-      n: routes.length
-    });
-    for (const route of routes) {
       try {
         await send({
           type: 'update',
-          message: `Syncing route ${route.name}...`
+          message: `Syncing activity ${summaryActivity.name}...`,
         });
-        await upsertUserRoute(session, route);
-        const routeJson = await fetchRouteGeoJson(session, route.id_str);
-        await enrichUserRoute(session, route.id_str, routeJson);
-        await send({ message: `Successfully synced route ${route.name}` });
+        await upsertUserActivity(session, summaryActivity);
+        const detailedActivity = await fetchDetailedActivity(session, summaryActivity.id);
+        await enrichUserActivity(session, detailedActivity);
       } catch (error) {
+        if (error instanceof HttpError && error.status === 429) {
+          throw error;
+        }
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         await send({
           type: 'fail',
-          message: `Failed to sync route ${route.name}: ${errorMessage}`,
-          route: route.name,
+          message: `Failed to sync route ${summaryActivity.name}: ${errorMessage}`,
+          route: summaryActivity.name,
         });
       }
+
+      // Sync routes
+      const routes = await fetchRoutes(session, perPage, page);
+      await send({
+        type: 'start',
+        message: `Syncing ${routes.length} routes fetched from Strava`,
+        n: routes.length
+      });
+      for (const route of routes) {
+        try {
+          await send({
+            type: 'update',
+            message: `Syncing route ${route.name}...`
+          });
+          await upsertUserRoute(session, route);
+          const routeJson = await fetchRouteGeoJson(session, route.id_str);
+          await enrichUserRoute(session, route.id_str, routeJson);
+          await send({ message: `Successfully synced route ${route.name}` });
+        } catch (error) {
+          if (error instanceof HttpError && error.status === 429) {
+            throw error;
+          }
+          const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+          await send({
+            type: 'fail',
+            message: `Failed to sync route ${route.name}: ${errorMessage}`,
+            route: route.name,
+          });
+        }
+      }
+      await send({ type: 'complete' });
     }
-    await send({ type: 'complete' });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     sessionLogger.error(`Sync failed: ${errorMessage}`);
