@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState } from "react";
 import GradientCdfChart from "@/components/gradient-cdf-chart";
 import RouteComparisonColumn from "@/components/route-comparison-column";
 import { UserRoute } from "@prisma/client";

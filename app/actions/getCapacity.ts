@@ -1,7 +1,7 @@
 "use server";
 
-import { unstable_noStore as noStore } from 'next/cache';
-import { prisma } from '@/lib/prisma';
+import { unstable_noStore as noStore } from "next/cache";
+import { prisma } from "@/lib/prisma";
 
 export type Capacity = {
   shortTerm: {
@@ -29,7 +29,7 @@ export async function getStravaCapacity(): Promise<Capacity> {
   const [recentQueries, dailyQueries] = await Promise.all([
     prisma.apiQuery.count({
       where: {
-        provider: 'strava',
+        provider: "strava",
         createdAt: {
           gte: fifteenSecondsAgo
         }
@@ -37,7 +37,7 @@ export async function getStravaCapacity(): Promise<Capacity> {
     }),
     prisma.apiQuery.count({
       where: {
-        provider: 'strava',
+        provider: "strava",
         createdAt: {
           gte: startOfDay
         }
