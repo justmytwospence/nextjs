@@ -28,10 +28,7 @@ export default async function processWebhookEvent(event: WebhookEvent) {
                 provider: "strava",
                 providerAccountId: String(event.object_id),
               },
-            },
-            include: {
-              user: true,
-            },
+            }
           });
           baseLogger.info(`Deleted user and associated data for stravaId: ${event.object_id}`);
         } catch (error) {
