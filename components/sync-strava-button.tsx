@@ -58,44 +58,48 @@ export default function SyncStravaButton() {
             setProgress(prev => ({
               ...prev,
               totalItems: data.n,
-            }))
+              currentItem: 0,  // Reset to 0 when starting
+            }));
             break;
           case 'update':
             setProgress(prev => ({
               ...prev,
               message: data.message,
               currentItem: prev.currentItem + 1,
-            }))
+            }));
             break;
           case 'fail':
             setProgress(prev => ({
               ...prev,
+              currentItem: prev.currentItem + 1,
               failedItems: [
-                ...prev.failedItems, {
-                  name: data.route,
-                  error: data.error
-                }],
-            }))
+                ...prev.failedItems,
+                { name: data.route, error: data.error }
+              ],
+            }));
             break;
           case 'complete':
             events.close();
             setProgress(prev => ({
               ...prev,
               message: "Sync Complete",
-            }))
+            }));
             resolve(true);
+            break;
           case 'error':
             events.close();
             setProgress(prev => ({
               ...prev,
               message: `Sync Failed: ${data.error}`,
-            }))
+            }));
             reject(new Error(data.error));
+            break;
         }
       };
 
       events.onerror = (error) => {
         events.close();
+        setIsSyncing(false);
         reject(error);
       };
     });
@@ -109,7 +113,7 @@ export default function SyncStravaButton() {
 
     setProgress({
       currentPage: 1,
-      currentItem: 1,
+      currentItem: 0,  // Start from 0
       totalItems: 0,
       message: "Sync starting...",
       failedItems: []
@@ -117,13 +121,8 @@ export default function SyncStravaButton() {
 
     let currentPage = 1;
     while (currentPage <= BATCH_LIMIT) {
-      console.log(progress)
       const capacity = await getStravaCapacity();
       setCapacity(capacity);
-      setProgress(prev => ({
-        ...prev,
-        currentItem: prev.currentItem++,
-      }));
       if (capacity.shortTerm.remaining >= BATCH_SIZE && capacity.daily.remaining >= BATCH_SIZE) {
         await syncBatch(currentPage, PAGE_SIZE);
         currentPage++;
@@ -147,8 +146,7 @@ export default function SyncStravaButton() {
                   sync();
                   setShowModal(true);
                 }
-              }}
-              disabled={isSyncing}>
+              }}>
               {isSyncing ? (
                 <>
                   <Spinner className="mr-2 h-4 w-4" />
