@@ -3,6 +3,8 @@
 import winston from 'winston';
 import { Session } from 'next-auth';
 
+const level = process.env.LOG_LEVEL || 'info'; // Default to 'info' if not set
+
 export const baseLogger = winston.createLogger({
   levels: winston.config.npm.levels,
   format: winston.format.combine(
