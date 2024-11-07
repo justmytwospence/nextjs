@@ -1,8 +1,7 @@
-import { WebhookEvent } from "@/schemas/strava-webhook-events";
-import { prisma } from "@/lib/prisma";
-import { baseLogger } from "@/lib/logger";
-import { fetchDetailedActivity } from "./strava-api";
 import { deleteUserAccount, queryUserAccount, upsertUserActivity } from "@/lib/db";
+import { baseLogger } from "@/lib/logger";
+import { WebhookEvent } from "@/schemas/strava-webhook-events";
+import { fetchDetailedActivity } from "./strava-api";
 
 export default async function processWebhookEvent(event: WebhookEvent) {
   switch (event.object_type) {
