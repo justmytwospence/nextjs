@@ -1,6 +1,5 @@
 import { auth } from "@/auth";
-import SyncRoutesButton from "@/components/sync-routes-button";
-import SyncActivitiesButton from "@/components/sync-activities-button";
+import SyncStravaButton from "@/components/sync-strava-button";
 
 export default async function ProfilePage() {
   const session = await auth();
@@ -16,7 +15,7 @@ export default async function ProfilePage() {
             <h2 className="text-xl font-semibold">Strava Routes</h2>
             <p className="text-muted-foreground">Sync your routes from Strava</p>
           </div>
-          <SyncRoutesButton />
+          <SyncStravaButton />
         </div>
 
         <div className="flex items-center justify-between p-4 border rounded-lg">
@@ -24,7 +23,7 @@ export default async function ProfilePage() {
             <h2 className="text-xl font-semibold">Strava Activities</h2>
             <p className="text-muted-foreground">Sync your activities from Strava</p>
           </div>
-          <SyncActivitiesButton />
+          <SyncStravaButton />
         </div>
       </div>
     </div>

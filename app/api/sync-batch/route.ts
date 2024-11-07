@@ -1,9 +1,8 @@
 import { auth } from "@/auth";
 import { NextResponse } from "next/server";
-import { createSessionLogger } from "@/lib/logger";
-import { enrichUserActivity, enrichUserRoute, upsertUserActivity, upsertUserRoute } from "@/lib/db";
+import { baseLogger } from "@/lib/logger";
+import { enrichUserRoute, upsertUserActivity, upsertUserRoute } from "@/lib/db";
 import { fetchActivities, fetchDetailedActivity, fetchRouteGeoJson, fetchRoutes } from "@/lib/strava-api";
-import { Session } from "next-auth";
 import { HttpError } from "@/lib/errors";
 
 type Message =
@@ -29,10 +28,10 @@ export async function GET(request: Request) {
 
   switch (searchParams.get("type")) {
     case "routes":
-      await syncRoutes(session, searchParams, send);
+      await syncRoutes(session.user.id, searchParams, send);
       break;
     case "activities":
-      await syncActivities(session, searchParams, send);
+      await syncActivities(session.user.id, searchParams, send);
       break;
     default:
       await send({ type: "error", error: "Invalid sync type" });
@@ -49,14 +48,12 @@ export async function GET(request: Request) {
   });
 }
 
-async function syncRoutes(session: Session, searchParams: URLSearchParams, send) {
-  const sessionLogger = createSessionLogger(session);
-
+async function syncRoutes(userId: string, searchParams: URLSearchParams, send) {
   const perPage = parseInt(searchParams.get("page_size") || "2");
   const page = parseInt(searchParams.get("page") || "1");
 
   try {
-    const routes = await fetchRoutes(session, perPage, page);
+    const routes = await fetchRoutes(userId, perPage, page);
     await send({
       type: "start",
       message: `Syncing ${routes.length} routes fetched from Strava`,
@@ -68,9 +65,9 @@ async function syncRoutes(session: Session, searchParams: URLSearchParams, send)
           type: "update",
           message: `Syncing route ${route.name}...`
         });
-        await upsertUserRoute(session, route);
-        const routeJson = await fetchRouteGeoJson(session, route.id_str);
-        await enrichUserRoute(session, route.id_str, routeJson);
+        await upsertUserRoute(userId, route);
+        const routeJson = await fetchRouteGeoJson(userId, route.id_str);
+        await enrichUserRoute(userId, route.id_str, routeJson);
         await send({ message: `Successfully synced route ${route.name}` });
       } catch (error) {
         if (error instanceof HttpError && error.status === 429) {
@@ -87,7 +84,7 @@ async function syncRoutes(session: Session, searchParams: URLSearchParams, send)
     await send({ type: "complete" });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
-    sessionLogger.error(`Sync failed: ${errorMessage}`);
+    baseLogger.error(`Sync failed: ${errorMessage}`);
     await send({
       type: "error",
       error: errorMessage,
@@ -95,14 +92,12 @@ async function syncRoutes(session: Session, searchParams: URLSearchParams, send)
   }
 }
 
-async function syncActivities(session: Session, searchParams: URLSearchParams, send) {
-  const sessionLogger = createSessionLogger(session);
-
+async function syncActivities(userId: string, searchParams: URLSearchParams, send) {
   const perPage = parseInt(searchParams.get("page_size") || "2");
   const page = parseInt(searchParams.get("page") || "1");
 
   try {
-    const summaryActivities = await fetchActivities(session, perPage, page);
+    const summaryActivities = await fetchActivities(userId, perPage, page);
     await send({
       type: "start",
       message: `Syncing ${summaryActivities.length} activities fetched from Strava...`,
@@ -114,9 +109,8 @@ async function syncActivities(session: Session, searchParams: URLSearchParams, s
           type: "update",
           message: `Syncing activity ${summaryActivity.name}...`,
         });
-        await upsertUserActivity(session, summaryActivity);
-        const detailedActivity = await fetchDetailedActivity(session, summaryActivity.id);
-        await enrichUserActivity(session, detailedActivity);
+        const detailedActivity = await fetchDetailedActivity(userId, summaryActivity.id);
+        await upsertUserActivity(userId, detailedActivity);
       } catch (error) {
         if (error instanceof HttpError && error.status === 429) {
           throw error;
@@ -132,7 +126,7 @@ async function syncActivities(session: Session, searchParams: URLSearchParams, s
     }
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
-    sessionLogger.error(`Sync failed: ${errorMessage}`);
+    baseLogger.error(`Sync failed: ${errorMessage}`);
     await send({
       type: "error",
       error: errorMessage,
