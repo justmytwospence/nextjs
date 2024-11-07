@@ -11,11 +11,9 @@ if [ -z "$subscription_id" ]; then
   exit 1
 fi
 
-url="https://www.strava.com/api/v3/push_subscriptions/${subscription_id}"
-echo "Deleting subscription: $url"
-response=$(curl -X DELETE "$url" \
-  -d "client_id=$STRAVA_CLIENT_ID" \
-  -d "client_secret=$STRAVA_CLIENT_SECRET")
+url="https://www.strava.com/api/v3/push_subscriptions/${subscription_id}\
+?client_id=${STRAVA_CLIENT_ID}\
+&client_secret=${STRAVA_CLIENT_SECRET}"
+response=$(curl -X DELETE "$url")
 
-# Pretty print the JSON response
-echo "$response" | jq .
+echo $response | jq .

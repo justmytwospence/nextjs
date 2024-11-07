@@ -16,5 +16,4 @@ response=$(curl -s -X POST "https://www.strava.com/api/v3/push_subscriptions" \
   -d "callback_url=$1" \
   -d "verify_token=$STRAVA_WEBHOOK_VERIFY_TOKEN")
 
-# Print the response
-echo "Response: $response"
+echo $response | jq .
