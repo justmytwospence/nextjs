@@ -189,6 +189,12 @@ model UserActivity {
   splitsMetric   Json?   @map("splits_metric")
   splitsStandard Json?   @map("splits_standard")
 
+  // Add any missing fields from DetailedActivity/SummaryActivity
+  bestEfforts    Json?   @map("best_efforts")
+  externalId     String? @map("external_id")
+  gear           Json?
+  segmentEfforts Json?   @map("segment_efforts")
+
   // Relations
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 

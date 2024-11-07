@@ -1,14 +1,24 @@
 import { WebhookEvent } from "@/schemas/strava-webhook-events";
 import { prisma } from "@/lib/prisma";
 import { baseLogger } from "@/lib/logger";
+import { fetchDetailedActivity } from "./strava-api";
+import { upsertUserActivity } from "@/lib/db";
 
 export default async function processWebhookEvent(event: WebhookEvent) {
   switch (event.object_type) {
     case "activity":
       switch (event.aspect_type) {
         case "create":
-          // TODO: Store new activity in database
-          break;
+          const account = await prisma.account.findUnique({
+            where: {
+              provider_providerAccountId: {
+                provider: "strava",
+                providerAccountId: String(event.owner_id),
+              },
+            }
+          })
+          const detailedActivity = await fetchDetailedActivity(event.owner_id, event.object_id);
+          return await upsertUserActivity(event.owner_id, detailedActivity);
         case "update":
           // TODO: Update activity in database
           break;

@@ -1,46 +1,48 @@
 "use server";
 
-import { createSessionLogger } from "@/lib/logger";
+import { baseLogger } from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
 import type { DetailedActivity, Route, SummaryActivity } from "@/schemas/strava";
 import polyline from "@mapbox/polyline";
-import { Prisma } from "@prisma/client";
 import type { Account, UserActivity, UserRoute } from "@prisma/client";
-import type { Session } from "next-auth";
+import { Prisma } from "@prisma/client";
+import { ApiQuery } from "@prisma/client";
 
 export async function insertApiQuery(
-  session: Session,
+  userId: string,
   provider: string,
   accessToken: string,
   endpoint: string,
   params: URLSearchParams,
-) {
+): Promise<ApiQuery> {
   return await prisma.apiQuery.create({
     data: {
       accessToken,
       endpoint,
       params: Object.fromEntries(params.entries()),
       provider,
-      userId: session.user.id,
+      userId: userId
     },
   });
 }
 
-export async function queryUserAccount(session: Session, accountProvider: string): Promise<Account> {
-  const sessionLogger = createSessionLogger(session);
+export async function queryUserAccount(
+  userId: string,
+  accountProvider: string
+): Promise<Account> {
   try {
-    sessionLogger.info(`Querying ${accountProvider} account for user ${session.user.id}`);
+    baseLogger.info(`Querying ${accountProvider} account for user ${userId}`);
     const account = await prisma.account.findUnique({
       where: {
         userId_provider: {
-          userId: session.user.id,
+          userId,
           provider: accountProvider,
         }
       },
     });
 
     if (!account) {
-      sessionLogger.warn("No account found", { provider: accountProvider });
+      baseLogger.warn("No account found", { provider: accountProvider });
       throw new Error(`No ${accountProvider} account found for this user`);
     }
 
@@ -50,50 +52,47 @@ export async function queryUserAccount(session: Session, accountProvider: string
   }
 }
 
-export async function queryUserRoutes(session: Session): Promise<UserRoute[]> {
-  const sessionLogger = createSessionLogger(session);
+export async function queryUserRoutes(userId: string): Promise<UserRoute[]> {
   try {
-    sessionLogger.info("Querying user routes for user", { userId: session.user.id });
+    baseLogger.info(`Querying user routes for user ${userId}`);
     const routes = await prisma.userRoute.findMany({
-      where: {
-        userId: session.user.id
-      },
+      where: { userId },
     });
-    sessionLogger.info(`Found ${routes.length} routes`);
+    baseLogger.info(`Found ${routes.length} routes`);
     return routes;
   } catch (error) {
     throw error;
   }
 }
 
-export async function queryUserRoute(session: Session, routeId: string): Promise<UserRoute | null> {
-  if (!session) {
-    throw new Error("Session is required to query route");
-  }
-  const sessionLogger = createSessionLogger(session);
+export async function queryUserRoute(
+  userId: string,
+  routeId: string
+): Promise<UserRoute | null> {
   try {
-    sessionLogger.info("Querying user route");
+    baseLogger.info(`Querying user route for user ${userId} and route ${routeId}`);
     const route = await prisma.userRoute.findUnique({
       where: {
         id_userId: {
           id: routeId,
-          userId: session.user.id
+          userId,
         }
       }
     });
-    sessionLogger.info(`Found route ${routeId} to be ${route?.name}`);
+    baseLogger.info(`Found route ${routeId} to be ${route?.name}`);
     return route;
   } catch (error) {
     throw error;
   }
 }
 
-export async function upsertUserRoute(session: Session, route: Route) {
-  const sessionLogger = createSessionLogger(session);
-  sessionLogger.info(`Upserting route ${route.name}`);
+export async function upsertUserRoute(
+  userId: string,
+  route: Route
+): Promise<void> {
+  baseLogger.info(`Upserting route ${route.name}`);
 
   try {
-
     await prisma.userRoute.upsert({
       where: {
         id: route.id_str
@@ -113,7 +112,7 @@ export async function upsertUserRoute(session: Session, route: Route) {
         timestamp: new Date(route.timestamp),
         type: route.type,
         updatedAt: new Date(route.updated_at),
-        userId: session.user.id,
+        userId: userId
       },
       update: {
         createdAt: new Date(route.created_at),
@@ -130,11 +129,11 @@ export async function upsertUserRoute(session: Session, route: Route) {
         timestamp: new Date(route.timestamp),
         type: route.type,
         updatedAt: new Date(route.updated_at),
-        userId: session.user.id,
+        userId: userId
       },
     });
 
-    sessionLogger.info(`Route ${route.name} upserted successfully`);
+    baseLogger.info(`Route ${route.name} upserted successfully`);
   } catch (error) {
     throw error;
   } finally {
@@ -142,15 +141,18 @@ export async function upsertUserRoute(session: Session, route: Route) {
   }
 }
 
-export async function enrichUserRoute(session: Session, routeId: string, route: JSON) {
-  const sessionLogger = createSessionLogger(session);
-  sessionLogger.info(`Enriching route ${routeId}`);
+export async function enrichUserRoute(
+  userId: string,
+  routeId: string,
+  route: JSON
+): Promise<void> {
+  baseLogger.info(`Enriching route ${routeId}`);
 
   try {
     await prisma.userRoute.update({
       where: {
         id: routeId,
-        userId: session.user.id
+        userId,
       },
       data: {
         polyline: (route as unknown) as Prisma.InputJsonValue
@@ -163,107 +165,82 @@ export async function enrichUserRoute(session: Session, routeId: string, route: 
   }
 }
 
-export async function upsertUserActivity(session: Session, activity: SummaryActivity) {
-  const sessionLogger = createSessionLogger(session);
-  sessionLogger.info(`Upserting activity ${activity.name}`);
+export async function upsertUserActivity(
+  userId: string,
+  activity: SummaryActivity | DetailedActivity
+): Promise<void> {
+  baseLogger.info(`Upserting activity ${activity.name}`);
 
   try {
+    const commonData = {
+      // Base fields that exist in both types
+      id: activity.id.toString(),
+      userId,
+      achievementCount: activity.achievement_count ?? 0,
+      athleteCount: activity.athlete_count ?? 0,
+      averageSpeed: activity.average_speed,
+      averageWatts: activity.average_watts,
+      commentCount: activity.comment_count ?? 0,
+      commute: activity.commute ?? false,
+      deviceWatts: activity.device_watts,
+      distance: activity.distance,
+      elapsedTime: activity.elapsed_time,
+      elevationHigh: activity.elev_high,
+      elevationLow: activity.elev_low,
+      externalId: activity.external_id,
+      flagged: activity.flagged ?? false,
+      gearId: activity.gear_id,
+      hasKudoed: activity.has_kudoed ?? false,
+      hideFromHome: activity.hide_from_home ?? false,
+      kilojoules: activity.kilojoules,
+      kudosCount: activity.kudos_count ?? 0,
+      manual: activity.manual ?? false,
+      maxSpeed: activity.max_speed,
+      maxWatts: activity.max_watts,
+      movingTime: activity.moving_time,
+      name: activity.name,
+      photoCount: activity.photo_count ?? 0,
+      private: activity.private ?? false,
+      sportType: activity.sport_type,
+      startDate: new Date(activity.start_date),
+      startDateLocal: new Date(activity.start_date_local),
+      timezone: activity.timezone,
+      totalElevationGain: activity.total_elevation_gain,
+      totalPhotoCount: activity.total_photo_count ?? 0,
+      trainer: activity.trainer ?? false,
+      type: activity.type,
+      uploadId: activity.upload_id?.toString() ?? "",
+      weightedAverageWatts: activity.weighted_average_watts,
+      workoutType: activity.workout_type,
+      summaryPolyline: polyline.toGeoJSON(activity.map.summary_polyline),
+
+      // DetailedActivity specific fields - will be undefined if not present
+      polyline: polyline.toGeoJSON(activity.map.polyline),
+      bestEfforts: "best_efforts" in activity ? (activity.best_efforts as Prisma.InputJsonValue) : undefined,
+      calories: "calories" in activity ? activity.calories : undefined,
+      description: "description" in activity ? activity.description : undefined,
+      deviceName: "device_name" in activity ? activity.device_name : undefined,
+      embedToken: "embed_token" in activity ? activity.embed_token : undefined,
+      gear: "gear" in activity ? (activity.gear as Prisma.InputJsonValue) : undefined,
+      laps: "laps" in activity ? (activity.laps as Prisma.InputJsonValue) : undefined,
+      photos: "photos" in activity ? (activity.photos as Prisma.InputJsonValue) : undefined,
+      segmentEfforts: "segment_efforts" in activity ? (activity.segment_efforts as Prisma.InputJsonValue) : undefined,
+      splitsMetric: "splits_metric" in activity ? (activity.splits_metric as Prisma.InputJsonValue) : undefined,
+      splitsStandard: "splits_standard" in activity ? (activity.splits_standard as Prisma.InputJsonValue) : undefined,
+    };
+
     await prisma.userActivity.upsert({
       where: {
         id_userId: {
           id: activity.id.toString(),
-          userId: session.user.id
+          userId,
         }
       },
-      create: {
-        achievementCount: activity.achievement_count,
-        athleteCount: activity.athlete_count,
-        averageSpeed: activity.average_speed,
-        averageWatts: activity.average_watts,
-        commentCount: activity.comment_count,
-        commute: activity.commute,
-        deviceWatts: activity.device_watts,
-        distance: activity.distance,
-        elapsedTime: activity.elapsed_time,
-        elevationHigh: activity.elev_high,
-        elevationLow: activity.elev_low,
-        flagged: activity.flagged,
-        gearId: activity.gear_id,
-        hasKudoed: activity.has_kudoed,
-        hideFromHome: activity.hide_from_home || false,
-        id: activity.id.toString(),
-        kilojoules: activity.kilojoules,
-        kudosCount: activity.kudos_count,
-        manual: activity.manual,
-        maxSpeed: activity.max_speed,
-        maxWatts: activity.max_watts,
-        movingTime: activity.moving_time,
-        name: activity.name,
-        photoCount: activity.photo_count,
-        private: activity.private,
-        sportType: activity.sport_type,
-        startDate: new Date(activity.start_date),
-        startDateLocal: new Date(activity.start_date_local),
-        timezone: activity.timezone,
-        totalElevationGain: activity.total_elevation_gain,
-        totalPhotoCount: activity.total_photo_count,
-        trainer: activity.trainer,
-        type: activity.type,
-        uploadId: activity.upload_id.toString(),
-        weightedAverageWatts: activity.weighted_average_watts,
-        workoutType: activity.workout_type,
-        userId: session.user.id,
-
-        // If map data exists, store the polyline
-        summaryPolyline: activity.map?.summary_polyline ?
-          polyline.toGeoJSON(activity.map.summary_polyline) :
-          null,
-      },
-      update: {
-        achievementCount: activity.achievement_count,
-        athleteCount: activity.athlete_count,
-        averageSpeed: activity.average_speed,
-        averageWatts: activity.average_watts,
-        commentCount: activity.comment_count,
-        commute: activity.commute,
-        deviceWatts: activity.device_watts,
-        distance: activity.distance,
-        elapsedTime: activity.elapsed_time,
-        elevationHigh: activity.elev_high,
-        elevationLow: activity.elev_low,
-        flagged: activity.flagged,
-        gearId: activity.gear_id,
-        hasKudoed: activity.has_kudoed,
-        hideFromHome: activity.hide_from_home,
-        kilojoules: activity.kilojoules,
-        kudosCount: activity.kudos_count,
-        manual: activity.manual,
-        maxSpeed: activity.max_speed,
-        maxWatts: activity.max_watts,
-        movingTime: activity.moving_time,
-        name: activity.name,
-        photoCount: activity.photo_count,
-        private: activity.private,
-        sportType: activity.sport_type,
-        startDate: new Date(activity.start_date),
-        startDateLocal: new Date(activity.start_date_local),
-        timezone: activity.timezone,
-        totalElevationGain: activity.total_elevation_gain,
-        totalPhotoCount: activity.total_photo_count,
-        trainer: activity.trainer,
-        type: activity.type,
-        uploadId: activity.upload_id.toString(),
-        weightedAverageWatts: activity.weighted_average_watts,
-        workoutType: activity.workout_type,
-
-        // If map data exists, update the polyline
-        summaryPolyline: activity.map?.summary_polyline ?
-          polyline.toGeoJSON(activity.map.summary_polyline) :
-          undefined,
-      },
+      create: commonData,
+      update: commonData,
     });
 
-    sessionLogger.info(`Activity ${activity.name} upserted successfully`);
+    baseLogger.info(`Activity ${activity.name} upserted successfully`);
   } catch (error) {
     throw error;
   } finally {
@@ -271,57 +248,12 @@ export async function upsertUserActivity(session: Session, activity: SummaryActi
   }
 }
 
-export async function enrichUserActivity(session: Session, activity: DetailedActivity) {
-  const sessionLogger = createSessionLogger(session);
-  sessionLogger.info(`Enriching activity ${activity.name}`);
-
+export async function queryUserActivities(userId: string): Promise<UserActivity[]> {
   try {
-    await prisma.userActivity.update({
-      where: {
-        id_userId: {
-          id: activity.id.toString(),
-          userId: session.user.id
-        }
-      },
-      data: {
-        // Add detailed-only fields
-        description: activity.description,
-        deviceName: activity.device_name,
-        embedToken: activity.embed_token,
-        calories: activity.calories,
-
-        // Add detailed map data if available
-        polyline: activity.map?.polyline ?
-          polyline.toGeoJSON(activity.map.polyline) :
-          undefined,
-
-        // Add splits data
-        splitsMetric: activity.splits_metric as Prisma.InputJsonValue,
-        splitsStandard: activity.splits_standard as Prisma.InputJsonValue,
-
-        // Add photos data if available
-        photos: activity.photos as Prisma.InputJsonValue,
-
-        // Add laps data
-        laps: activity.laps as Prisma.InputJsonValue,
-      }
-    });
-
-    sessionLogger.info(`Activity ${activity.name} enriched successfully`);
-  } catch (error) {
-    throw error;
-  } finally {
-    await prisma.$disconnect();
-  }
-}
-
-export async function queryUserActivities(session: Session): Promise<UserActivity[]> {
-  const sessionLogger = createSessionLogger(session);
-  try {
-    sessionLogger.info("Querying user activities for user", { userId: session.user.id });
+    baseLogger.info(`Querying user activities for user ${userId}`);
     const activities = await prisma.userActivity.findMany({
       where: {
-        userId: session.user.id,
+        userId: userId,
         summaryPolyline: {
           not: Prisma.JsonNullValueFilter.JsonNull
         }
@@ -330,7 +262,7 @@ export async function queryUserActivities(session: Session): Promise<UserActivit
         startDateLocal: "desc"
       }
     });
-    sessionLogger.info(`Found ${activities.length} activities`);
+    baseLogger.info(`Found ${activities.length} activities`);
     return activities;
   } catch (error) {
     throw error;

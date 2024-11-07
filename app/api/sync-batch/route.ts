@@ -27,8 +27,18 @@ export async function GET(request: Request) {
     await writer.write(encoder.encode(`data: ${JSON.stringify(message)}\n\n`));
   }
 
-  // Sync in the background
-  syncBatch(session, searchParams, send).finally(() => writer.close());
+  switch (searchParams.get("type")) {
+    case "routes":
+      await syncRoutes(session, searchParams, send);
+      break;
+    case "activities":
+      await syncActivities(session, searchParams, send);
+      break;
+    default:
+      await send({ type: "error", error: "Invalid sync type" });
+      writer.close();
+      return;
+  }
 
   return new NextResponse(stream.readable, {
     headers: {
@@ -39,18 +49,63 @@ export async function GET(request: Request) {
   });
 }
 
-async function syncBatch(session: Session, searchParams: URLSearchParams, send) {
+async function syncRoutes(session: Session, searchParams: URLSearchParams, send) {
   const sessionLogger = createSessionLogger(session);
 
   const perPage = parseInt(searchParams.get("page_size") || "2");
   const page = parseInt(searchParams.get("page") || "1");
 
   try {
-    // Sync activities
+    const routes = await fetchRoutes(session, perPage, page);
+    await send({
+      type: "start",
+      message: `Syncing ${routes.length} routes fetched from Strava`,
+      n: routes.length
+    });
+    for (const route of routes) {
+      try {
+        await send({
+          type: "update",
+          message: `Syncing route ${route.name}...`
+        });
+        await upsertUserRoute(session, route);
+        const routeJson = await fetchRouteGeoJson(session, route.id_str);
+        await enrichUserRoute(session, route.id_str, routeJson);
+        await send({ message: `Successfully synced route ${route.name}` });
+      } catch (error) {
+        if (error instanceof HttpError && error.status === 429) {
+          throw error;
+        }
+        const errorMessage = error instanceof Error ? error.message : "Unknown error";
+        await send({
+          type: "fail",
+          message: `Failed to sync route ${route.name}: ${errorMessage}`,
+          route: route.name,
+        });
+      }
+    }
+    await send({ type: "complete" });
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    sessionLogger.error(`Sync failed: ${errorMessage}`);
+    await send({
+      type: "error",
+      error: errorMessage,
+    });
+  }
+}
+
+async function syncActivities(session: Session, searchParams: URLSearchParams, send) {
+  const sessionLogger = createSessionLogger(session);
+
+  const perPage = parseInt(searchParams.get("page_size") || "2");
+  const page = parseInt(searchParams.get("page") || "1");
+
+  try {
     const summaryActivities = await fetchActivities(session, perPage, page);
     await send({
       type: "start",
-      message: `Syncing ${summaryActivities.length} fetched from Strava...`,
+      message: `Syncing ${summaryActivities.length} activities fetched from Strava...`,
       n: summaryActivities.length
     });
     for (const summaryActivity of summaryActivities) {
@@ -72,36 +127,6 @@ async function syncBatch(session: Session, searchParams: URLSearchParams, send) 
           message: `Failed to sync route ${summaryActivity.name}: ${errorMessage}`,
           route: summaryActivity.name,
         });
-      }
-
-      // Sync routes
-      const routes = await fetchRoutes(session, perPage, page);
-      await send({
-        type: "start",
-        message: `Syncing ${routes.length} routes fetched from Strava`,
-        n: routes.length
-      });
-      for (const route of routes) {
-        try {
-          await send({
-            type: "update",
-            message: `Syncing route ${route.name}...`
-          });
-          await upsertUserRoute(session, route);
-          const routeJson = await fetchRouteGeoJson(session, route.id_str);
-          await enrichUserRoute(session, route.id_str, routeJson);
-          await send({ message: `Successfully synced route ${route.name}` });
-        } catch (error) {
-          if (error instanceof HttpError && error.status === 429) {
-            throw error;
-          }
-          const errorMessage = error instanceof Error ? error.message : "Unknown error";
-          await send({
-            type: "fail",
-            message: `Failed to sync route ${route.name}: ${errorMessage}`,
-            route: route.name,
-          });
-        }
       }
       await send({ type: "complete" });
     }

@@ -38,9 +38,13 @@ STRAVA_WEBHOOK_VERIFY_TOKEN=""
 - [X] Ensure type safety with TypeScript and Zod
 - [X] Set up deployment pipeline
 - [X] Create route comparison tools 
-- [ ] Implement logic for dealing with Strava rate limits
-- [ ] Integrate Strava API for fetching segments
-- [ ] Implement Strava hooks for account deletion per API terms
+- [X] Implement logic for dealing with Strava rate limits
+- [X] Implement webhook for account deletion per API terms
+- [ ] Refactor functions to take userId instead of session
+- [ ] Implement webhook for new activites
+- [ ] Split sync into route and activity segments
+- [ ] Sync segments when activities are synced
 - [ ] Increase athlete headcount
+- [ ] Split out Route from UserRoute model
 - [ ] Write unit and integration tests
 - [ ] Create segment sniper tool
