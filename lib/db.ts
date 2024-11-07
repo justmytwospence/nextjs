@@ -251,9 +251,9 @@ export async function upsertUserActivity(
 export async function queryUserActivities(userId: string): Promise<UserActivity[]> {
   try {
     baseLogger.info(`Querying user activities for user ${userId}`);
-    const activities = await prisma.userActivity.findMany({
+    const userActivities = await prisma.userActivity.findMany({
       where: {
-        userId: userId,
+        userId,
         summaryPolyline: {
           not: Prisma.JsonNullValueFilter.JsonNull
         }
@@ -262,8 +262,8 @@ export async function queryUserActivities(userId: string): Promise<UserActivity[
         startDateLocal: "desc"
       }
     });
-    baseLogger.info(`Found ${activities.length} activities`);
-    return activities;
+    baseLogger.info(`Found ${userActivities.length} activities`);
+    return userActivities;
   } catch (error) {
     throw error;
   }
