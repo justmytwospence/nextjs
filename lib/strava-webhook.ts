@@ -2,21 +2,14 @@ import { WebhookEvent } from "@/schemas/strava-webhook-events";
 import { prisma } from "@/lib/prisma";
 import { baseLogger } from "@/lib/logger";
 import { fetchDetailedActivity } from "./strava-api";
-import { upsertUserActivity } from "@/lib/db";
+import { deleteUserAccount, queryUserAccount, upsertUserActivity } from "@/lib/db";
 
 export default async function processWebhookEvent(event: WebhookEvent) {
   switch (event.object_type) {
     case "activity":
       switch (event.aspect_type) {
         case "create":
-          const account = await prisma.account.findUnique({
-            where: {
-              provider_providerAccountId: {
-                provider: "strava",
-                providerAccountId: String(event.owner_id),
-              },
-            }
-          })
+          const account = await queryUserAccount(event.owner_id, "strava");
           const detailedActivity = await fetchDetailedActivity(event.owner_id, event.object_id);
           return await upsertUserActivity(event.owner_id, detailedActivity);
         case "update":
@@ -32,14 +25,7 @@ export default async function processWebhookEvent(event: WebhookEvent) {
       if (event.updates?.authorized === "false") {
         baseLogger.info(`Deauthorizing user with stravaId: ${event.object_id}`);
         try {
-          const deletedUser = await prisma.account.delete({
-            where: {
-              provider_providerAccountId: {
-                provider: "strava",
-                providerAccountId: String(event.object_id),
-              },
-            }
-          });
+          const deletedUser = await deleteUserAccount(event.object_id.toString(), "strava");
           baseLogger.info(`Deleted user and associated data for stravaId: ${event.object_id}`);
         } catch (error) {
           baseLogger.error(`Failed to deauthorize user with stravaId: ${event.object_id}: ${error}`);
