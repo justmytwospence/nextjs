@@ -104,19 +104,19 @@ const validateAndLogExtras = (input: any, schema: z.ZodObject<any> | z.ZodArray<
 /**
  * Fetches a list of routes from the authenticated user's Strava account
  * @param userId - The authenticated user 
- * @param pageSize - Number of routes to fetch (default: 10)
+ * @param perPage - Number of routes to fetch (default: 10)
  * @param page - Page number to fetch (default: 1)
  * @returns Promise containing an array of Route objects
  */
 export async function fetchRoutes(
   userId: string,
-  pageSize: number = 10,
+  perPage: number = 10,
   page: number = 1
 ): Promise<Route[]> {
-  baseLogger.info(`Fetching ${pageSize} routes from page ${page} from Strava`);
+  baseLogger.info(`Fetching ${perPage} routes from page ${page} from Strava`);
 
   const params = new URLSearchParams({
-    per_page: pageSize.toString(), // this endpoint still uses older per_page
+    per_page: perPage.toString(), // this endpoint still uses older per_page
     page: page.toString()
   });
   const response = await makeStravaRequest(userId, "/athlete/routes", params);
@@ -176,17 +176,17 @@ export async function fetchRouteGeoJson(
 /**
  * Fetches a list of activities from the authenticated user's Strava account
  * @param userId - The authenticated user
- * @param pageSize - Number of activities to fetch (default: 10)
+ * @param perPage - Number of activities to fetch (default: 10)
  * @param page - Page number to fetch (default: 1)
  * @returns Promise containing an array of SummaryActivity objects
  */
 export async function fetchActivities(
   userId: string,
-  pageSize: number = 10,
+  perPage: number = 10,
   page: number = 1
 ): Promise<SummaryActivity[]> {
   const params = new URLSearchParams({
-    per_page: pageSize.toString(),
+    per_page: perPage.toString(),
     page: page.toString()
   });
   const response = await makeStravaRequest(userId, "/athlete/activities", params);

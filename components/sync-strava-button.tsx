@@ -5,8 +5,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Progress } from "@/components/ui/progress";
 import { Spinner } from "@/components/ui/spinner";
-import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 type ProgressState = {
   message: string;
@@ -41,7 +41,8 @@ export default function SyncStravaButton() {
       failedItems: []
     });
 
-    const events = new EventSource("/api/stream-sync?type=activities");
+    const PER_PAGE = 20;
+    const events = new EventSource(`/api/stream-sync?type=activities&per_page=${PER_PAGE}`);
 
     events.onmessage = (event) => {
       const data = JSON.parse(event.data);
@@ -78,11 +79,10 @@ export default function SyncStravaButton() {
             message: "Sync Complete",
           }));
           setIsSyncing(false);
-          router.refresh();
-          // Close modal only if there were no failures
           if (progress.failedItems.length === 0) {
             setShowModal(false);
           }
+          router.refresh();
           break;
       }
     };

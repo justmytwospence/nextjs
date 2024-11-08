@@ -24,7 +24,7 @@ export default async function Topbar() {
 
   return (
     <header className="sticky top-0 z-50 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6">
-      <nav className="hidden flex-col gap-6 text-lg font-semibold md:flex md:flex-row md:items-center md:gap-5 md:text-base lg:gap-6">
+      <nav className="hidden flex-col gap-6 text-lg font-semibold md:flex md:flex-row md:items-center md:gap-5 md:text-base lg:gap-6 flex-nowrap w-auto">
         <NavLinks links={links} />
       </nav>
 

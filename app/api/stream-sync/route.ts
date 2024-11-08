@@ -65,11 +65,11 @@ async function syncRoutes(
   send: (message: Message) => Promise<void>
 ) {
   try {
-    const pageSize = parseInt(searchParams.get("page_size") || "2");
+    const perPage = parseInt(searchParams.get("per_page") || "2");
     const page = parseInt(searchParams.get("page") || "1");
 
     // Fetch all routes first
-    const allRoutes = await fetchRoutes(userId, pageSize, page);
+    const allRoutes = await fetchRoutes(userId, perPage, page);
     if (!allRoutes || allRoutes.length === 0) {
       await send({ type: "complete" });
       return;
@@ -119,11 +119,11 @@ async function syncActivities(
   searchParams: URLSearchParams,
   send: (message: Message) => Promise<void>
 ) {
-  const pageSize = parseInt(searchParams.get("page_size") || "2");
+  const perPage = parseInt(searchParams.get("per_page") || "2");
   const page = parseInt(searchParams.get("page") || "1");
 
   try {
-    const activities = await fetchActivities(userId, pageSize, page);
+    const activities = await fetchActivities(userId, perPage, page);
     await send({
       type: "start",
       message: `Syncing ${activities.length} activities fetched from Strava...`,

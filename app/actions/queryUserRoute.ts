@@ -8,5 +8,5 @@ export async function queryUserRouteAction(routeId: string) {
   if (!session) {
     throw new Error("Not authenticated");
   }
-  return queryUserRoute(session, routeId);
+  return queryUserRoute(session.user.id, routeId);
 }
