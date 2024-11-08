@@ -48,30 +48,35 @@ export default function SyncStravaButton() {
       const data = JSON.parse(event.data);
 
       switch (data.type) {
-        case "start":
+        case "update_total":
           setProgress(prev => ({
             ...prev,
             totalItems: data.n,
-            message: data.message
-          }));
-          break;
-        case "update":
-          setProgress(prev => ({
-            ...prev,
             message: data.message,
-            currentItem: Math.min(prev.currentItem + 1, prev.totalItems)
           }));
           break;
-        case "fail":
+        case "update_current":
           setProgress(prev => ({
             ...prev,
-            currentItem: prev.currentItem + 1,
+            currentItem: Math.min(prev.currentItem + 1, prev.totalItems),
+            message: data.message,
+          }));
+          break;
+        case "update_failed":
+          setProgress(prev => ({
+            ...prev,
             failedItems: [
               ...prev.failedItems,
               { name: data.route, error: data.error }
             ],
           }));
           break;
+        case "update_message":
+          setProgress(prev => ({
+            ...prev,
+            message: data.message,
+          }));
+          break
         case "complete":
           events.close();
           setProgress(prev => ({

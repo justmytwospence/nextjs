@@ -5,6 +5,18 @@ import { enrichUserRoute, upsertUserActivity, upsertUserRoute } from "@/lib/db";
 import { fetchActivities, fetchDetailedActivity, fetchRouteGeoJson, fetchRoutes } from "@/lib/strava-api";
 import { HttpError } from "@/lib/errors";
 
+let writer: WritableStreamDefaultWriter<any>;
+const encoder = new TextEncoder();
+
+async function send(message: Message) {
+  try {
+    await writer.write(encoder.encode(`data: ${JSON.stringify(message)}\n\n`));
+  } catch (error) {
+    baseLogger.error(`Failed to write to stream: ${error}`);
+    throw error;
+  }
+}
+
 async function retryWithBackoff<T>(
   operation: () => Promise<T>,
   retryCount = 0
@@ -21,15 +33,20 @@ async function retryWithBackoff<T>(
 
     const delay = BASE_DELAY * Math.pow(2, retryCount);
     baseLogger.warn(`Rate limited by Strava, waiting ${delay / 1000} seconds before retry ${retryCount + 1}...`);
+    await send({
+      type: "update_message",
+      message: `Rate limited by Strava, waiting ${delay / 1000} seconds before retry ${retryCount + 1}...`
+    })
     await new Promise(resolve => setTimeout(resolve, delay));
     return retryWithBackoff(operation, retryCount + 1);
   }
 }
 
 type Message =
-  | { type: "start", message: string, n: number }
-  | { type: "update", message: string }
-  | { type: "fail", route: string, error: string }
+  | { type: "update_total", message: string, n: number }
+  | { type: "update_current", message: string }
+  | { type: "update_failed", route: string, error: string }
+  | { type: "update_message", message: string }
   | { type: "complete" }
 
 export async function GET(request: Request) {
@@ -40,17 +57,7 @@ export async function GET(request: Request) {
 
   const { searchParams } = new URL(request.url);
   const stream = new TransformStream();
-  const writer = stream.writable.getWriter();
-  const encoder = new TextEncoder();
-
-  async function send(message: Message) {
-    try {
-      await writer.write(encoder.encode(`data: ${JSON.stringify(message)}\n\n`));
-    } catch (error) {
-      baseLogger.error(`Failed to write to stream: ${error}`);
-      throw error;
-    }
-  }
+  writer = stream.writable.getWriter();
 
   // Start the response immediately
   const response = new NextResponse(stream.readable, {
@@ -65,10 +72,10 @@ export async function GET(request: Request) {
   try {
     switch (searchParams.get("type")) {
       case "routes":
-        syncRoutes(session.user.id, searchParams, send).finally(() => writer.close());
+        syncRoutes(session.user.id, searchParams).finally(() => writer.close());
         break;
       case "activities":
-        syncActivities(session.user.id, searchParams, send).finally(() => writer.close());
+        syncActivities(session.user.id, searchParams).finally(() => writer.close());
         break;
       default:
         throw new Error("Invalid type");
@@ -83,16 +90,15 @@ export async function GET(request: Request) {
 async function syncRoutes(
   userId: string,
   searchParams: URLSearchParams,
-  send: (message: Message) => Promise<void>
 ) {
   try {
     const perPage = parseInt(searchParams.get("per_page") || "1000");
     const page = parseInt(searchParams.get("page") || "1");
 
     // Fetch all routes first with backoff
-    const allRoutes = await retryWithBackoff(async () =>
-      fetchRoutes(userId, perPage, page)
-    );
+    const allRoutes = await retryWithBackoff(async () => {
+      return fetchRoutes(userId, perPage, page)
+    });
 
     if (!allRoutes || allRoutes.length === 0) {
       await send({ type: "complete" });
@@ -101,7 +107,7 @@ async function syncRoutes(
 
     baseLogger.info(`Syncing ${allRoutes.length} routes fetched from Strava`);
     await send({
-      type: "start",
+      type: "update_total",
       message: `Syncing ${allRoutes.length} routes fetched from Strava`,
       n: allRoutes.length
     });
@@ -113,7 +119,7 @@ async function syncRoutes(
     for (const route of allRoutes) {
       try {
         await send({
-          type: "update",
+          type: "update_current",
           message: `Syncing route ${route.name}...`
         });
 
@@ -125,7 +131,7 @@ async function syncRoutes(
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : "Unknown error";
         await send({
-          type: "fail",
+          type: "update_failed",
           route: route.name,
           error: `Failed to sync route ${route.name}: ${errorMessage}`,
         });
@@ -142,15 +148,14 @@ async function syncRoutes(
 async function syncActivities(
   userId: string,
   searchParams: URLSearchParams,
-  send: (message: Message) => Promise<void>
 ) {
   const perPage = parseInt(searchParams.get("per_page") || "2");
   const page = parseInt(searchParams.get("page") || "1");
 
   try {
-    const activities = await retryWithBackoff(async () =>
-      fetchActivities(userId, perPage, page)
-    );
+    const activities = await retryWithBackoff(async () => {
+      return fetchActivities(userId, perPage, page)
+    });
 
     if (!activities || activities.length === 0) {
       await send({ type: "complete" });
@@ -159,7 +164,7 @@ async function syncActivities(
 
     baseLogger.info(`Syncing ${activities.length} activities fetched from Strava`);
     await send({
-      type: "start",
+      type: "update_total",
       message: `Syncing ${activities.length} activities fetched from Strava...`,
       n: activities.length
     });
@@ -167,7 +172,7 @@ async function syncActivities(
     for (const summaryActivity of activities) {
       try {
         await send({
-          type: "update",
+          type: "update_current",
           message: `Syncing activity ${summaryActivity.name}...`,
         });
 
@@ -179,7 +184,7 @@ async function syncActivities(
         const errorMessage = error instanceof Error ? error.message : "Unknown error";
         baseLogger.error(`Failed to sync activity ${summaryActivity.name}: ${errorMessage}`);
         await send({
-          type: "fail",
+          type: "update_failed",
           route: summaryActivity.name,
           error: `Failed to sync activity ${summaryActivity.name}: ${errorMessage}`,
         });
