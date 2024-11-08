@@ -52,6 +52,26 @@ export async function deleteUserAccount(
   }
 }
 
+export async function deleteUserActivity(
+  userId: string,
+  activityId: string
+): Promise<void> {
+  try {
+    baseLogger.info(`Deleting activity ${activityId}`);
+    await prisma.userActivity.delete({
+      where: {
+        id_userId: {
+          id: activityId,
+          userId,
+        }
+      }
+    });
+    baseLogger.info(`Deleted activity ${activityId}`);
+  } catch (error) {
+    throw error;
+  }
+}
+
 export async function queryUserRoutes(userId: string): Promise<UserRoute[]> {
   try {
     baseLogger.info(`Querying user routes for user ${userId}`);
