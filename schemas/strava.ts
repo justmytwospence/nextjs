@@ -94,7 +94,7 @@ export const ClubActivitySchema = z.object({
   sport_type: ActivityTypeSchema, // Type of sport for the activity
   total_elevation_gain: z.number(), // Total elevation gain in meters
   type: ActivityTypeSchema, // Deprecated, prefer using sport_type
-  workout_type: z.number().int().nullable(), // Type of workout, if available
+  workout_type: z.number().int().nullable().optional(), // Type of workout, if available
 });
 
 //  Information about an athlete in a club
@@ -268,7 +268,7 @@ export const SummarySegmentSchema = z.object({
 export const WaypointSchema = z.object({
   categories: z.array(z.string()), // Categories that the waypoint belongs to
   description: z.string().nullable(), // Description of the waypoint (optional)
-  distance_into_route: z.number().int(), // Distance into the route in meters
+  distance_into_route: z.number(), // Distance into the route in meters
   latlng: LatLngSchema, // Closest location along the route (lat/lng)
   target_latlng: LatLngSchema.nullable(), // Off-route target location (optional)
   title: z.string(), // Title of the waypoint
@@ -278,7 +278,7 @@ export const WaypointSchema = z.object({
 export const RouteSchema = z.object({
   athlete: SummaryAthleteSchema, // Athlete information
   created_at: z.string().datetime(), // Route creation date
-  description: z.string().nullable(), // Description of the route
+  // description: z.string().nullable(), // Description of the route
   distance: z.number(), // Route distance in meters
   elevation_gain: z.number(), // Total elevation gain in meters
   estimated_moving_time: z.number().int(), // Estimated moving time in seconds
@@ -562,8 +562,9 @@ export const SummaryActivitySchema = z.object({
   upload_id: z.number().int(), // Identifier of the upload that created this activity
   upload_id_str: z.string().nullable(), // String format of upload ID
   weighted_average_watts: z.number().int().optional(), // Similar to Normalized Power (rides)
-  workout_type: z.number().int().optional(), // Type of workout
+  workout_type: z.number().int().nullable().optional(), // Type of workout
 });
+export const SummaryActivitiesSchema = z.array(SummaryActivitySchema);
 
 // SummaryClub - Basic club details
 export const SummaryClubSchema = z.object({
@@ -640,7 +641,7 @@ export const DetailedActivitySchema = z.object({
   upload_id: z.number().int(), // Identifier of the upload that created this activity
   upload_id_str: z.string().nullable(), // String format of upload ID
   weighted_average_watts: z.number().int().optional(), // Similar to Normalized Power (rides)
-  workout_type: z.number().int().optional(), // Type of workout
+  workout_type: z.number().int().nullable().optional(), // Type of workout
 });
 
 export type DetailedActivity = z.infer<typeof DetailedActivitySchema>;

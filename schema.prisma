@@ -20,7 +20,6 @@ model User {
 
   accounts   Account[]
   activities UserActivity[]
-  apiQueries ApiQuery[]
   routes     UserRoute[]
   segments   UserSegment[]
   sessions   Session[]
@@ -56,8 +55,7 @@ model Session {
   sessionToken String   @unique
   userId       String
 
-  user     User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  ApiQuery ApiQuery[]
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model VerificationToken {
@@ -189,32 +187,8 @@ model UserActivity {
   splitsMetric   Json?   @map("splits_metric")
   splitsStandard Json?   @map("splits_standard")
 
-  // Add any missing fields from DetailedActivity/SummaryActivity
-  bestEfforts    Json?   @map("best_efforts")
-  externalId     String? @map("external_id")
-  gear           Json?
-  segmentEfforts Json?   @map("segment_efforts")
-
   // Relations
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([id, userId])
-}
-
-model ApiQuery {
-  id        String   @id @default(cuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  accessToken String
-  endpoint    String
-  params      Json
-  provider    String
-  userId      String
-
-  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  Session             Session? @relation(fields: [sessionSessionToken], references: [sessionToken])
-  sessionSessionToken String?
-
-  @@index([provider, createdAt])
 }

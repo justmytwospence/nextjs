@@ -41,10 +41,10 @@ STRAVA_WEBHOOK_VERIFY_TOKEN=""
 - [X] Implement logic for dealing with Strava rate limits
 - [X] Implement webhook for account deletion per API terms
 - [ ] Refactor functions to take userId instead of session
+- [ ] Handle rate limiting using the headers from Strava
 - [ ] Implement webhook for new activites
 - [ ] Split sync into route and activity segments
-- [ ] Sync segments when activities are synced
+- [ ] Sync UserSegment and Segment models
 - [ ] Increase athlete headcount
-- [ ] Split out Route from UserRoute model
 - [ ] Write unit and integration tests
 - [ ] Create segment sniper tool

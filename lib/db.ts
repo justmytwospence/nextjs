@@ -6,25 +6,6 @@ import type { DetailedActivity, Route, SummaryActivity } from "@/schemas/strava"
 import polyline from "@mapbox/polyline";
 import type { Account, UserActivity, UserRoute } from "@prisma/client";
 import { Prisma } from "@prisma/client";
-import { ApiQuery } from "@prisma/client";
-
-export async function insertApiQuery(
-  userId: string,
-  provider: string,
-  accessToken: string,
-  endpoint: string,
-  params: URLSearchParams,
-): Promise<ApiQuery> {
-  return await prisma.apiQuery.create({
-    data: {
-      accessToken,
-      endpoint,
-      params: Object.fromEntries(params.entries()),
-      provider,
-      userId: userId
-    },
-  });
-}
 
 export async function queryUserAccount(
   userId: string,
@@ -111,45 +92,31 @@ export async function upsertUserRoute(
 ): Promise<void> {
   baseLogger.info(`Upserting route ${route.name}`);
 
+  const data = {
+    createdAt: new Date(route.created_at),
+    // description: route.description,
+    distance: route.distance,
+    elevationGain: route.elevation_gain,
+    estimatedMovingTime: route.estimated_moving_time,
+    id: route.id_str,
+    name: route.name,
+    private: route.private,
+    starred: Boolean(route.starred),
+    subType: route.sub_type,
+    summaryPolyline: polyline.toGeoJSON(route.map.summary_polyline),
+    timestamp: new Date(route.timestamp),
+    type: route.type,
+    updatedAt: new Date(route.updated_at),
+    userId: userId
+  }
+
   try {
     await prisma.userRoute.upsert({
       where: {
         id: route.id_str
       },
-      create: {
-        createdAt: new Date(route.created_at),
-        description: route.description,
-        distance: route.distance,
-        elevationGain: route.elevation_gain,
-        estimatedMovingTime: route.estimated_moving_time,
-        id: route.id_str,
-        name: route.name,
-        private: route.private,
-        starred: Boolean(route.starred),
-        subType: route.sub_type,
-        summaryPolyline: polyline.toGeoJSON(route.map.summary_polyline),
-        timestamp: new Date(route.timestamp),
-        type: route.type,
-        updatedAt: new Date(route.updated_at),
-        userId: userId
-      },
-      update: {
-        createdAt: new Date(route.created_at),
-        description: route.description,
-        distance: route.distance,
-        elevationGain: route.elevation_gain,
-        estimatedMovingTime: route.estimated_moving_time,
-        id: route.id_str,
-        name: route.name,
-        private: route.private,
-        starred: Boolean(route.starred),
-        subType: route.sub_type,
-        summaryPolyline: polyline.toGeoJSON(route.map.summary_polyline),
-        timestamp: new Date(route.timestamp),
-        type: route.type,
-        updatedAt: new Date(route.updated_at),
-        userId: userId
-      },
+      create: data,
+      update: data,
     });
 
     baseLogger.info(`Route ${route.name} upserted successfully`);
@@ -191,7 +158,7 @@ export async function upsertUserActivity(
   baseLogger.info(`Upserting activity ${activity.name}`);
 
   try {
-    const commonData = {
+    const data = {
       // Base fields that exist in both types
       id: activity.id.toString(),
       userId,
@@ -206,7 +173,6 @@ export async function upsertUserActivity(
       elapsedTime: activity.elapsed_time,
       elevationHigh: activity.elev_high,
       elevationLow: activity.elev_low,
-      externalId: activity.external_id,
       flagged: activity.flagged ?? false,
       gearId: activity.gear_id,
       hasKudoed: activity.has_kudoed ?? false,
@@ -235,7 +201,6 @@ export async function upsertUserActivity(
 
       // DetailedActivity specific fields - will be undefined if not present
       polyline: polyline.toGeoJSON(activity.map.polyline),
-      bestEfforts: "best_efforts" in activity ? (activity.best_efforts as Prisma.InputJsonValue) : undefined,
       calories: "calories" in activity ? activity.calories : undefined,
       description: "description" in activity ? activity.description : undefined,
       deviceName: "device_name" in activity ? activity.device_name : undefined,
@@ -255,8 +220,8 @@ export async function upsertUserActivity(
           userId,
         }
       },
-      create: commonData,
-      update: commonData,
+      create: data,
+      update: data,
     });
 
     baseLogger.info(`Activity ${activity.name} upserted successfully`);

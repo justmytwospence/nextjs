@@ -12,13 +12,13 @@ import tj from "@mapbox/togeojson";
 import type { Route, DetailedSegment, DetailedActivity, SummaryActivity } from "@/schemas/strava";
 import { DOMParser } from "@xmldom/xmldom";
 import { prisma } from "@/lib/prisma";
-import { RoutesSchema, DetailedSegmentSchema, DetailedActivitySchema, SummaryActivitySchema } from "@/schemas/strava";
+import { RoutesSchema, DetailedSegmentSchema, DetailedActivitySchema, SummaryActivitiesSchema } from "@/schemas/strava";
 import { baseLogger } from "@/lib/logger";
-import { queryUserAccount, insertApiQuery } from "@/lib/db";
+import { queryUserAccount } from "@/lib/db";
 import { z } from "zod";
-import { HttpError } from "@/lib/errors";
+import { HttpError, type RateLimit } from "@/lib/errors";
 
-/*d
+/**
  * Makes an authenticated request to the Strava API
  * @private
  */
@@ -34,55 +34,95 @@ async function makeStravaRequest(
     throw new Error("No Strava access token found");
   }
 
-  await insertApiQuery(userId, "strava", userAccount?.access_token, endpoint, params);
-
   const url = new URL(`https://www.strava.com/api/v3${endpoint}`);
-
-  // Add each parameter from params to the URL
-  params.forEach((value, key) => {
-    url.searchParams.append(key, value);
-  });
+  params.forEach((value, key) => url.searchParams.append(key, value));
 
   baseLogger.info(`Fetching from URL: ${url.toString()}`);
   const response = await fetch(url.toString(), {
     headers: { "Authorization": `Bearer ${userAccount.access_token}` }
   });
 
-  baseLogger.debug(`Strava response: ${response.status} ${response.statusText}`);
+  if (response.status === 429) {
+    const rateLimit: RateLimit = {
+      short: {
+        usage: Number(response.headers.get("X-RateLimit-Usage")?.split(",")[0]),
+        limit: Number(response.headers.get("X-RateLimit-Limit")?.split(",")[0]),
+        readUsage: Number(response.headers.get("X-ReadRateLimit-Usage")?.split(",")[0]),
+        readLimit: Number(response.headers.get("X-ReadRateLimit-Limit")?.split(",")[0])
+      },
+      long: {
+        usage: Number(response.headers.get("X-RateLimit-Usage")?.split(",")[1]),
+        limit: Number(response.headers.get("X-RateLimit-Limit")?.split(",")[1]),
+        readUsage: Number(response.headers.get("X-ReadRateLimit-Usage")?.split(",")[1]),
+        readLimit: Number(response.headers.get("X-ReadRateLimit-Limit")?.split(",")[1])
+      }
+    };
+
+    throw new HttpError(429, "Rate limit exceeded", rateLimit);
+  }
 
   if (!response.ok) {
-    baseLogger.error(`Failed to fetch from Strava: ${response.status} ${response.statusText}`);
     throw new HttpError(response.status, response.statusText);
   }
 
-  return response
+  return response;
 }
+
+const validateAndLogExtras = (input: any, schema: z.ZodObject<any> | z.ZodArray<any>): any => {
+  const parsedData = schema.safeParse(input);
+
+  if (!parsedData.success) {
+    baseLogger.error(`Failed to validate input: ${JSON.stringify(parsedData.error.errors, null, 2)}`);
+    return null;
+  }
+
+  if (schema instanceof z.ZodArray) {
+    baseLogger.info(`Checking array elements for extra keys`);
+    if (schema.element instanceof z.ZodObject) {
+      input.forEach((item: any) => {
+        const inputKeys = Object.keys(item);
+        const schemaKeys = Object.keys(schema.element.shape);
+        const extraKeys = inputKeys.filter(key => !schemaKeys.includes(key));
+        extraKeys.forEach(key => {
+          baseLogger.warn(`Found extra key in array element: ${key} with value: ${JSON.stringify(item[key])}, consider adding to Zod/Prisma schemas`);
+        });
+      });
+    }
+  } else if (schema instanceof z.ZodObject) {
+    baseLogger.info(`Checking object for extra keys`);
+    const inputKeys = Object.keys(input);
+    const schemaKeys = Object.keys(schema.shape);
+    const extraKeys = inputKeys.filter(key => !schemaKeys.includes(key));
+    extraKeys.forEach(key => {
+      baseLogger.warn(`Found extra key: ${key} with value: ${JSON.stringify(input[key])}`);
+    });
+  }
+
+  return parsedData.data;
+};
 
 /**
  * Fetches a list of routes from the authenticated user's Strava account
  * @param userId - The authenticated user 
- * @param per_page - Number of routes to fetch (default: 10)
+ * @param pageSize - Number of routes to fetch (default: 10)
  * @param page - Page number to fetch (default: 1)
  * @returns Promise containing an array of Route objects
  */
-export async function fetchRoutes(userId: string, per_page: number = 10, page: number = 1): Promise<Route[]> {
-  baseLogger.info(`Fetching ${per_page} routes from page ${page} from Strava`);
+export async function fetchRoutes(
+  userId: string,
+  pageSize: number = 10,
+  page: number = 1
+): Promise<Route[]> {
+  baseLogger.info(`Fetching ${pageSize} routes from page ${page} from Strava`);
 
   const params = new URLSearchParams({
-    per_page: per_page.toString(),
+    per_page: pageSize.toString(), // this endpoint still uses older per_page
     page: page.toString()
   });
   const response = await makeStravaRequest(userId, "/athlete/routes", params);
   const responseData = await response.json();
-  baseLogger.info(`Strava response data: ${JSON.stringify(responseData, null, 2)}`);
-  const validatedRoutes = RoutesSchema.safeParse(responseData)
-  if (!validatedRoutes.success) {
-    baseLogger.error(`Failed to parse routes from Strava: ${JSON.stringify(validatedRoutes.error.errors, null, 2)}`);
-    throw new Error(`Failed to parse routes: ${JSON.stringify(validatedRoutes.error.errors, null, 2)}`);
-  }
-
-  baseLogger.info(`Parsed ${validatedRoutes.data.length} routes from Strava`);
-  return validatedRoutes.data;
+  const validatedRoutes = validateAndLogExtras(responseData, RoutesSchema);
+  return validatedRoutes;
 }
 
 /**
@@ -91,18 +131,19 @@ export async function fetchRoutes(userId: string, per_page: number = 10, page: n
  * @param segmentId - The ID of the segment to fetch
  * @returns Promise containing the DetailedSegment object
  */
-export async function fetchDetailedSegment(userId: string, segmentId: number): Promise<DetailedSegment> {
+export async function fetchDetailedSegment(
+  userId: string,
+  segmentId: number
+): Promise<DetailedSegment> {
   baseLogger.info(`Fetching full segment ${segmentId} from Strava`);
 
   const response = await makeStravaRequest(userId, `/segments/${segmentId}`);
   const responseData = await response.json();
-  const segment = DetailedSegmentSchema.safeParse(responseData).data;
+  const segment = validateAndLogExtras(responseData, DetailedSegmentSchema);
 
   if (!segment) {
     baseLogger.error(`Failed to parse segment ${segmentId} from Strava`);
     throw new Error("Failed to parse segment");
-  } else {
-    baseLogger.info(`Successfully fetched segment ${segmentId} as ${segment?.name} from Strava`);
   }
 
   return segment;
@@ -114,26 +155,20 @@ export async function fetchDetailedSegment(userId: string, segmentId: number): P
  * @param routeId - The ID of the route to fetch
  * @returns Promise containing the GeoJSON representation of the route
  */
-export async function fetchRouteGeoJson(userId: string, routeId: string): Promise<JSON> {
+export async function fetchRouteGeoJson(
+  userId: string,
+  routeId: string
+): Promise<JSON> {
   baseLogger.info(`Fetching GPX for route ${routeId} from Strava`);
 
   const response = await makeStravaRequest(userId, `/routes/${routeId}/export_gpx`);
-
-  switch (response.status) {
-    case 429:
-      throw new Error("Too Many Requests");
-    case 200:
-      break;
-    default:
-      baseLogger.error(`Failed to fetch GPX for route ${routeId} from Strava: ${response.statusText}`);
-      throw new Error(`Failed to fetch GPX: ${response.statusText}`);
-  }
-
   const gpxData = await response.text();
+
   baseLogger.info(`Successfully fetched GPX for route ${routeId} from Strava`);
   const gpxParser = new DOMParser();
   const gpxDoc = gpxParser.parseFromString(gpxData, "text/xml");
   const geoJson = tj.gpx(gpxDoc, { styles: false });
+
   baseLogger.info(`Successfully converted GPX to GeoJSON for route ${routeId}`);
   return geoJson;
 }
@@ -141,29 +176,23 @@ export async function fetchRouteGeoJson(userId: string, routeId: string): Promis
 /**
  * Fetches a list of activities from the authenticated user's Strava account
  * @param userId - The authenticated user
- * @param per_page - Number of activities to fetch (default: 10)
+ * @param pageSize - Number of activities to fetch (default: 10)
  * @param page - Page number to fetch (default: 1)
  * @returns Promise containing an array of SummaryActivity objects
  */
-export async function fetchActivities(userId: string, per_page: number = 10, page: number = 1): Promise<SummaryActivity[]> {
-  baseLogger.info(`Fetching ${per_page} activities from page ${page} from Strava`);
-
+export async function fetchActivities(
+  userId: string,
+  pageSize: number = 10,
+  page: number = 1
+): Promise<SummaryActivity[]> {
   const params = new URLSearchParams({
-    per_page: per_page.toString(),
+    page_size: pageSize.toString(),
     page: page.toString()
   });
   const response = await makeStravaRequest(userId, "/athlete/activities", params);
   const responseData = await response.json();
-  baseLogger.debug(`rawData: ${JSON.stringify(responseData, null, 2)}`);
-  const validatedActivities = z.array(SummaryActivitySchema).safeParse(responseData)
-
-  if (!validatedActivities.success) {
-    baseLogger.error(`Failed to parse activities from Strava: ${JSON.stringify(validatedActivities.error.errors, null, 2)}`);
-    throw new Error(`Failed to parse activities: ${JSON.stringify(validatedActivities.error.errors, null, 2)}`);
-  } else {
-    baseLogger.info(`Parsed ${validatedActivities.data.length} activities from Strava`);
-    return validatedActivities.data;
-  }
+  const validatedActivities = validateAndLogExtras(responseData, SummaryActivitiesSchema);
+  return validatedActivities;
 }
 
 /**
@@ -172,23 +201,18 @@ export async function fetchActivities(userId: string, per_page: number = 10, pag
  * @param activityId - The ID of the activity to fetch
  * @returns Promise containing the DetailedActivity object
  */
-export async function fetchDetailedActivity(userId: string, activityId: number): Promise<DetailedActivity> {
+export async function fetchDetailedActivity(
+  userId: string,
+  activityId: number
+): Promise<DetailedActivity> {
   baseLogger.info(`Fetching detailed activity ${activityId} from Strava`);
 
   const response = await makeStravaRequest(userId, `/activities/${activityId}`);
   const responseData = await response.json();
   baseLogger.info(`responseData: ${JSON.stringify(responseData, null, 2)}`);
-
-  const validatedActivities = DetailedActivitySchema.safeParse(responseData);
-
-  if (!validatedActivities.success) {
-    baseLogger.error(`Failed to parse detailed activity ${activityId} from Strava: ${JSON.stringify(validatedActivities.error.errors, null, 2)}`);
-    baseLogger.debug(`${JSON.stringify(responseData, null, 2)}`);
-    throw new Error(`Failed to parse detailed activity: ${JSON.stringify(validatedActivities.error.errors, null, 2)}`);
-  } else {
-    baseLogger.info(`Successfully fetched detailed activity ${activityId} as ${validatedActivities.data?.name} from Strava`);
-    return validatedActivities.data;
-  }
+  const validatedActivities = validateAndLogExtras(responseData, DetailedActivitySchema);
+  baseLogger.info(`Successfully fetched detailed activity ${activityId} as ${validatedActivities.name} from Strava`);
+  return validatedActivities;
 }
 
 export async function refreshToken(userId: string) {

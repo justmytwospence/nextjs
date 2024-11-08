@@ -1,12 +1,25 @@
+export interface RateLimit {
+  short: {
+    usage: number,
+    limit: number,
+    readUsage: number,
+    readLimit: number,
+  },
+  long: {
+    usage: number,
+    limit: number,
+    readUsage: number,
+    readLimit: number,
+  }
+}
+
 export class HttpError extends Error {
-  public status: number;
-
-  constructor(status: number, message: string) {
+  constructor(
+    public status: number,
+    message: string,
+    public rateLimit?: RateLimit
+  ) {
     super(message);
-    this.name = "HttpError";
-    this.status = status;
-
-    // Set the prototype explicitly to ensure compatibility in some environments
-    Object.setPrototypeOf(this, HttpError.prototype);
+    this.name = 'HttpError';
   }
 }

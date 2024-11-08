@@ -9,7 +9,5 @@ export default async function RoutesPage() {
     return null;
   }
   const initialRoutes = await queryUserRoutes(session.user.id);
-  baseLogger.info(`Found ${initialRoutes.length} routes`);
-
   return <RoutesClient initialRoutes={initialRoutes} />;
 }

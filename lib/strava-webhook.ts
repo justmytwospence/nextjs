@@ -9,8 +9,8 @@ export default async function processWebhookEvent(event: WebhookEvent) {
       switch (event.aspect_type) {
         case "create":
           const account = await queryUserAccount(event.owner_id, "strava");
-          const detailedActivity = await fetchDetailedActivity(event.owner_id, event.object_id);
-          return await upsertUserActivity(event.owner_id, detailedActivity);
+          const activity = await fetchDetailedActivity(event.owner_id, event.object_id);
+          return await upsertUserActivity(event.owner_id, activity);
         case "update":
           // TODO: Update activity in database
           break;
