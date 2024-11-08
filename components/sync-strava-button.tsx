@@ -81,10 +81,10 @@ export default function SyncStravaButton() {
           events.close();
           setProgress(prev => ({
             ...prev,
-            message: "Sync Complete",
+            message: data.error
           }));
           setIsSyncing(false);
-          if (progress.failedItems.length === 0) {
+          if (!data.error && progress.failedItems.length === 0) {
             setShowModal(false);
           }
           router.refresh();

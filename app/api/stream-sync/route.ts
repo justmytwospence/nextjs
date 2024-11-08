@@ -28,6 +28,23 @@ async function retryWithBackoff<T>(
     return await operation();
   } catch (error) {
     if (!(error instanceof HttpError) || error.status !== 429 || retryCount >= MAX_RETRIES) {
+      baseLogger.error("Non rate-limit error or max retries exceeded, throwing error...");
+      throw error;
+    }
+
+    if (!error.rateLimit) {
+      baseLogger.error("Rate limit exceeded, but no rate limit headers found");
+      throw error;
+    }
+
+    baseLogger.info(`Rate limit headers: ${JSON.stringify(error.rateLimit, null, 2)}`);
+
+    if (error.rateLimit?.long?.readUsage > error.rateLimit?.long?.readLimit) {
+      baseLogger.error("Daily rate limit exceeded, please try again tomorrow");
+      await send({
+        type: "complete",
+        error: "Daily rate limit exceeded, please try again tomorrow"
+      });
       throw error;
     }
 
@@ -47,7 +64,7 @@ type Message =
   | { type: "update_current", message: string }
   | { type: "update_failed", route: string, error: string }
   | { type: "update_message", message: string }
-  | { type: "complete" }
+  | { type: "complete", error?: string }
 
 export async function GET(request: Request) {
   const session = await auth();

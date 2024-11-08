@@ -62,6 +62,7 @@ async function makeStravaRequest(
   }
 
   if (!response.ok) {
+    baseLogger.error(`${response.status} ${response.statusText}`);
     throw new HttpError(response.status, response.statusText);
   }
 
@@ -116,7 +117,7 @@ export async function fetchRoutes(
   baseLogger.info(`Fetching ${perPage} routes from page ${page} from Strava`);
 
   const params = new URLSearchParams({
-    per_page: perPage.toString(), // this endpoint still uses older per_page
+    per_page: perPage.toString(),
     page: page.toString()
   });
   const response = await makeStravaRequest(userId, "/athlete/routes", params);
