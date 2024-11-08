@@ -41,7 +41,7 @@ export default function SyncStravaButton() {
       failedItems: []
     });
 
-    const PER_PAGE = 20;
+    const PER_PAGE = 100;
     const events = new EventSource(`/api/stream-sync?type=activities&per_page=${PER_PAGE}`);
 
     events.onmessage = (event) => {
