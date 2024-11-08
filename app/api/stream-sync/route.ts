@@ -96,27 +96,31 @@ async function syncRoutes(
     const page = parseInt(searchParams.get("page") || "1");
 
     // Fetch all routes first with backoff
-    const allRoutes = await retryWithBackoff(async () => {
+    const routes = await retryWithBackoff(async () => {
       return fetchRoutes(userId, perPage, page)
     });
 
-    if (!allRoutes || allRoutes.length === 0) {
+    if (!routes || routes.length === 0) {
       await send({ type: "complete" });
       return;
     }
 
-    baseLogger.info(`Syncing ${allRoutes.length} routes fetched from Strava`);
-    await send({
-      type: "update_total",
-      message: `Syncing ${allRoutes.length} routes fetched from Strava`,
-      n: allRoutes.length
-    });
-
-    for (const route of allRoutes) {
-      await upsertUserRoute(userId, route);
+    for (const route of routes) {
+      const existingRoute = await upsertUserRoute(userId, route);
+      if (existingRoute && existingRoute.polyline) {
+        baseLogger.info(`Route ${route.name} already enriched, removing from list to enrich...`);
+        routes.splice(routes.indexOf(route), 1);
+      }
     }
 
-    for (const route of allRoutes) {
+    baseLogger.info(`Syncing ${routes.length} routes fetched from Strava`);
+    await send({
+      type: "update_total",
+      message: `Syncing ${routes.length} routes fetched from Strava`,
+      n: routes.length
+    });
+
+    for (const route of routes) {
       try {
         await send({
           type: "update_current",
@@ -124,7 +128,6 @@ async function syncRoutes(
         });
 
         await retryWithBackoff(async () => {
-          await upsertUserRoute(userId, route);
           const geoJson = await fetchRouteGeoJson(userId, route.id_str);
           await enrichUserRoute(userId, route.id_str, geoJson);
         });
@@ -153,23 +156,31 @@ async function syncActivities(
   const page = parseInt(searchParams.get("page") || "1");
 
   try {
-    const activities = await retryWithBackoff(async () => {
+    const summaryActivities = await retryWithBackoff(async () => {
       return fetchActivities(userId, perPage, page)
     });
 
-    if (!activities || activities.length === 0) {
+    if (!summaryActivities || summaryActivities.length === 0) {
       await send({ type: "complete" });
       return;
     }
 
-    baseLogger.info(`Syncing ${activities.length} activities fetched from Strava`);
+    for (const summaryActivity of summaryActivities) {
+      const existingActivity = await upsertUserActivity(userId, summaryActivity);
+      if (existingActivity && existingActivity.polyline) {
+        baseLogger.info(`Activity ${summaryActivity.name} already exists in detailed form, skipping...`);
+        summaryActivities.splice(summaryActivities.indexOf(summaryActivity), 1);
+      }
+    }
+
+    baseLogger.info(`Syncing ${summaryActivities.length} activities fetched from Strava`);
     await send({
       type: "update_total",
-      message: `Syncing ${activities.length} activities fetched from Strava...`,
-      n: activities.length
+      message: `Syncing ${summaryActivities.length} activities fetched from Strava...`,
+      n: summaryActivities.length
     });
 
-    for (const summaryActivity of activities) {
+    for (const summaryActivity of summaryActivities) {
       try {
         await send({
           type: "update_current",
@@ -177,8 +188,8 @@ async function syncActivities(
         });
 
         await retryWithBackoff(async () => {
-          const activity = await fetchDetailedActivity(userId, summaryActivity.id);
-          await upsertUserActivity(userId, activity);
+          const detailedActivity = await fetchDetailedActivity(userId, summaryActivity.id);
+          await upsertUserActivity(userId, detailedActivity);
         });
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : "Unknown error";

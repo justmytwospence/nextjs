@@ -89,7 +89,7 @@ export async function queryUserRoute(
 export async function upsertUserRoute(
   userId: string,
   route: Route
-): Promise<void> {
+): Promise<UserRoute> {
   baseLogger.info(`Upserting route ${route.name}`);
 
   const data = {
@@ -111,7 +111,7 @@ export async function upsertUserRoute(
   }
 
   try {
-    await prisma.userRoute.upsert({
+    return await prisma.userRoute.upsert({
       where: {
         id: route.id_str
       },
@@ -154,7 +154,7 @@ export async function enrichUserRoute(
 export async function upsertUserActivity(
   userId: string,
   activity: SummaryActivity | DetailedActivity
-): Promise<void> {
+): Promise<UserActivity> {
   baseLogger.info(`Upserting activity ${activity.name}`);
 
   const data = {
@@ -210,7 +210,7 @@ export async function upsertUserActivity(
   };
 
   try {
-    await prisma.userActivity.upsert({
+    return await prisma.userActivity.upsert({
       where: {
         id_userId: {
           id: activity.id.toString(),
