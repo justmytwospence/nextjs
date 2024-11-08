@@ -94,7 +94,7 @@ const validateAndLogExtras = (input: any, schema: z.ZodObject<any> | z.ZodArray<
     const schemaKeys = Object.keys(schema.shape);
     const extraKeys = inputKeys.filter(key => !schemaKeys.includes(key));
     extraKeys.forEach(key => {
-      baseLogger.warn(`Found extra key: ${key} with value: ${JSON.stringify(input[key])}`);
+      baseLogger.warn(`Found extra key: ${key} with value: ${JSON.stringify(input[key], null, 2)}`);
     });
   }
 
@@ -186,7 +186,7 @@ export async function fetchActivities(
   page: number = 1
 ): Promise<SummaryActivity[]> {
   const params = new URLSearchParams({
-    page_size: pageSize.toString(),
+    per_page: pageSize.toString(),
     page: page.toString()
   });
   const response = await makeStravaRequest(userId, "/athlete/activities", params);
@@ -209,7 +209,6 @@ export async function fetchDetailedActivity(
 
   const response = await makeStravaRequest(userId, `/activities/${activityId}`);
   const responseData = await response.json();
-  baseLogger.info(`responseData: ${JSON.stringify(responseData, null, 2)}`);
   const validatedActivities = validateAndLogExtras(responseData, DetailedActivitySchema);
   baseLogger.info(`Successfully fetched detailed activity ${activityId} as ${validatedActivities.name} from Strava`);
   return validatedActivities;

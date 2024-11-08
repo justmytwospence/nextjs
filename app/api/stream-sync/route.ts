@@ -150,7 +150,6 @@ async function syncActivities(
         });
       }
     }
-    // Moved outside the loop
     await send({ type: "complete" });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : "Unknown error";

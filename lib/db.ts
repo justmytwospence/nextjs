@@ -157,62 +157,59 @@ export async function upsertUserActivity(
 ): Promise<void> {
   baseLogger.info(`Upserting activity ${activity.name}`);
 
+  const data = {
+    // Base fields that exist in both types
+
+    id: activity.id.toString(),
+    userId,
+    achievementCount: activity.achievement_count ?? 0,
+    athleteCount: activity.athlete_count ?? 0,
+    averageSpeed: activity.average_speed,
+    averageWatts: activity.average_watts,
+    commentCount: activity.comment_count ?? 0,
+    commute: activity.commute ?? false,
+    deviceWatts: activity.device_watts,
+    distance: activity.distance,
+    elapsedTime: activity.elapsed_time,
+    elevationHigh: activity.elev_high,
+    elevationLow: activity.elev_low,
+    flagged: activity.flagged ?? false,
+    gearId: activity.gear_id,
+    hasKudoed: activity.has_kudoed ?? false,
+    hideFromHome: activity.hide_from_home ?? false,
+    kilojoules: activity.kilojoules,
+    kudosCount: activity.kudos_count ?? 0,
+    manual: activity.manual ?? false,
+    maxSpeed: activity.max_speed,
+    maxWatts: activity.max_watts,
+    movingTime: activity.moving_time,
+    name: activity.name,
+    photoCount: activity.photo_count ?? 0,
+    private: activity.private ?? false,
+    sportType: activity.sport_type,
+    startDate: new Date(activity.start_date),
+    startDateLocal: new Date(activity.start_date_local),
+    timezone: activity.timezone,
+    totalElevationGain: activity.total_elevation_gain,
+    totalPhotoCount: activity.total_photo_count ?? 0,
+    trainer: activity.trainer ?? false,
+    type: activity.type,
+    uploadId: activity.upload_id?.toString() ?? "",
+    weightedAverageWatts: activity.weighted_average_watts,
+    workoutType: activity.workout_type,
+    summaryPolyline: activity.map.summary_polyline ? polyline.toGeoJSON(activity.map.summary_polyline) : null,
+
+    // DetailedActivity specific fields - will be undefined if not present
+
+    polyline: activity.map.summary_polyline ? polyline.toGeoJSON(activity.map.polyline) : null,
+    calories: "calories" in activity ? activity.calories : undefined,
+    description: "description" in activity ? activity.description : undefined,
+    deviceName: "device_name" in activity ? activity.device_name : undefined,
+    embedToken: "embed_token" in activity ? activity.embed_token : undefined,
+    photos: "photos" in activity ? (activity.photos as Prisma.InputJsonValue) : undefined,
+  };
+
   try {
-    const data = {
-      // Base fields that exist in both types
-      id: activity.id.toString(),
-      userId,
-      achievementCount: activity.achievement_count ?? 0,
-      athleteCount: activity.athlete_count ?? 0,
-      averageSpeed: activity.average_speed,
-      averageWatts: activity.average_watts,
-      commentCount: activity.comment_count ?? 0,
-      commute: activity.commute ?? false,
-      deviceWatts: activity.device_watts,
-      distance: activity.distance,
-      elapsedTime: activity.elapsed_time,
-      elevationHigh: activity.elev_high,
-      elevationLow: activity.elev_low,
-      flagged: activity.flagged ?? false,
-      gearId: activity.gear_id,
-      hasKudoed: activity.has_kudoed ?? false,
-      hideFromHome: activity.hide_from_home ?? false,
-      kilojoules: activity.kilojoules,
-      kudosCount: activity.kudos_count ?? 0,
-      manual: activity.manual ?? false,
-      maxSpeed: activity.max_speed,
-      maxWatts: activity.max_watts,
-      movingTime: activity.moving_time,
-      name: activity.name,
-      photoCount: activity.photo_count ?? 0,
-      private: activity.private ?? false,
-      sportType: activity.sport_type,
-      startDate: new Date(activity.start_date),
-      startDateLocal: new Date(activity.start_date_local),
-      timezone: activity.timezone,
-      totalElevationGain: activity.total_elevation_gain,
-      totalPhotoCount: activity.total_photo_count ?? 0,
-      trainer: activity.trainer ?? false,
-      type: activity.type,
-      uploadId: activity.upload_id?.toString() ?? "",
-      weightedAverageWatts: activity.weighted_average_watts,
-      workoutType: activity.workout_type,
-      summaryPolyline: polyline.toGeoJSON(activity.map.summary_polyline),
-
-      // DetailedActivity specific fields - will be undefined if not present
-      polyline: polyline.toGeoJSON(activity.map.polyline),
-      calories: "calories" in activity ? activity.calories : undefined,
-      description: "description" in activity ? activity.description : undefined,
-      deviceName: "device_name" in activity ? activity.device_name : undefined,
-      embedToken: "embed_token" in activity ? activity.embed_token : undefined,
-      gear: "gear" in activity ? (activity.gear as Prisma.InputJsonValue) : undefined,
-      laps: "laps" in activity ? (activity.laps as Prisma.InputJsonValue) : undefined,
-      photos: "photos" in activity ? (activity.photos as Prisma.InputJsonValue) : undefined,
-      segmentEfforts: "segment_efforts" in activity ? (activity.segment_efforts as Prisma.InputJsonValue) : undefined,
-      splitsMetric: "splits_metric" in activity ? (activity.splits_metric as Prisma.InputJsonValue) : undefined,
-      splitsStandard: "splits_standard" in activity ? (activity.splits_standard as Prisma.InputJsonValue) : undefined,
-    };
-
     await prisma.userActivity.upsert({
       where: {
         id_userId: {
@@ -226,6 +223,7 @@ export async function upsertUserActivity(
 
     baseLogger.info(`Activity ${activity.name} upserted successfully`);
   } catch (error) {
+    baseLogger.error(`Failed to upsert activity ${activity.name}: ${error}`);
     throw error;
   } finally {
     await prisma.$disconnect();
