@@ -9,7 +9,7 @@ async function retryWithBackoff<T>(
   operation: () => Promise<T>,
   retryCount = 0
 ): Promise<T> {
-  const MAX_RETRIES = 3;
+  const MAX_RETRIES = 5;
   const BASE_DELAY = 15000; // 15 seconds
 
   try {
@@ -86,11 +86,14 @@ async function syncRoutes(
   send: (message: Message) => Promise<void>
 ) {
   try {
-    const perPage = parseInt(searchParams.get("per_page") || "2");
+    const perPage = parseInt(searchParams.get("per_page") || "1000");
     const page = parseInt(searchParams.get("page") || "1");
 
-    // Fetch all routes first
-    const allRoutes = await fetchRoutes(userId, perPage, page);
+    // Fetch all routes first with backoff
+    const allRoutes = await retryWithBackoff(async () =>
+      fetchRoutes(userId, perPage, page)
+    );
+
     if (!allRoutes || allRoutes.length === 0) {
       await send({ type: "complete" });
       return;
@@ -102,6 +105,10 @@ async function syncRoutes(
       message: `Syncing ${allRoutes.length} routes fetched from Strava`,
       n: allRoutes.length
     });
+
+    for (const route of allRoutes) {
+      await upsertUserRoute(userId, route);
+    }
 
     for (const route of allRoutes) {
       try {

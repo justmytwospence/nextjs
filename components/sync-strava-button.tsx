@@ -42,7 +42,7 @@ export default function SyncStravaButton() {
     });
 
     const PER_PAGE = 100;
-    const events = new EventSource(`/api/stream-sync?type=activities&per_page=${PER_PAGE}`);
+    const events = new EventSource(`/api/stream-sync?type=routes&per_page=${PER_PAGE}`);
 
     events.onmessage = (event) => {
       const data = JSON.parse(event.data);
