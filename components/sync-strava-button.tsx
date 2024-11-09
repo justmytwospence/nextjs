@@ -19,7 +19,7 @@ type ProgressState = {
   }[];
 }
 
-export default function SyncStravaButton() {
+export default function SyncStravaButton({ type }: { type: string }) {
   const router = useRouter();
   const [isSyncing, setIsSyncing] = useState(false);
   const [showModal, setShowModal] = useState(false);
@@ -42,7 +42,7 @@ export default function SyncStravaButton() {
     });
 
     const PER_PAGE = 100;
-    const events = new EventSource(`/api/stream-sync?type=routes&per_page=${PER_PAGE}`);
+    const events = new EventSource(`/api/stream-sync?type=${type}&per_page=${PER_PAGE}`);
 
     events.onmessage = (event) => {
       const data = JSON.parse(event.data);
@@ -108,7 +108,7 @@ export default function SyncStravaButton() {
         <div onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
           <PopoverTrigger asChild>
             <Button
-              className="ml-auto"
+              className="ml-auto font-bold"
               onClick={() => {
                 if (isSyncing) {
                   setShowModal(true);
@@ -119,10 +119,12 @@ export default function SyncStravaButton() {
               }}>
               {isSyncing ? (
                 <>
-                  <Spinner className="mr-2 h-4 w-4" />
-                  Syncing...
+                  <Spinner className="mr-2" />
+                  Syncing {type.charAt(0).toUpperCase() + type.slice(1)}...
                 </>
-              ) : ("Sync Strava")}
+              ) : (
+                `Sync ${type.charAt(0).toUpperCase() + type.slice(1)}`
+              )}
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-80" sideOffset={5}>
@@ -162,7 +164,7 @@ export default function SyncStravaButton() {
                       <p className="text-sm font-bold break-words">{item.name}</p>
                       <pre className="text-xs bg-muted p-2 rounded-md whitespace-pre-wrap break-all w-full">
                         <code>
-                          {typeof item.error === 'string'
+                          {typeof item.error === "string"
                             ? item.error
                             : JSON.stringify(item.error, null, 2)}
                         </code>

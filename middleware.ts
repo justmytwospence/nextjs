@@ -1,5 +1,5 @@
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
 export async function middleware(request: NextRequest) {
   // We don't call auth directly here because this is an edge runtime and authjs
@@ -7,15 +7,14 @@ export async function middleware(request: NextRequest) {
   const response = await fetch(`${request.nextUrl.origin}/api/auth/session`, {
     headers: {
       // Forward cookies to maintain session state
-      cookie: request.headers.get('cookie') || '',
+      cookie: request.headers.get("cookie") || "",
     }
   });
-
   const session = response.ok ? await response.json() : null;
 
   if (!session) {
-    const loginUrl = new URL('/login', request.url);
-    loginUrl.searchParams.set('redirectUrl', request.url);
+    const loginUrl = new URL("/login", request.url);
+    loginUrl.searchParams.set("redirectUrl", request.url);
     return NextResponse.redirect(loginUrl);
   }
 
@@ -32,6 +31,6 @@ export const config = {
      * 4. /static (static files)
      * 5. /favicon.ico, etc. (static files)
      */
-    '/((?!api/|login|_next|static|favicon.ico).*)'
+    "/((?!api/|login|logout|_next|static|favicon.ico).*)"
   ]
 };

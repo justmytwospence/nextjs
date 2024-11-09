@@ -10,10 +10,7 @@ export function SignIn({ redirectUrl }) {
         await signIn("strava", { redirectTo: redirectUrl });
       }}
     >
-      <div className="text-center">
-        Not signed in <br />
-      </div>
-      <Button className="w-full" type="submit">Sign in with Strava</Button>
+      <Button className="w-full font-bold" type="submit">Sign in with Strava</Button>
     </form>
   );
 }
@@ -26,10 +23,7 @@ export function SignOut({ session }) {
         await signOut();
       }}
     >
-      <div className="text-center mb-4">
-        Signed in as {session.user.name} <br />
-      </div>
-      <Button className="w-full" type="submit">Sign Out</Button>
+      <Button className="w-full font-bold" type="submit">Sign Out</Button>
     </form>
   );
 }

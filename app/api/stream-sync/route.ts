@@ -5,6 +5,13 @@ import { enrichUserRoute, upsertUserActivity, upsertUserRoute } from "@/lib/db";
 import { fetchActivities, fetchDetailedActivity, fetchRouteGeoJson, fetchRoutes } from "@/lib/strava-api";
 import { HttpError } from "@/lib/errors";
 
+type Message =
+  | { type: "update_total", message: string, n: number }
+  | { type: "update_current", message: string }
+  | { type: "update_failed", route: string, error: string }
+  | { type: "update_message", message: string }
+  | { type: "complete", error?: string }
+
 let writer: WritableStreamDefaultWriter<any>;
 const encoder = new TextEncoder();
 
@@ -49,22 +56,17 @@ async function retryWithBackoff<T>(
     }
 
     const delay = BASE_DELAY * Math.pow(2, retryCount);
-    baseLogger.warn(`Rate limited by Strava, waiting ${delay / 1000} seconds before retry ${retryCount + 1}...`);
+    const shortTermUsage = error.rateLimit?.short?.readUsage || 0;
+    const shortTermLimit = error.rateLimit?.short?.readLimit || 0;
+    baseLogger.warn(`Rate limited by Strava, waiting ${delay / 1000} seconds before retry ${retryCount + 1}... Short term usage: ${shortTermUsage}/${shortTermLimit}`);
     await send({
       type: "update_message",
-      message: `Rate limited by Strava, waiting ${delay / 1000} seconds before retry ${retryCount + 1}...`
-    })
+      message: `Rate limited by Strava ${shortTermUsage} / ${shortTermLimit} in the last 15 minues, waiting ${delay / 1000} seconds before retry ${retryCount + 1}...`,
+    });
     await new Promise(resolve => setTimeout(resolve, delay));
     return retryWithBackoff(operation, retryCount + 1);
   }
 }
-
-type Message =
-  | { type: "update_total", message: string, n: number }
-  | { type: "update_current", message: string }
-  | { type: "update_failed", route: string, error: string }
-  | { type: "update_message", message: string }
-  | { type: "complete", error?: string }
 
 export async function GET(request: Request) {
   const session = await auth();
