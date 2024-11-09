@@ -43,8 +43,9 @@ STRAVA_WEBHOOK_VERIFY_TOKEN=""
 - [X] Refactor functions to take userId instead of session
 - [X] Handle rate limiting using the headers from Strava
 - [ ] Implement webhook for new activites
-- [ ] Split sync into route and activity segments
+- [ ] Split sync into route and activity 
 - [ ] Sync UserSegment and Segment models
 - [ ] Increase athlete headcount
+- [ ] Reattach to existing syncs
 - [ ] Write unit and integration tests
 - [ ] Create segment sniper tool

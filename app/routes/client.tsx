@@ -3,6 +3,7 @@
 import { useState, type ReactNode } from "react";
 import LazyMap from "@/components/lazy-map";
 import { Navigation, TrendingUp } from "lucide-react";
+import { useRouter } from "next/navigation";
 import {
   Card,
   CardContent,
@@ -153,10 +154,12 @@ export default function RoutesClient({ initialRoutes }: { initialRoutes: UserRou
 }
 
 function RouteGrid({ routes }: { routes: UserRoute[] }) {
+  const router = useRouter();
   return (
     <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
       {routes.map((route) => (
-        <Card key={route.id} className="hover:shadow-lg transition-shadow rounded-md bg-background">
+        <Card key={route.id} onClick={() => router.push(`/routes/${route.id}`)}
+          className="hover:shadow-lg transition-shadow rounded-md bg-background">
           <CardHeader>
             <CardTitle className="text-xl font-semibold line-clamp-1">
               {route.name}
@@ -185,7 +188,8 @@ function RouteGrid({ routes }: { routes: UserRoute[] }) {
             {new Date(route.createdAt).toLocaleDateString()}
           </CardFooter>
         </Card>
-      ))}
-    </div>
+      ))
+      }
+    </div >
   );
 }

@@ -271,3 +271,23 @@ export async function queryUserActivities(userId: string): Promise<UserActivity[
   }
 }
 
+export async function queryUserActivity(
+  userId: string,
+  activityId: string
+): Promise<UserActivity | null> {
+  try {
+    baseLogger.info(`Querying user route for user ${userId} and route ${activityId}`);
+    const activity = await prisma.userActivity.findUnique({
+      where: {
+        id_userId: {
+          id: activityId,
+          userId,
+        }
+      }
+    });
+    baseLogger.info(`Found route ${activityId} to be ${activity?.name}`);
+    return activity;
+  } catch (error) {
+    throw error;
+  }
+}
