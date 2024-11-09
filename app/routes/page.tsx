@@ -1,6 +1,6 @@
 import { auth } from "@/auth";
 import { queryUserRoutes } from "@/lib/db";
-import RoutesClient from "./client";
+import MappablesGrid from "@/components/mappables-grid";
 import { baseLogger } from "@/lib/logger";
 
 export default async function RoutesPage() {
@@ -8,6 +8,7 @@ export default async function RoutesPage() {
   if (!session) {
     return null;
   }
-  const initialRoutes = await queryUserRoutes(session.user.id);
-  return <RoutesClient initialRoutes={initialRoutes} />;
+  const routes = await queryUserRoutes(session.user.id);
+  baseLogger.info(`Found ${routes.length} routes`);
+  return <MappablesGrid mappables={routes} type="routes" />;
 }

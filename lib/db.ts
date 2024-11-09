@@ -76,7 +76,15 @@ export async function queryUserRoutes(userId: string): Promise<UserRoute[]> {
   try {
     baseLogger.info(`Querying user routes for user ${userId}`);
     const routes = await prisma.userRoute.findMany({
-      where: { userId },
+      where: {
+        userId,
+        summaryPolyline: {
+          not: Prisma.JsonNullValueFilter.JsonNull
+        }
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
     });
     baseLogger.info(`Found ${routes.length} routes`);
     return routes;
@@ -123,7 +131,7 @@ export async function upsertUserRoute(
     private: route.private,
     starred: Boolean(route.starred),
     subType: route.sub_type,
-    summaryPolyline: route.map.summary_polyline ? polyline.toGeoJSON(route.map.summary_polyline) : null,
+    summaryPolyline: polyline.toGeoJSON(route.map.summary_polyline),
     timestamp: new Date(route.timestamp),
     type: route.type,
     updatedAt: new Date(route.updated_at),
@@ -217,11 +225,15 @@ export async function upsertUserActivity(
     uploadId: activity.upload_id?.toString() ?? "",
     weightedAverageWatts: activity.weighted_average_watts,
     workoutType: activity.workout_type,
-    summaryPolyline: activity.map?.summary_polyline ? polyline.toGeoJSON(activity.map.summary_polyline) : null,
+    summaryPolyline: activity.map?.summary_polyline
+      ? polyline.toGeoJSON(activity.map.summary_polyline)
+      : null,
 
     // DetailedActivity specific fields - will be undefined if not present
 
-    polyline: activity?.map?.polyline ? polyline.toGeoJSON(activity.map.polyline) : null,
+    polyline: activity.map?.polyline
+      ? polyline.toGeoJSON(activity.map.polyline)
+      : null,
     calories: "calories" in activity ? activity.calories : undefined,
     description: "description" in activity ? activity.description : undefined,
     deviceName: "device_name" in activity ? activity.device_name : undefined,

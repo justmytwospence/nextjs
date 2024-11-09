@@ -409,7 +409,7 @@ export const DetailedGearSchema = z.object({
 // Returned by /segments/{id} endpoint
 // Detailed information about a segment
 export const DetailedSegmentSchema = z.object({
-  activity_type: z.enum(["Ride", "Run", "Hike"]), // Type of activity (Ride or Run)
+  activity_type: z.enum(["Ride", "Run", "Hike", "BackcountrySki"]), // Type of activity (Ride or Run)
   athlete_count: z.number().int().optional(), // Number of unique athletes with efforts
   athlete_pr_effort: SummaryPRSegmentEffortSchema.optional(), // PR effort details if applicable
   athlete_segment_stats: SummarySegmentEffortSchema.optional(), // Segment effort details if available

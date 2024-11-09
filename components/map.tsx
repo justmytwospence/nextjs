@@ -1,10 +1,11 @@
 "use client";
 
+import { baseLogger } from "@/lib/logger";
+import { Mappable } from "@prisma/client";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useEffect } from "react";
 import { MapContainer, TileLayer, useMap } from "react-leaflet";
-import { UserRoute, UserActivity } from "@prisma/client";
 
 const GeoJSONLayer = ({ polyline }) => {
   const map = useMap();
@@ -27,7 +28,13 @@ const GeoJSONLayer = ({ polyline }) => {
   return null;
 };
 
-const Map = ({ route, interactive = true }: { route: UserRoute | UserActivity; interactive?: boolean }) => {
+export default function Map({
+  mappable,
+  interactive = true
+}: {
+  mappable: Mappable;
+  interactive?: boolean
+}) {
   return (
     <MapContainer
       className="map-container"
@@ -41,9 +48,7 @@ const Map = ({ route, interactive = true }: { route: UserRoute | UserActivity; i
       doubleClickZoom={interactive}
     >
       <TileLayer url="https://tile.jawg.io/jawg-terrain/{z}/{x}/{y}{r}.png?access-token=bDE5WHMnFV1P973D59QWuGaq6hebBcjPSyud6vVGYqqi2r4kZyaShdbC3SF2Bc7y" />
-      {route.summaryPolyline && <GeoJSONLayer polyline={route.summaryPolyline} />}
+      {mappable.summaryPolyline && <GeoJSONLayer polyline={mappable.summaryPolyline} />}
     </MapContainer>
   );
 };
-
-export default Map;

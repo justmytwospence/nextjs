@@ -144,7 +144,7 @@ export default function SyncStravaButton({ type }: { type: string }) {
         <DialogContent className="max-w-[90vw] md:max-w-[600px] overflow-hidden w-full">
           <DialogHeader>
             <DialogTitle>
-              {isSyncing ? "Syncing" : "Sync Complete"}
+              {isSyncing ? "Syncing... Please do close or refresh the page" : "Sync Complete"}
             </DialogTitle>
           </DialogHeader>
           <div className="w-full">

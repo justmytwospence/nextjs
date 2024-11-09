@@ -2,32 +2,46 @@ import React, { useEffect, useState } from "react";
 import { Line } from "react-chartjs-2";
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from "chart.js";
 import { computeCdf, computeGradient } from "@/lib/geo";
+import { Mappable } from "@prisma/client";
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
-export default function GradientCdfChart({ selectedRoute1, selectedRoute2 }) {
+// Move calculation outside component
+const xAxisRange = Array.from({ length: 61 }, (_, i) => parseFloat((-0.2 + i * 0.01).toFixed(2)));
+
+export default function GradientCdfChart({
+  selectedRoute1,
+  selectedRoute2
+}: {
+  selectedRoute1: Mappable | null,
+  selectedRoute2: Mappable | null
+}) {
   const [gradients1, setGradients1] = useState<number[]>([]);
   const [gradients2, setGradients2] = useState<number[]>([]);
   const [cdf1, setCdf1] = useState<number[]>([]);
   const [cdf2, setCdf2] = useState<number[]>([]);
 
-  const xAxisRange = Array.from({ length: 61 }, (_, i) => parseFloat((-0.2 + i * 0.01).toFixed(2)));
-
+  // First useEffect to calculate gradients
   useEffect(() => {
     if (selectedRoute1 && selectedRoute2) {
+      const polyline1 = selectedRoute1.polyline || selectedRoute1.summaryPolyline;
+      const geom1 = polyline1.features[0].geometry;
+      const polyline2 = selectedRoute2.polyline || selectedRoute2.summaryPolyline;
+      const geom2 = polyline2.features[0].geometry;
 
-      const polyline1 = selectedRoute1.polyline || selectedRoute1.summaryPolyline
-      const geom1 = polyline1.features[0].geometry
-      const polyline2 = selectedRoute2.polyline || selectedRoute2.summaryPolyline
-      const geom2 = polyline2.features[0].geometry
+      const newGradients1 = computeGradient(geom1);
+      const newGradients2 = computeGradient(geom2);
 
-      setGradients1(computeGradient(geom1));
-      setGradients2(computeGradient(geom2));
+      setGradients1(newGradients1);
+      setGradients2(newGradients2);
 
-      setCdf1(computeCdf(gradients1, xAxisRange));
-      setCdf2(computeCdf(gradients2, xAxisRange));
+      // Calculate CDFs immediately after setting gradients
+      setCdf1(computeCdf(newGradients1, xAxisRange));
+      setCdf2(computeCdf(newGradients2, xAxisRange));
     }
   }, [selectedRoute1, selectedRoute2]);
+
+  // Remove second useEffect as it's no longer needed
 
   if (!selectedRoute1 || !selectedRoute2) {
     return null;

@@ -1,23 +1,29 @@
 "use client";
 
-import { useState } from "react";
-import { Dialog, DialogTitle, DialogContent } from "@/components/ui/dialog";
-import { computeDistanceMiles, computeGradient } from "../lib/geo";
-import { CategoryScale, Chart as ChartJS, Filler, LinearScale, LineElement, PointElement, Title, Tooltip } from "chart.js";
-import React from "react";
-import { Line } from "react-chartjs-2";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Spinner } from "@/components/ui/spinner";
+import { Mappable } from "@prisma/client";
+import { CategoryScale, Chart as ChartJS, Filler, LinearScale, LineElement, PointElement, Title, Tooltip } from "chart.js";
+import React, { useState } from "react";
+import { Line } from "react-chartjs-2";
+import { computeDistanceMiles, computeGradient } from "../lib/geo";
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Filler);
 
-export default function ElevationChart({ route, maxGradient }) {
+export default function ElevationChart({
+  mappable,
+  maxGradient
+}: {
+  mappable: Mappable,
+  maxGradient: number
+}) {
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  if (!route) {
+  if (!mappable) {
     return <Spinner className="w-6 h-6 text-blue-500" />;
   }
 
-  const polyline = route.polyline || route.summaryPolyline;
+  const polyline = mappable.polyline || mappable.summaryPolyline;
   const geom = polyline.features[0].geometry;
   const distance = computeDistanceMiles(geom);
   const elevationData = geom.coordinates.map(point => point[2] * 3.28084);

@@ -29,12 +29,12 @@ export default function RouteComparisonColumn({ routes, selectedRoute, setSelect
 
       {selectedRoute && (
         <div className="h-[300px] w-full mt-4">
-          <LazyMap route={selectedRoute} />
+          <LazyMap mappable={selectedRoute} />
         </div>
       )}
 
       {selectedRoute && (
-        <ElevationChart route={selectedRoute} maxGradient={0.1} />
+        <ElevationChart mappable={selectedRoute} maxGradient={0.1} />
       )}
     </div>
   );
