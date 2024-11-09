@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogTitle, DialogContent } from "@/components/ui/dialog";
 import { computeDistanceMiles, computeGradient } from "../lib/geo";
 import { CategoryScale, Chart as ChartJS, Filler, LinearScale, LineElement, PointElement, Title, Tooltip } from "chart.js";
 import React from "react";
@@ -65,6 +65,25 @@ export default function ElevationChart({ route, maxGradient }) {
         display: true,
         text: "Elevation and Gradient Profile",
       },
+      tooltip: {
+        mode: "index",
+        intersect: false,
+        callbacks: {
+          title: function (context) {
+            const label = context[0]?.label;
+            return `Distance: ${parseFloat(label).toFixed(1)} miles`;
+          },
+          label: function (context) {
+            const label = context.dataset.label || "";
+            if (label === "Elevation (ft)") {
+              return `Elevation: ${context.parsed.y.toFixed(0)} ft`;
+            } else if (label === "Gradient (%)") {
+              return `Gradient: ${(context.parsed.y * 100).toFixed(1)}%`;
+            }
+            return label;
+          }
+        }
+      }
     },
     hover: {
       intersect: false,
@@ -76,8 +95,12 @@ export default function ElevationChart({ route, maxGradient }) {
       x: {
         type: "linear" as const,
         min: 0,
+        max: Math.max(...distance),
         ticks: {
           stepSize: 1,
+          callback: function (value) {
+            return value.toFixed(1); // Format as one decimal point
+          },
         },
         title: {
           display: true,
@@ -137,6 +160,7 @@ export default function ElevationChart({ route, maxGradient }) {
       </div>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogTitle />
         <DialogContent className="max-w-[90vw] max-h-[90vh] w-[1200px]">
           <div className="h-[600px]">
             <Line

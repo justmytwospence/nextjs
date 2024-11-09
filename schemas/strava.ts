@@ -245,7 +245,7 @@ export const SummarySegmentEffortSchema = z.object({
 // Summary of a segment
 // Returned by /segments/starred endpoint
 export const SummarySegmentSchema = z.object({
-  activity_type: z.enum(["Ride", "Run"]), // Type of activity (Ride or Run)
+  activity_type: z.enum(["Ride", "Run", "BackcountrySki"]), // Type of activity (Ride or Run)
   athlete_pr_effort: SummaryPRSegmentEffortSchema.optional(), // PR effort details if applicable
   athlete_segment_stats: SummarySegmentEffortSchema.optional(), // Segment effort details if available
   average_grade: z.number(), // Average grade in percent
