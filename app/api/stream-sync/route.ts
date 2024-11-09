@@ -96,6 +96,12 @@ export async function GET(request: Request) {
       case "activities":
         syncActivities(session.user.id, searchParams).finally(() => writer.close());
         break;
+      case "all":
+        syncRoutes(session.user.id, searchParams);
+        syncActivities(session.user.id, searchParams);
+        writer.close()
+        break;
+
       default:
         throw new Error("Invalid type");
     }
