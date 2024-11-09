@@ -39,8 +39,8 @@ export default function TopbarClient({ session }: { session: any }) {
         ))}
       </nav>
 
-      <div className="flex items-center gap-4">
-        {session && (
+      {session && (
+        <div className="flex items-center gap-4">
           <SyncStravaButton
             type={
               pathname.startsWith("/activities")
@@ -50,32 +50,32 @@ export default function TopbarClient({ session }: { session: any }) {
                   : "all"
             }
           />
-        )}
 
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="secondary" size="icon" className="rounded-full">
-              <Avatar className="h-8 w-8">
-                <AvatarImage src={session?.user?.image} alt="Profile" />
-                <AvatarFallback>
-                  {session?.user?.name?.split(" ").map(n => n[0]).join("") || "?"}
-                </AvatarFallback>
-              </Avatar>
-              <span className="sr-only">Toggle user menu</span>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>My Account</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>Settings</DropdownMenuItem>
-            <DropdownMenuItem>Support</DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onSelect={async () => {
-              await signOut({ redirectTo: "/login" });
-            }}>Logout</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="secondary" size="icon" className="rounded-full">
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src={session?.user?.image} alt="Profile" />
+                  <AvatarFallback>
+                    {session?.user?.name?.split(" ").map(n => n[0]).join("") || "?"}
+                  </AvatarFallback>
+                </Avatar>
+                <span className="sr-only">Toggle user menu</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>My Account</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem>Settings</DropdownMenuItem>
+              <DropdownMenuItem>Support</DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onSelect={async () => {
+                await signOut({ redirectTo: "/login" });
+              }}>Logout</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      )}
     </header>
   )
 }
