@@ -72,7 +72,7 @@ export default function ElevationChart({
         text: "Elevation and Gradient Profile",
       },
       tooltip: {
-        mode: "index",
+        mode: "index" as const,
         intersect: false,
         callbacks: {
           title: function (context) {
