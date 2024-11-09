@@ -26,7 +26,7 @@ export function SignOut({ session }) {
         await signOut();
       }}
     >
-      <div className="text-center">
+      <div className="text-center mb-4">
         Signed in as {session.user.name} <br />
       </div>
       <Button className="w-full" type="submit">Sign Out</Button>
