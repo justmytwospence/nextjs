@@ -20,6 +20,6 @@ export class HttpError extends Error {
     public rateLimit?: RateLimit
   ) {
     super(message);
-    this.name = 'HttpError';
+    this.name = "HttpError";
   }
 }

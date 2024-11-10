@@ -78,7 +78,6 @@ const validateAndLogExtras = (input: any, schema: z.ZodObject<any> | z.ZodArray<
   }
 
   if (schema instanceof z.ZodArray) {
-    baseLogger.info(`Checking array elements for extra keys`);
     if (schema.element instanceof z.ZodObject) {
       input.forEach((item: any) => {
         const inputKeys = Object.keys(item);
@@ -90,7 +89,6 @@ const validateAndLogExtras = (input: any, schema: z.ZodObject<any> | z.ZodArray<
       });
     }
   } else if (schema instanceof z.ZodObject) {
-    baseLogger.info(`Checking object for extra keys`);
     const inputKeys = Object.keys(input);
     const schemaKeys = Object.keys(schema.shape);
     const extraKeys = inputKeys.filter(key => !schemaKeys.includes(key));

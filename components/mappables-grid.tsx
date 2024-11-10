@@ -28,7 +28,7 @@ type Mappable = UserRoute | UserActivity;
 
 interface MappablesGridProps {
   mappables: Mappable[];
-  type: 'routes' | 'activities';
+  type: "routes" | "activities";
 }
 
 export default function MappablesGrid({ mappables, type }: MappablesGridProps) {
@@ -69,7 +69,7 @@ export default function MappablesGrid({ mappables, type }: MappablesGridProps) {
   const filteredItems = selectedType === "all"
     ? validMappables
     : validMappables.filter(item => {
-      const itemType = type === 'routes'
+      const itemType = type === "routes"
         ? typeConfig.routes.getType(item as UserRoute)
         : typeConfig.activities.getType(item as UserActivity);
       return itemType === selectedType;
@@ -138,7 +138,7 @@ export default function MappablesGrid({ mappables, type }: MappablesGridProps) {
         <div className="flex justify-between items-center mb-4">
           <TabsList className="h-10">
             <TabsTrigger value="all">All</TabsTrigger>
-            {type === 'routes'
+            {type === "routes"
               ? Array.from(new Set(Object.values(config.types))).map((label: string) => {
                 const value = Object.keys(config.types).find(key => config.types[key] === label) ?? "all";
                 return (
@@ -187,11 +187,11 @@ export default function MappablesGrid({ mappables, type }: MappablesGridProps) {
         <div className="mt-6">
           <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
             {paginatedItems.map((item) => {
-              const isRoute = 'elevationGain' in item;
+              const isRoute = "elevationGain" in item;
               return (
                 <Card
                   key={item.id}
-                  onClick={type === 'routes' ? () => router.push(`/routes/${item.id}`) : undefined}
+                  onClick={type === "routes" ? () => router.push(`/routes/${item.id}`) : undefined}
                   className="group hover:shadow-lg transition-all duration-200 rounded-lg overflow-hidden hover:cursor-pointer"
                 >
                   <div className="relative">
@@ -204,7 +204,7 @@ export default function MappablesGrid({ mappables, type }: MappablesGridProps) {
                     <h3 className="text-xl font-semibold line-clamp-1 mb-2">
                       {item.name}
                     </h3>
-                    <div className={`grid ${isRoute ? 'grid-cols-2' : 'grid-cols-3'} gap-2`}>
+                    <div className={`grid ${isRoute ? "grid-cols-2" : "grid-cols-3"} gap-2`}>
                       <div className="flex items-center gap-2">
                         <Navigation className="h-4 w-4 text-muted-foreground" />
                         <span className="text-sm">

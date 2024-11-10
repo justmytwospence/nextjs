@@ -3,11 +3,7 @@ import { queryUserRoute } from "@/lib/db";
 import { notFound } from "next/navigation";
 import RouteDetail from "./client";
 
-export default async function RoutePage({
-  params,
-}: {
-  params: { routeId: string };
-}) {
+export default async function RoutePage({ params }) {
   const session = await auth();
   if (!session) {
     return null;
@@ -20,5 +16,5 @@ export default async function RoutePage({
     notFound();
   }
 
-  return <RouteDetail route={route} />;
+  return <RouteDetail mappable={route} />;
 }

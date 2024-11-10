@@ -83,7 +83,7 @@ export async function queryUserRoutes(userId: string): Promise<UserRoute[]> {
         }
       },
       orderBy: {
-        createdAt: 'desc'
+        createdAt: "desc"
       }
     });
     baseLogger.info(`Found ${routes.length} routes`);

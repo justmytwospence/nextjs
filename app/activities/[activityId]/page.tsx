@@ -3,20 +3,18 @@ import { queryUserActivity } from "@/lib/db";
 import { notFound } from "next/navigation";
 import RouteDetail from "./client";
 
-export default async function RoutePage({
-  params,
-}: {
-  params: { routeId: string };
-}) {
+export default async function RoutePage({ params }) {
   const session = await auth();
   if (!session) {
     return null;
   }
 
-  const activity = await queryUserActivity(session.user.id, params.routeId);
+  const { activityId } = await params;
+
+  const activity = await queryUserActivity(session.user.id, activityId);
   if (!activity) {
     notFound();
   }
 
-  return <RouteDetail route={activity} />;
+  return <RouteDetail mappable={activity} />;
 }
