@@ -24,10 +24,9 @@ export default function ElevationChart({
   }
 
   const polyline = mappable.polyline || mappable.summaryPolyline;
-  const geom = polyline.features[0].geometry;
-  const distance = computeDistanceMiles(geom);
-  const elevationData = geom.coordinates.map(point => point[2] * 3.28084);
-  const gradientData = computeGradient(geom);
+  const distance = computeDistanceMiles(polyline);
+  const elevationData = polyline.coordinates.map(point => point[2] * 3.28084);
+  const gradientData = computeGradient(polyline);
 
   const createChartData = (isLarge = false) => ({
     labels: distance,

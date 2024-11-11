@@ -191,7 +191,16 @@ export default function MappablesGrid({ mappables, type }: MappablesGridProps) {
               return (
                 <Card
                   key={item.id}
-                  onClick={type === "routes" ? () => router.push(`/routes/${item.id}`) : undefined}
+                  onClick={() => {
+                    switch (type) {
+                      case "routes":
+                        router.push(`/routes/${item.id}`);
+                        break;
+                      case "activities":
+                        router.push(`/activities/${item.id}`);
+                        break;
+                    }
+                  }}
                   className="group hover:shadow-lg transition-all duration-200 rounded-lg overflow-hidden hover:cursor-pointer"
                 >
                   <div className="relative">

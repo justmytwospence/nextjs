@@ -425,22 +425,22 @@ export const DetailedSegmentSchema = z.object({
   end_latlng: LatLngSchema, // End coordinates (lat/lng)
   hazardous: z.boolean(), // If the segment is considered hazardous
   id: z.coerce.string(), // Unique identifier of the segment
-  map: PolylineMapSchema.optional(), // Map details
+  map: PolylineMapSchema, // Map details
   maximum_grade: z.number(), // Maximum grade in percent
   name: z.string(), // Segment name
   private: z.boolean(), // Whether the segment is private
   star_count: z.number().int().optional(), // Number of stars for this segment
   start_latlng: LatLngSchema, // Start coordinates (lat/lng)
-  state: z.string().nullable(), // Segment's state or region
+  state: z.string(), // Segment's state or region
   total_elevation_gain: z.number().optional(), // Total elevation gain in meters
   updated_at: z.string().datetime().optional(), // Date when the segment was last updated
-});
+}).strict();
 
 // Returned by GET /segment_efforts/{id}
 // Returns details of a segment effort
 export const DetailedSegmentEffortSchema = z.object({
   activity: z.object({ id: z.coerce.string() }), // Associated activity details
-  activity_id: z.coerce.string().optional(), // Activity ID related to this effort
+  activity_id: z.coerce.string(), // Activity ID related to this effort
   athlete: z.object({ id: z.coerce.string() }), // Athlete details
   average_cadence: z.number().nullable().optional(), // Average cadence during effort
   average_heartrate: z.number().optional(), // Average heart rate during effort
@@ -449,19 +449,19 @@ export const DetailedSegmentEffortSchema = z.object({
   distance: z.number(), // Effort distance in meters
   elapsed_time: z.number().int(), // Elapsed time of the effort
   end_index: z.number().int(), // End index in activity's stream
-  hidden: z.boolean().optional(), // If this effort should be hidden in the activity
+  hidden: z.boolean(), // If this effort should be hidden in the activity
   id: z.coerce.string(), // Unique identifier of the effort
-  is_kom: z.boolean().optional(), // If this is the current best on leaderboard
+  is_kom: z.boolean(), // If this is the current best on leaderboard
   kom_rank: z.number().int().nullable().optional(), // Rank on the global leaderboard if in top 10, can be null
   max_heartrate: z.number().optional(), // Max heart rate during effort
   moving_time: z.number().int(), // Moving time during the effort
   name: z.string(), // Segment name for this effort
   pr_rank: z.number().int().nullable(), // Rank on athlete's leaderboard if in top 3
-  segment: DetailedSegmentSchema.optional(), // Detailed segment information
+  segment: DetailedSegmentSchema, // Detailed segment information
   start_date: z.string().datetime(), // Start date of the effort
   start_date_local: z.string().datetime(), // Local start date of the effort
   start_index: z.number().int(), // Start index in activity's stream
-});
+}).strict();
 
 // DistanceStream - Stream of distance data points
 export const DistanceStreamSchema = z.object({
@@ -625,7 +625,7 @@ export const DetailedActivitySchema = z.object({
   photo_count: z.number().int(), // Number of Instagram photos
   photos: PhotosSummarySchema.nullable().optional(), // Photos summary
   private: z.boolean(), // Whether it is private
-  segment_efforts: z.array(DetailedSegmentEffortSchema).optional(), // Segment efforts
+  segment_efforts: z.array(DetailedSegmentEffortSchema).nullable(), // Segment efforts
   splits_metric: z.array(SplitSchema).optional(), // Splits in metric units (for runs)
   splits_standard: z.array(SplitSchema).optional(), // Splits in imperial units (for runs)
   sport_type: SportTypeSchema, // Sport type of the activity
@@ -644,6 +644,7 @@ export const DetailedActivitySchema = z.object({
 
 export type DetailedActivity = z.infer<typeof DetailedActivitySchema>;
 export type DetailedSegment = z.infer<typeof DetailedSegmentSchema>;
+export type DetailedSegmentEffort = z.infer<typeof DetailedSegmentEffortSchema>;
 export type Route = z.infer<typeof RouteSchema>;
 export type SummaryActivity = z.infer<typeof SummaryActivitySchema>;
 export type SummarySegment = z.infer<typeof SummarySegmentSchema>;

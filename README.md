@@ -30,7 +30,7 @@ STRAVA_WEBHOOK_VERIFY_TOKEN=""
 - **Staging**: The `staging` branch is automatically deployed to the staging.$DOMAIN and migrations are run against the staging database.
 
 ## TODO
-- [X] Set up databasee
+- [X] Set up database
 - [X] Implement authentication
 - [X] Integrate Strava API for fetching routes
 - [X] Add maps using Leaflet and React Leaflet
@@ -42,10 +42,11 @@ STRAVA_WEBHOOK_VERIFY_TOKEN=""
 - [X] Implement webhook for account deletion per API terms
 - [X] Refactor functions to take userId instead of session
 - [X] Handle rate limiting using the headers from Strava
-- [ ] Implement webhook for new activites
-- [ ] Split sync into route and activity 
+- [X] Implement webhook for new activites
+- [X] Split sync into route and activity 
 - [ ] Sync UserSegment and Segment models
 - [ ] Increase athlete headcount
 - [ ] Reattach to existing syncs
+- [ ] Map brushed linking
 - [ ] Write unit and integration tests
 - [ ] Create segment sniper tool

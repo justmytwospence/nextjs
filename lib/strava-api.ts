@@ -77,7 +77,7 @@ const validateAndLogExtras = (data: any, schema: z.ZodObject<any> | z.ZodArray<a
     if (error instanceof z.ZodError) {
       // Log unrecognized fields
       const unrecognizedFields = new Set(error.errors.flatMap((e) => e.code === "unrecognized_keys" ? e.keys : []));
-      baseLogger.warn(`Received unrecognized fields from Strava: ${unrecognizedFields}`);
+      baseLogger.warn(`Received unrecognized fields from Strava: ${Array.from(unrecognizedFields).join(", ")}`);
 
       // Continue with the valid part of the input if desired
       if (schema instanceof z.ZodObject) {
@@ -156,9 +156,10 @@ export async function fetchRouteGeoJson(
   const gpxParser = new DOMParser();
   const gpxDoc = gpxParser.parseFromString(gpxData, "text/xml");
   const geoJson = tj.gpx(gpxDoc, { styles: false });
+  const lineString = geoJson.features[0].geometry;
 
   baseLogger.info(`Successfully converted GPX to GeoJSON for route ${routeId}`);
-  return geoJson;
+  return lineString;
 }
 
 /**
@@ -255,3 +256,4 @@ export async function refreshToken(userId: string) {
   }
   return
 }
+

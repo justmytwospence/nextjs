@@ -19,9 +19,9 @@ model User {
   name          String?
 
   accounts   Account[]
-  activities UserActivity[]
+  activities Activity[]
   routes     UserRoute[]
-  segments   UserSegment[]
+  segments   Segment[]
   sessions   Session[]
 }
 
@@ -84,54 +84,69 @@ model UserRoute {
   updatedAt           DateTime @map("updated_at")
   userId              String   @map("user_id")
 
-  user     User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  segments UserSegment[]
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([id, userId])
 }
 
-// TODO: split Segments out from the UserSegment relationship
-model UserSegment {
-  // Required fields from SummarySegment
-  activityType  String  @map("activity_type")
-  averageGrade  Float   @map("average_grade")
-  city          String?
-  climbCategory Int     @map("climb_category")
-  country       String?
-  distance      Float
-  effortCount   Int     @default(0) @map("effort_count")
-  elevationHigh Float   @map("elevation_high")
-  elevationLow  Float   @map("elevation_low")
-  id            String  @id
-  maximumGrade  Float   @map("maximum_grade")
-  name          String
-  private       Boolean
-  state         String
-  userId        String  @map("user_id")
+model SegmentEffort {
+  activityId       String   @map("activity_id")
+  averageCadence   Float?   @map("average_cadence")
+  averageHeartrate Float?   @map("average_heartrate")
+  averageWatts     Float?   @map("average_watts")
+  deviceWatts      Boolean?
+  distance         Float
+  elapsedTime      Int      @map("elapsed_time")
+  endIndex         Int      @map("end_index")
+  hidden           Boolean
+  id               String   @id
+  isKom            Boolean  @map("is_kom")
+  komRank          Int?     @map("kom_rank")
+  maxHeartrate     Float?   @map("max_heartrate")
+  movingTime       Int      @map("moving_time")
+  name             String
+  prRank           Int?     @map("pr_rank")
+  segmentId        String   @map("segment_id")
+  startDate        DateTime @map("start_date")
+  startDateLocal   DateTime @map("start_date_local")
+  startIndex       Int      @map("start_index")
 
-  // Optional fields from DetailedSegment
-  athleteCount       Int?      @map("athlete_count")
-  createdAt          DateTime? @map("created_at")
-  hazardous          Boolean?
-  mapResourceState   Int?      @map("map_resource_state")
-  polyline           Json?     @map("polyline")
-  prActivityId       String?   @map("pr_activity_id")
-  prDate             DateTime? @map("pr_date")
-  prElapsedTime      Int?      @map("pr_elapsed_time")
-  starCount          Int?      @map("star_count")
-  starred            Boolean?
-  summaryPolyline    Json?     @map("summary_polyline")
-  totalElevationGain Float?    @map("total_elevation_gain")
-  updatedAt          DateTime? @map("updated_at")
+  activity Activity @relation(fields: [activityId], references: [id])
+  segment  Segment  @relation(fields: [segmentId], references: [id])
+}
 
-  User        User       @relation(fields: [userId], references: [id])
-  UserRoute   UserRoute? @relation(fields: [userRouteId], references: [id])
-  userRouteId String?
+model Segment {
+  activityType       String?  @map("activity_type")
+  athleteCount       Int      @map("athlete_count")
+  averageGrade       Float?   @map("average_grade")
+  city               String?
+  climbCategory      Int?     @map("climb_category")
+  country            String?
+  createdAt          DateTime @map("created_at")
+  distance           Float
+  effortCount        Int      @map("effort_count")
+  elevationHigh      Float?   @map("elevation_high")
+  elevationLow       Float?   @map("elevation_low")
+  hazardous          Boolean
+  id                 String   @id
+  maximumGrade       Float?   @map("maximum_grade")
+  name               String
+  polyline           Json?
+  private            Boolean
+  starCount          Int      @map("star_count")
+  state              String?
+  totalElevationGain Float    @map("total_elevation_gain")
+  updatedAt          DateTime @map("updated_at")
+
+  userId String @map("user_id")
+
+  User          User            @relation(fields: [userId], references: [id])
+  SegmentEffort SegmentEffort[]
 
   @@unique([id, userId])
 }
 
-model UserActivity {
+model Activity {
   // Required fields from SummaryActivity
   achievementCount     Int      @map("achievement_count")
   athleteCount         Int      @map("athlete_count")
@@ -185,7 +200,8 @@ model UserActivity {
   splitsStandard Json?   @map("splits_standard")
 
   // Relations
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  SegmentEffort SegmentEffort[]
 
   @@unique([id, userId])
 }

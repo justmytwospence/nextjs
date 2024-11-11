@@ -3,9 +3,10 @@
 import { baseLogger } from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
 import { convertKeysToCamelCase } from "@/lib/utils";
-import type { DetailedActivity, Route, SummaryActivity } from "@/schemas/strava";
+import type { DetailedActivity, Route, SummaryActivity, DetailedSegment, DetailedSegmentEffort } from "@/schemas/strava";
 import type { Account, UserActivity, UserRoute } from "@prisma/client";
 import { Prisma } from "@prisma/client";
+import { polyline } from "leaflet";
 
 export async function queryUserAccount(
   userId: string,
@@ -314,6 +315,83 @@ export async function queryUserActivity(
     baseLogger.info(`Found route ${activityId} to be ${activity?.name}`);
     return activity;
   } catch (error) {
+    throw error;
+  }
+}
+
+export async function upsertDetailedSegment(
+  detailedSegment: DetailedSegment,
+  userId: string,
+): Promise<void> {
+  baseLogger.info(`Upserting segment ${detailedSegment.name}`);
+
+  const segmentData = convertKeysToCamelCase<DetailedSegment>(detailedSegment);
+
+  const {
+    athletePrEffort,
+    athleteSegmentStats,
+    endLatlng,
+    startLatlng,
+    map,
+    ...inputData
+  } = segmentData
+
+
+  try {
+    await prisma.segment.upsert({
+      where: {
+        id_userId: {
+          id: detailedSegment.id,
+          userId,
+        }
+      },
+      create: {
+        ...inputData,
+        userId,
+        polyline: (map.polyline as unknown) as Prisma.InputJsonValue,
+      },
+      update: {
+        ...inputData,
+        userId,
+        polyline: (map.polyline as unknown) as Prisma.InputJsonValue,
+      }
+    });
+  } catch (error) {
+    baseLogger.error(`Failed to upsert segment ${detailedSegment.name}: ${error}`);
+    throw error;
+  }
+}
+
+export async function upsertSegmentEffort(
+  segmentEffort: DetailedSegmentEffort,
+): Promise<void> {
+  baseLogger.info(`Upserting segment effort ${segmentEffort.name}`);
+
+  const segmentEffortData = convertKeysToCamelCase<DetailedSegmentEffort>(segmentEffort);
+
+  const {
+    athlete,
+    segment,
+    activity,
+    ...inputData
+  } = segmentEffortData
+
+  try {
+    await prisma.segmentEffort.upsert({
+      where: {
+        id: inputData.id
+      },
+      create: {
+        ...inputData,
+        segmentId: segment.id,
+      },
+      update: {
+        ...inputData,
+        segmentId: segment.id,
+      }
+    });
+  } catch (error) {
+    baseLogger.error(`Failed to upsert segment effort ${segmentEffort.name}: ${error}`);
     throw error;
   }
 }

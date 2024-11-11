@@ -1,10 +1,10 @@
 import { auth } from "@/auth";
 import { NextResponse } from "next/server";
 import { baseLogger } from "@/lib/logger";
-import { enrichUserRoute, upsertSummaryActivity, upsertDetailedActivity, upsertUserRoute } from "@/lib/db";
-import { fetchActivities, fetchDetailedActivity, fetchRouteGeoJson, fetchRoutes } from "@/lib/strava-api";
+import { enrichUserRoute, upsertSummaryActivity, upsertDetailedActivity, upsertUserRoute, upsertSegmentEffort, upsertDetailedSegment } from "@/lib/db";
+import { fetchActivities, fetchDetailedActivity, fetchDetailedSegment, fetchRouteGeoJson, fetchRoutes } from "@/lib/strava-api";
 import { HttpError } from "@/lib/errors";
-import { DetailedActivity, SummaryActivity } from "@/schemas/strava";
+import { Route, DetailedActivity, SummaryActivity } from "@/schemas/strava";
 
 type Message =
   | { type: "update_total", message: string, n: number }
@@ -62,7 +62,7 @@ async function retryWithBackoff<T>(
     baseLogger.warn(`Rate limited by Strava, waiting ${delay / 1000} seconds before retry ${retryCount + 1}... Short term usage: ${shortTermUsage}/${shortTermLimit}`);
     await send({
       type: "update_message",
-      message: `Rate limited by Strava ${shortTermUsage} / ${shortTermLimit} in the last 15 minues, waiting ${delay / 1000} seconds before retry ${retryCount + 1}...`,
+      message: `Rate limited by Strava (${shortTermUsage} / ${shortTermLimit} in the last 15 minutes), waiting ${delay / 1000} seconds before retry ${retryCount + 1}...`,
     });
     await new Promise(resolve => setTimeout(resolve, delay));
     return retryWithBackoff(operation, retryCount + 1);
@@ -138,26 +138,27 @@ async function syncRoutes(
       n: routes.length,
     });
 
-    for (const route of routes) {
+    const filteredRoutes = routes.filter(async (route: Route) => {
       const existingRoute = await upsertUserRoute(userId, route);
       if (existingRoute && existingRoute.polyline) {
-        baseLogger.info(`Activity ${existingRoute.name} already exists in detailed form, skipping...`);
+        baseLogger.info(`Route ${route.name} already exists in detailed form, skipping...`);
         await send({
           type: "update_current",
-          message: `Found ${routes.length} activities from Strava, already synced ${existingRoute.name} `
-        })
-        routes.splice(routes.indexOf(route), 1);
+          message: `Found ${routes.length} activities from Strava, already synced ${route.name} `
+        });
+        return false;
       }
-    }
+      return true;
+    });
 
-    baseLogger.info(`Syncing ${routes.length} new routes`);
+    baseLogger.info(`Syncing ${filteredRoutes.length} new routes`);
     await send({
       type: "update_total",
-      message: `Syncing ${routes.length} activities from Strava...`,
+      message: `Syncing ${filteredRoutes.length} activities from Strava...`,
       n: routes.length
     });
 
-    for (const route of routes) {
+    for (const route of filteredRoutes) {
       try {
         await send({
           type: "update_current",
@@ -210,10 +211,8 @@ async function syncActivities(
     });
 
     const filteredActivities = summaryActivities.filter(async (summaryActivity: SummaryActivity) => {
-      const existingActivity = await upsertSummaryActivity(userId, summaryActivity);
-      if (existingActivity?.polyline) {
-        baseLogger.info(`Activity ${summaryActivity.name} already exists in detailed form, skipping...`);
-        await send({
+      const existingActivity = await upsertSummaryActivity(userId, summaryActivity); if (existingActivity?.polyline) {
+        baseLogger.info(`Activity ${summaryActivity.name} already exists in detailed form, skipping...`); await send({
           type: "update_current",
           message: `Found ${summaryActivities.length} activities from Strava, already synced ${existingActivity.name} `
         });
@@ -237,10 +236,19 @@ async function syncActivities(
           message: `Syncing activity ${summaryActivity.name}...`,
         });
 
-        await retryWithBackoff(async () => {
-          const detailedActivity = await fetchDetailedActivity(userId, summaryActivity.id);
-          await upsertDetailedActivity(userId, detailedActivity);
+        const detailedActivity = await retryWithBackoff(async () => {
+          return await fetchDetailedActivity(userId, summaryActivity.id);
         });
+
+        await upsertDetailedActivity(userId, detailedActivity);
+
+        if (detailedActivity.segment_efforts) {
+          for (const segmentEffort of detailedActivity.segment_efforts) {
+            upsertSegmentEffort(segmentEffort);
+            upsertDetailedSegment(segmentEffort?.segment, userId);
+          }
+        }
+
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : "Unknown error";
         baseLogger.error(`Failed to sync activity ${summaryActivity.name}: ${errorMessage}`);
