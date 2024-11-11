@@ -1,25 +1,25 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 async function main() {
   const user = await prisma.user.upsert({
     where: {
-      id: 'user_1',
+      id: "user_1",
     },
     update: {},
     create: {
-      id: 'user_1',
-      email: 'test@example.com',
-      name: 'Test User',
+      id: "user_1",
+      email: "test@example.com",
+      name: "Test User",
     },
   });
 
   await prisma.userRoute.createMany({
     data: [
       {
-        id: 'route_1',
-        name: 'Morning Ride',
-        description: 'A scenic ride through the countryside.',
+        id: "route_1",
+        name: "Morning Ride",
+        description: "A scenic ride through the countryside.",
         distance: 25000,
         elevationGain: 500,
         estimatedMovingTime: 5400,
@@ -29,11 +29,11 @@ async function main() {
         subType: 1,
         timestamp: Math.floor(new Date().getTime() / 1000),
         summaryPolyline: {
-          type: 'FeatureCollection',
+          type: "FeatureCollection",
           features: [{
-            type: 'Feature',
+            type: "Feature",
             geometry: {
-              type: 'LineString',
+              type: "LineString",
               coordinates: [
                 [-122.483696, 37.833818, 10],
                 [-122.483482, 37.833174, 15],
@@ -66,9 +66,9 @@ async function main() {
         userId: "user_1",
       },
       {
-        id: 'route_2',
-        name: 'City Run',
-        description: 'An urban running route.',
+        id: "route_2",
+        name: "City Run",
+        description: "An urban running route.",
         distance: 8000,
         elevationGain: 100,
         estimatedMovingTime: 3600,
@@ -78,11 +78,11 @@ async function main() {
         subType: 5,
         timestamp: Math.floor(new Date().getTime() / 1000),
         summaryPolyline: {
-          type: 'FeatureCollection',
+          type: "FeatureCollection",
           features: [{
-            type: 'Feature',
+            type: "Feature",
             geometry: {
-              type: 'LineString',
+              type: "LineString",
               coordinates: [
                 [-122.4194, 37.7749, 5],
                 [-122.4184, 37.7759, 10],
