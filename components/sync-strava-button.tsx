@@ -41,7 +41,7 @@ export default function SyncStravaButton({ type }: { type: string }) {
       failedItems: []
     });
 
-    const PER_PAGE = 100;
+    const PER_PAGE = 5;
     const events = new EventSource(`/api/stream-sync?type=${type}&per_page=${PER_PAGE}`);
 
     events.onmessage = (event) => {
@@ -52,6 +52,7 @@ export default function SyncStravaButton({ type }: { type: string }) {
           setProgress(prev => ({
             ...prev,
             totalItems: data.n,
+            currentItem: 0,
             message: data.message,
           }));
           break;
@@ -67,7 +68,7 @@ export default function SyncStravaButton({ type }: { type: string }) {
             ...prev,
             failedItems: [
               ...prev.failedItems,
-              { name: data.route, error: data.error }
+              { name: data.name, error: data.error }
             ],
           }));
           break;

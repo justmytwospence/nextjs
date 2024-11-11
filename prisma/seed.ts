@@ -27,7 +27,7 @@ async function main() {
         starred: true,
         type: 1,
         subType: 1,
-        timestamp: new Date(),
+        timestamp: Math.floor(new Date().getTime() / 1000),
         summaryPolyline: {
           type: 'FeatureCollection',
           features: [{
@@ -76,7 +76,7 @@ async function main() {
         starred: false,
         type: 5,
         subType: 5,
-        timestamp: new Date(),
+        timestamp: Math.floor(new Date().getTime() / 1000),
         summaryPolyline: {
           type: 'FeatureCollection',
           features: [{

@@ -69,35 +69,24 @@ async function makeStravaRequest(
   return response;
 }
 
-const validateAndLogExtras = (input: any, schema: z.ZodObject<any> | z.ZodArray<any>): any => {
-  const parsedData = schema.safeParse(input);
+const validateAndLogExtras = (data: any, schema: z.ZodObject<any> | z.ZodArray<any>): any => {
+  try {
+    const validatedData = schema.parse(data);
+    return validatedData;
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      // Log unrecognized fields
+      const unrecognizedFields = new Set(error.errors.flatMap((e) => e.code === "unrecognized_keys" ? e.keys : []));
+      baseLogger.warn(`Received unrecognized fields from Strava: ${unrecognizedFields}`);
 
-  if (!parsedData.success) {
-    baseLogger.error(`Failed to validate input: ${JSON.stringify(parsedData.error.errors, null, 2)}`);
-    return null;
-  }
-
-  if (schema instanceof z.ZodArray) {
-    if (schema.element instanceof z.ZodObject) {
-      input.forEach((item: any) => {
-        const inputKeys = Object.keys(item);
-        const schemaKeys = Object.keys(schema.element.shape);
-        const extraKeys = inputKeys.filter(key => !schemaKeys.includes(key));
-        extraKeys.forEach(key => {
-          baseLogger.warn(`Found extra key in array element: ${key} with value: ${JSON.stringify(item[key])}, consider adding to Zod/Prisma schemas`);
-        });
-      });
+      // Continue with the valid part of the input if desired
+      if (schema instanceof z.ZodObject) {
+        return schema.strip().parse(data);
+      } else if (schema instanceof z.ZodArray) {
+        return z.array(schema.element.strip()).parse(data);
+      }
     }
-  } else if (schema instanceof z.ZodObject) {
-    const inputKeys = Object.keys(input);
-    const schemaKeys = Object.keys(schema.shape);
-    const extraKeys = inputKeys.filter(key => !schemaKeys.includes(key));
-    extraKeys.forEach(key => {
-      baseLogger.warn(`Found extra key: ${key} with value: ${JSON.stringify(input[key], null, 2)}`);
-    });
   }
-
-  return parsedData.data;
 };
 
 /**
@@ -132,7 +121,7 @@ export async function fetchRoutes(
  */
 export async function fetchDetailedSegment(
   userId: string,
-  segmentId: number
+  segmentId: string
 ): Promise<DetailedSegment> {
   baseLogger.info(`Fetching full segment ${segmentId} from Strava`);
 
@@ -202,7 +191,7 @@ export async function fetchActivities(
  */
 export async function fetchDetailedActivity(
   userId: string,
-  activityId: number
+  activityId: string
 ): Promise<DetailedActivity> {
   baseLogger.info(`Fetching detailed activity ${activityId} from Strava`);
 

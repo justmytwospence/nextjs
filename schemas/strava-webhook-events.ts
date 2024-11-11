@@ -10,7 +10,7 @@ export const WebhookEventUpdatesSchema = z.object({
 export const WebhookEventSchema = z.object({
   aspect_type: z.enum(["create", "update", "delete"]),
   event_time: z.number(),
-  object_id: z.number(),
+  object_id: z.string(),
   object_type: z.enum(["activity", "athlete"]),
   owner_id: z.string(),
   subscription_id: z.number(),

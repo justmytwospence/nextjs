@@ -66,22 +66,20 @@ model VerificationToken {
   @@id([identifier, token])
 }
 
-// TODO: split Routes out from the UserRoute relationship 
 model UserRoute {
-  id String @id
-
   createdAt           DateTime @map("created_at")
   description         String?
   distance            Float
   elevationGain       Float    @map("elevation_gain")
   estimatedMovingTime Float    @map("estimated_moving_time")
+  id                  String   @id
   name                String
   polyline            Json?
   private             Boolean
   starred             Boolean
   subType             Int      @map("sub_type")
   summaryPolyline     Json     @map("summary_polyline")
-  timestamp           DateTime
+  timestamp           BigInt
   type                Int?
   updatedAt           DateTime @map("updated_at")
   userId              String   @map("user_id")
@@ -95,8 +93,6 @@ model UserRoute {
 // TODO: split Segments out from the UserSegment relationship
 model UserSegment {
   // Required fields from SummarySegment
-  id Int @id
-
   activityType  String  @map("activity_type")
   averageGrade  Float   @map("average_grade")
   city          String?
@@ -106,6 +102,7 @@ model UserSegment {
   effortCount   Int     @default(0) @map("effort_count")
   elevationHigh Float   @map("elevation_high")
   elevationLow  Float   @map("elevation_low")
+  id            String  @id
   maximumGrade  Float   @map("maximum_grade")
   name          String
   private       Boolean
@@ -113,30 +110,29 @@ model UserSegment {
   userId        String  @map("user_id")
 
   // Optional fields from DetailedSegment
-  athleteCount       Int?       @map("athlete_count")
-  createdAt          DateTime?  @map("created_at")
+  athleteCount       Int?      @map("athlete_count")
+  createdAt          DateTime? @map("created_at")
   hazardous          Boolean?
-  mapResourceState   Int?       @map("map_resource_state")
-  polyline           Json?      @map("polyline")
-  prActivityId       Int?       @map("pr_activity_id")
-  prDate             DateTime?  @map("pr_date")
-  prElapsedTime      Int?       @map("pr_elapsed_time")
-  starCount          Int?       @map("star_count")
+  mapResourceState   Int?      @map("map_resource_state")
+  polyline           Json?     @map("polyline")
+  prActivityId       String?   @map("pr_activity_id")
+  prDate             DateTime? @map("pr_date")
+  prElapsedTime      Int?      @map("pr_elapsed_time")
+  starCount          Int?      @map("star_count")
   starred            Boolean?
-  summaryPolyline    Json?      @map("summary_polyline")
-  totalElevationGain Float?     @map("total_elevation_gain")
-  updatedAt          DateTime?  @map("updated_at")
-  User               User       @relation(fields: [userId], references: [id])
-  UserRoute          UserRoute? @relation(fields: [userRouteId], references: [id])
-  userRouteId        String?
+  summaryPolyline    Json?     @map("summary_polyline")
+  totalElevationGain Float?    @map("total_elevation_gain")
+  updatedAt          DateTime? @map("updated_at")
+
+  User        User       @relation(fields: [userId], references: [id])
+  UserRoute   UserRoute? @relation(fields: [userRouteId], references: [id])
+  userRouteId String?
 
   @@unique([id, userId])
 }
 
 model UserActivity {
   // Required fields from SummaryActivity
-  id String @id
-
   achievementCount     Int      @map("achievement_count")
   athleteCount         Int      @map("athlete_count")
   averageSpeed         Float?   @map("average_speed")
@@ -146,12 +142,13 @@ model UserActivity {
   deviceWatts          Boolean?
   distance             Float
   elapsedTime          Int      @map("elapsed_time")
-  elevationHigh        Float?   @map("elevation_high")
-  elevationLow         Float?   @map("elevation_low")
+  elevHigh             Float?   @map("elev_high")
+  elevLow              Float?   @map("elev_low")
   flagged              Boolean
   gearId               String?  @map("gear_id")
   hasKudoed            Boolean  @map("has_kudoed")
-  hideFromHome         Boolean  @map("hide_from_home")
+  hideFromHome         Boolean? @map("hide_from_home")
+  id                   String   @id
   kilojoules           Float?
   kudosCount           Int      @map("kudos_count")
   manual               Boolean

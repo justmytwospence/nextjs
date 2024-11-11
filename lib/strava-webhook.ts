@@ -1,4 +1,4 @@
-import { deleteUserAccount, deleteUserActivity, upsertUserActivity } from "@/lib/db";
+import { deleteUserAccount, deleteUserActivity, upsertDetailedActivity } from "@/lib/db";
 import { baseLogger } from "@/lib/logger";
 import { WebhookEvent } from "@/schemas/strava-webhook-events";
 import { fetchDetailedActivity } from "./strava-api";
@@ -10,7 +10,7 @@ export default async function processWebhookEvent(event: WebhookEvent) {
         case "create":
         case "update":
           const detailedActivity = await fetchDetailedActivity(event.owner_id, event.object_id);
-          return await upsertUserActivity(event.owner_id, detailedActivity);
+          return await upsertDetailedActivity(event.owner_id, detailedActivity);
         case "delete":
           return await deleteUserActivity(event.owner_id, "strava");
       }

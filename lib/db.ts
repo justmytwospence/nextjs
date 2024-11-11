@@ -2,8 +2,8 @@
 
 import { baseLogger } from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
+import { convertKeysToCamelCase } from "@/lib/utils";
 import type { DetailedActivity, Route, SummaryActivity } from "@/schemas/strava";
-import polyline from "@mapbox/polyline";
 import type { Account, UserActivity, UserRoute } from "@prisma/client";
 import { Prisma } from "@prisma/client";
 
@@ -120,34 +120,41 @@ export async function upsertUserRoute(
 ): Promise<UserRoute> {
   baseLogger.info(`Upserting route ${route.name}`);
 
-  const data = {
-    createdAt: new Date(route.created_at),
-    // description: route.description,
-    distance: route.distance,
-    elevationGain: route.elevation_gain,
-    estimatedMovingTime: route.estimated_moving_time,
-    id: route.id_str,
-    name: route.name,
-    private: route.private,
-    starred: Boolean(route.starred),
-    subType: route.sub_type,
-    summaryPolyline: polyline.toGeoJSON(route.map.summary_polyline),
-    timestamp: new Date(route.timestamp),
-    type: route.type,
-    updatedAt: new Date(route.updated_at),
-    userId: userId
-  }
+  const routeData = convertKeysToCamelCase<Route>(route);
+
+  const {
+    id,
+    idStr,
+    map,
+    athlete,
+    segments,
+    waypoints,
+    ...inputData
+  } = routeData
 
   try {
-    return await prisma.userRoute.upsert({
+    const route = await prisma.userRoute.upsert({
       where: {
-        id: route.id_str
+        id: idStr,
       },
-      create: data,
-      update: data,
+      create: {
+        ...inputData,
+        id: idStr,
+        polyline: (map.polyline as unknown) as Prisma.InputJsonValue || undefined,
+        summaryPolyline: (map.summaryPolyline as unknown) as Prisma.InputJsonValue,
+        userId: userId,
+      },
+      update: {
+        ...inputData,
+        id: idStr,
+        polyline: (map.polyline as unknown) as Prisma.InputJsonValue || undefined,
+        summaryPolyline: (map.summaryPolyline as unknown) as Prisma.InputJsonValue,
+        userId: userId,
+      },
     });
 
     baseLogger.info(`Route ${route.name} upserted successfully`);
+    return route
   } catch (error) {
     throw error;
   } finally {
@@ -159,11 +166,11 @@ export async function enrichUserRoute(
   userId: string,
   routeId: string,
   route: JSON
-): Promise<void> {
+): Promise<UserRoute> {
   baseLogger.info(`Enriching route ${routeId}`);
 
   try {
-    await prisma.userRoute.update({
+    return await prisma.userRoute.update({
       where: {
         id: routeId,
         userId,
@@ -179,81 +186,88 @@ export async function enrichUserRoute(
   }
 }
 
-export async function upsertUserActivity(
+export async function upsertSummaryActivity(
   userId: string,
-  activity: SummaryActivity | DetailedActivity
+  activity: SummaryActivity
 ): Promise<UserActivity> {
   baseLogger.info(`Upserting activity ${activity.name}`);
 
-  const data = {
-    // Base fields that exist in both types
+  const activityData = convertKeysToCamelCase<SummaryActivity>(activity);
 
-    id: activity.id.toString(),
-    userId,
-    achievementCount: activity.achievement_count ?? 0,
-    athleteCount: activity.athlete_count ?? 0,
-    averageSpeed: activity.average_speed,
-    averageWatts: activity.average_watts,
-    commentCount: activity.comment_count ?? 0,
-    commute: activity.commute ?? false,
-    deviceWatts: activity.device_watts,
-    distance: activity.distance,
-    elapsedTime: activity.elapsed_time,
-    elevationHigh: activity.elev_high,
-    elevationLow: activity.elev_low,
-    flagged: activity.flagged ?? false,
-    gearId: activity.gear_id,
-    hasKudoed: activity.has_kudoed ?? false,
-    hideFromHome: activity.hide_from_home ?? false,
-    kilojoules: activity.kilojoules,
-    kudosCount: activity.kudos_count ?? 0,
-    manual: activity.manual ?? false,
-    maxSpeed: activity.max_speed,
-    maxWatts: activity.max_watts,
-    movingTime: activity.moving_time,
-    name: activity.name,
-    photoCount: activity.photo_count ?? 0,
-    private: activity.private ?? false,
-    sportType: activity.sport_type,
-    startDate: new Date(activity.start_date),
-    startDateLocal: new Date(activity.start_date_local),
-    timezone: activity.timezone,
-    totalElevationGain: activity.total_elevation_gain,
-    totalPhotoCount: activity.total_photo_count ?? 0,
-    trainer: activity.trainer ?? false,
-    type: activity.type,
-    uploadId: activity.upload_id?.toString() ?? "",
-    weightedAverageWatts: activity.weighted_average_watts,
-    workoutType: activity.workout_type,
-    summaryPolyline: activity.map?.summary_polyline
-      ? polyline.toGeoJSON(activity.map.summary_polyline)
-      : null,
-
-    // DetailedActivity specific fields - will be undefined if not present
-
-    polyline: activity.map?.polyline
-      ? polyline.toGeoJSON(activity.map.polyline)
-      : null,
-    calories: "calories" in activity ? activity.calories : undefined,
-    description: "description" in activity ? activity.description : undefined,
-    deviceName: "device_name" in activity ? activity.device_name : undefined,
-    embedToken: "embed_token" in activity ? activity.embed_token : undefined,
-    photos: "photos" in activity ? (activity.photos as Prisma.InputJsonValue) : undefined,
-  };
+  const {
+    map,
+    athlete,
+    ...inputData
+  } = activityData
 
   try {
-    return await prisma.userActivity.upsert({
+    const activity = await prisma.userActivity.upsert({
       where: {
-        id_userId: {
-          id: activity.id.toString(),
-          userId,
-        }
+        id: inputData.id,
       },
-      create: data,
-      update: data,
+      create: {
+        ...inputData,
+        summaryPolyline: (map.summaryPolyline as unknown) as Prisma.InputJsonValue || undefined,
+        userId: userId,
+      },
+      update: {
+        ...inputData,
+        summaryPolyline: (map.summaryPolyline as unknown) as Prisma.InputJsonValue || undefined,
+        userId: userId,
+      },
     });
 
     baseLogger.info(`Activity ${activity.name} upserted successfully`);
+    return activity
+  } catch (error) {
+    baseLogger.error(`Failed to upsert activity ${activity.name}: ${error}`);
+    throw error;
+  } finally {
+    await prisma.$disconnect();
+  }
+}
+
+export async function upsertDetailedActivity(
+  userId: string,
+  activity: DetailedActivity
+): Promise<UserActivity> {
+  baseLogger.info(`Upserting activity ${activity.name}`);
+
+  const activityData = convertKeysToCamelCase<DetailedActivity>(activity);
+
+  const {
+    map,
+    athlete,
+    bestEfforts,
+    gear,
+    photos,
+    segmentEfforts,
+    splitsMetric,
+    splitsStandard,
+    laps,
+    ...inputData
+  } = activityData
+
+  try {
+    const activity = await prisma.userActivity.upsert({
+      where: {
+        id: inputData.id,
+      },
+      create: {
+        ...inputData,
+        polyline: (map.polyline as unknown) as Prisma.InputJsonValue,
+        summaryPolyline: (map.summary_polyline as unknown) as Prisma.InputJsonValue,
+        userId: userId,
+      },
+      update: {
+        ...inputData,
+        polyline: (map.polyline as unknown) as Prisma.InputJsonValue,
+        summaryPolyline: (map.summary_polyline as unknown) as Prisma.InputJsonValue,
+        userId: userId,
+      },
+    });
+    baseLogger.info(`Activity ${activity.name} upserted successfully`);
+    return activity
   } catch (error) {
     baseLogger.error(`Failed to upsert activity ${activity.name}: ${error}`);
     throw error;

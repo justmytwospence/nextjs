@@ -1,14 +1,15 @@
 import { auth } from "@/auth";
 import { NextResponse } from "next/server";
 import { baseLogger } from "@/lib/logger";
-import { enrichUserRoute, upsertUserActivity, upsertUserRoute } from "@/lib/db";
+import { enrichUserRoute, upsertSummaryActivity, upsertDetailedActivity, upsertUserRoute } from "@/lib/db";
 import { fetchActivities, fetchDetailedActivity, fetchRouteGeoJson, fetchRoutes } from "@/lib/strava-api";
 import { HttpError } from "@/lib/errors";
+import { DetailedActivity, SummaryActivity } from "@/schemas/strava";
 
 type Message =
   | { type: "update_total", message: string, n: number }
   | { type: "update_current", message: string }
-  | { type: "update_failed", route: string, error: string }
+  | { type: "update_failed", name: string, error: string }
   | { type: "update_message", message: string }
   | { type: "complete", error?: string }
 
@@ -130,18 +131,29 @@ async function syncRoutes(
       return;
     }
 
+    baseLogger.info(`Found ${routes.length} routes from Strava`);
+    await send({
+      type: "update_total",
+      message: `Found ${routes.length} activities from Strava...`,
+      n: routes.length,
+    });
+
     for (const route of routes) {
       const existingRoute = await upsertUserRoute(userId, route);
       if (existingRoute && existingRoute.polyline) {
-        baseLogger.info(`Route ${route.name} already enriched, removing from list to enrich...`);
+        baseLogger.info(`Activity ${existingRoute.name} already exists in detailed form, skipping...`);
+        await send({
+          type: "update_current",
+          message: `Found ${routes.length} activities from Strava, already synced ${existingRoute.name} `
+        })
         routes.splice(routes.indexOf(route), 1);
       }
     }
 
-    baseLogger.info(`Syncing ${routes.length} routes fetched from Strava`);
+    baseLogger.info(`Syncing ${routes.length} new routes`);
     await send({
       type: "update_total",
-      message: `Syncing ${routes.length} routes fetched from Strava`,
+      message: `Syncing ${routes.length} activities from Strava...`,
       n: routes.length
     });
 
@@ -160,7 +172,7 @@ async function syncRoutes(
         const errorMessage = error instanceof Error ? error.message : "Unknown error";
         await send({
           type: "update_failed",
-          route: route.name,
+          name: route.name,
           error: `Failed to sync route ${route.name}: ${errorMessage}`,
         });
       }
@@ -177,10 +189,10 @@ async function syncActivities(
   userId: string,
   searchParams: URLSearchParams,
 ) {
-  const perPage = parseInt(searchParams.get("per_page") || "2");
-  const page = parseInt(searchParams.get("page") || "1");
-
   try {
+    const perPage = parseInt(searchParams.get("per_page") || "2");
+    const page = parseInt(searchParams.get("page") || "1");
+
     const summaryActivities = await retryWithBackoff(async () => {
       return fetchActivities(userId, perPage, page)
     });
@@ -190,22 +202,35 @@ async function syncActivities(
       return;
     }
 
-    for (const summaryActivity of summaryActivities) {
-      const existingActivity = await upsertUserActivity(userId, summaryActivity);
-      if (existingActivity && existingActivity.polyline) {
-        baseLogger.info(`Activity ${summaryActivity.name} already exists in detailed form, skipping...`);
-        summaryActivities.splice(summaryActivities.indexOf(summaryActivity), 1);
-      }
-    }
-
-    baseLogger.info(`Syncing ${summaryActivities.length} activities fetched from Strava`);
+    baseLogger.info(`Found ${summaryActivities.length} activities from Strava`);
     await send({
       type: "update_total",
-      message: `Syncing ${summaryActivities.length} activities fetched from Strava...`,
-      n: summaryActivities.length
+      message: `Found ${summaryActivities.length} activities from Strava...`,
+      n: summaryActivities.length,
     });
 
-    for (const summaryActivity of summaryActivities) {
+    const filteredActivities = summaryActivities.filter(async (summaryActivity: SummaryActivity) => {
+      const existingActivity = await upsertSummaryActivity(userId, summaryActivity);
+      if (existingActivity?.polyline) {
+        baseLogger.info(`Activity ${summaryActivity.name} already exists in detailed form, skipping...`);
+        await send({
+          type: "update_current",
+          message: `Found ${summaryActivities.length} activities from Strava, already synced ${existingActivity.name} `
+        });
+        return false;
+      }
+      return true;
+    });
+
+    baseLogger.info(`Syncing ${filteredActivities.length} new activities`);
+    await send({
+      type: "update_total",
+      message: `Syncing ${filteredActivities.length} activities from Strava...`,
+      n: filteredActivities.length,
+    });
+
+
+    for (const summaryActivity of filteredActivities) {
       try {
         await send({
           type: "update_current",
@@ -214,14 +239,14 @@ async function syncActivities(
 
         await retryWithBackoff(async () => {
           const detailedActivity = await fetchDetailedActivity(userId, summaryActivity.id);
-          await upsertUserActivity(userId, detailedActivity);
+          await upsertDetailedActivity(userId, detailedActivity);
         });
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : "Unknown error";
         baseLogger.error(`Failed to sync activity ${summaryActivity.name}: ${errorMessage}`);
         await send({
           type: "update_failed",
-          route: summaryActivity.name,
+          name: summaryActivity.name,
           error: `Failed to sync activity ${summaryActivity.name}: ${errorMessage}`,
         });
       }
