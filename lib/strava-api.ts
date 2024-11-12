@@ -94,19 +94,16 @@ const recursivelyStripSchema = (schema: z.ZodTypeAny): z.ZodTypeAny => {
 
 const validateAndLogExtras = (data: any, schema: z.ZodObject<any> | z.ZodArray<any>): any => {
   try {
-    baseLogger.debug('Validating data:', data);
     const validatedData = schema.parse(data);
     return validatedData;
   } catch (error) {
     if (error instanceof z.ZodError) {
-      baseLogger.debug('Validation error:', error.errors);
-
       // Check if we only have unrecognized keys errors
       const hasOnlyUnrecognizedKeys = error.errors.every(e => e.code === "unrecognized_keys");
 
       if (hasOnlyUnrecognizedKeys) {
         const strippedSchema = recursivelyStripSchema(schema);
-        baseLogger.debug('Using stripped schema for:', data);
+        baseLogger.debug("Using stripped schema for:", data);
         return strippedSchema.parse(data);
       }
 
@@ -127,14 +124,8 @@ const validateAndLogExtras = (data: any, schema: z.ZodObject<any> | z.ZodArray<a
 
       // If we only have unrecognized key errors, we can safely strip and continue
       if (hasOnlyUnrecognizedKeys) {
-        baseLogger.debug('Stripping unrecognized keys...');
-
         const strippedSchema = deepStrip(schema);
-        baseLogger.debug(`Stripped schema: ${strippedSchema.toString()}`);
-
         const validatedData = strippedSchema.parse(data);
-        baseLogger.debug(`Stripped validated data: ${JSON.stringify(validatedData, null, 2)}`);
-
         return validatedData;
       }
 
