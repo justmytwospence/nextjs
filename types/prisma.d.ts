@@ -1,25 +1,24 @@
-import { UserActivity, UserRoute } from "@prisma/client";
+import { Activity, UserRoute } from "@prisma/client";
 
 declare module "@prisma/client" {
-  type RequiredFields = {
-    id: string;
-    name: string;
-  }
-
   type PolylineRequirement = {
     polyline: Json;
     summaryPolyline?: Json;
   } | {
     polyline?: Json;
     summaryPolyline: Json;
-  } | {
-    polyline: Json;
-    summaryPolyline: Json;
   }
 
-  export type Mappable = (
-    Pick<UserRoute, 'id' | 'name' | 'polyline' | 'summaryPolyline'> |
-    Pick<UserActivity, 'id' | 'name' | 'polyline' | 'summaryPolyline'>) &
-    RequiredFields &
-    PolylineRequirement;
+  export type MappableActivity = Pick<Activity, "id", "name", "description", "distance", "movingTime", "totalElevationGain"> & { type: "activity" };
+
+  export type Mappable = {
+    id: string;
+    name: string;
+    distance: number;
+    description: string;
+  } & PolylineRequirement
+    & (
+      | (Pick<UserRoute, "estimatedMovingTime" | "elevationGain"> & { type: "route" })
+      | MappableActivity
+    );
 }

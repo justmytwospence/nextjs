@@ -23,10 +23,9 @@ export default function ElevationChart({
     return <Spinner className="w-6 h-6 text-blue-500" />;
   }
 
-  const polyline = mappable.polyline || mappable.summaryPolyline;
-  const distance = computeDistanceMiles(polyline);
-  const elevationData = polyline.coordinates.map(point => point[2] * 3.28084);
-  const gradientData = computeGradient(polyline);
+  const distance = computeDistanceMiles(mappable.polyline);
+  const elevationData = mappable.polyline.coordinates.map(point => point[2] * 3.28084);
+  const gradientData = computeGradient(mappable.polyline);
 
   const createChartData = (isLarge = false) => ({
     labels: distance,
@@ -62,6 +61,7 @@ export default function ElevationChart({
 
   const createChartOptions = (isLarge = false) => ({
     responsive: true,
+    maintainAspectRatio: false,  // Changed this to always false
     animation: {
       duration: 0 // Set duration to 0 to disable animation
     },
@@ -157,10 +157,7 @@ export default function ElevationChart({
 
   return (
     <>
-      <div
-        onClick={() => setDialogOpen(true)}
-        className="cursor-pointer hover:opacity-90 transition-opacity"
-      >
+      <div className="w-full h-full">
         <Line data={createChartData()} options={createChartOptions()} />
       </div>
 

@@ -5,6 +5,7 @@ import LazyMap from "@/components/lazy-map";
 import { Navigation, TrendingUp } from "lucide-react";
 import ElevationChart from "@/components/elevation-chart";
 import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
+import { ResizeObserverComponent } from "@/components/resize-observer";
 
 
 export default function RouteDetail({ mappable }: { mappable: UserRoute }) {
@@ -55,7 +56,7 @@ export default function RouteDetail({ mappable }: { mappable: UserRoute }) {
         </div>
 
         <div className="space-y-4">
-          <div className="h-[200px]">
+          <div className="h-[200px] md:h-[400px] w-full">
             <ElevationChart mappable={mappable} maxGradient={0.1} />
           </div>
         </div>

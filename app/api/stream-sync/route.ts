@@ -1,7 +1,7 @@
 import { auth } from "@/auth";
 import { NextResponse } from "next/server";
 import { baseLogger } from "@/lib/logger";
-import { enrichUserRoute, upsertSummaryActivity, upsertDetailedActivity, upsertUserRoute, upsertSegmentEffort, upsertDetailedSegment } from "@/lib/db";
+import { enrichUserRoute, upsertSummaryActivity, upsertDetailedActivity, upsertUserRoute, upsertSegmentEffort, upsertSegment } from "@/lib/db";
 import { fetchActivities, fetchDetailedActivity, fetchDetailedSegment, fetchRouteGeoJson, fetchRoutes } from "@/lib/strava-api";
 import { HttpError } from "@/lib/errors";
 import { Route, DetailedActivity, SummaryActivity } from "@/schemas/strava";
@@ -140,7 +140,7 @@ async function syncRoutes(
 
     const filteredRoutes = routes.filter(async (route: Route) => {
       const existingRoute = await upsertUserRoute(userId, route);
-      if (existingRoute && existingRoute.polyline) {
+      if (existingRoute.polyline) {
         baseLogger.info(`Route ${route.name} already exists in detailed form, skipping...`);
         await send({
           type: "update_current",
@@ -211,7 +211,8 @@ async function syncActivities(
     });
 
     const filteredActivities = summaryActivities.filter(async (summaryActivity: SummaryActivity) => {
-      const existingActivity = await upsertSummaryActivity(userId, summaryActivity); if (existingActivity?.polyline) {
+      const existingActivity = await upsertSummaryActivity(userId, summaryActivity);
+      if (existingActivity?.polyline) {
         baseLogger.info(`Activity ${summaryActivity.name} already exists in detailed form, skipping...`); await send({
           type: "update_current",
           message: `Found ${summaryActivities.length} activities from Strava, already synced ${existingActivity.name} `
@@ -242,10 +243,11 @@ async function syncActivities(
 
         await upsertDetailedActivity(userId, detailedActivity);
 
+        // store segment efforts and detailed segments if the activity has them
         if (detailedActivity.segment_efforts) {
           for (const segmentEffort of detailedActivity.segment_efforts) {
             upsertSegmentEffort(segmentEffort);
-            upsertDetailedSegment(segmentEffort?.segment, userId);
+            upsertSegment(segmentEffort?.segment, userId);
           }
         }
 

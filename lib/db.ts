@@ -3,10 +3,9 @@
 import { baseLogger } from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
 import { convertKeysToCamelCase } from "@/lib/utils";
-import type { DetailedActivity, Route, SummaryActivity, DetailedSegment, DetailedSegmentEffort } from "@/schemas/strava";
-import type { Account, UserActivity, UserRoute } from "@prisma/client";
+import type { DetailedActivity, DetailedSegment, DetailedSegmentEffort, Route, SummaryActivity, SummarySegment } from "@/schemas/strava";
+import type { Account, Activity, MappableActivity, Mappable, UserRoute } from "@prisma/client";
 import { Prisma } from "@prisma/client";
-import { polyline } from "leaflet";
 
 export async function queryUserAccount(
   userId: string,
@@ -53,13 +52,13 @@ export async function deleteUserAccount(
   }
 }
 
-export async function deleteUserActivity(
+export async function deleteActivity(
   userId: string,
   activityId: string
 ): Promise<void> {
   try {
     baseLogger.info(`Deleting activity ${activityId}`);
-    await prisma.userActivity.delete({
+    await prisma.activity.delete({
       where: {
         id_userId: {
           id: activityId,
@@ -89,6 +88,43 @@ export async function queryUserRoutes(userId: string): Promise<UserRoute[]> {
     });
     baseLogger.info(`Found ${routes.length} routes`);
     return routes;
+  } catch (error) {
+    throw error;
+  }
+}
+
+export async function queryMappables(userId: string): Promise<Mappable[]> {
+  try {
+    baseLogger.info(`Querying mappables for user ${userId}`);
+    const [routes, activities] = await Promise.all([
+      prisma.userRoute.findMany({
+        where: {
+          userId,
+          OR: [
+            { summaryPolyline: { not: Prisma.JsonNullValueFilter.JsonNull } },
+            { polyline: { not: Prisma.JsonNullValueFilter.JsonNull } }
+          ]
+        },
+      }),
+      prisma.activity.findMany({
+        where: {
+          userId,
+          movingTime: {
+            gt: 0
+          },
+          OR: [
+            { summaryPolyline: { not: Prisma.JsonNullValueFilter.JsonNull } },
+            { polyline: { not: Prisma.JsonNullValueFilter.JsonNull } }
+          ]
+        },
+      })
+    ]);
+    const mappables = [
+      ...routes.map(route => ({ ...route, type: "route" })),
+      ...activities.map(activity => ({ ...activity, type: "activity" }))
+    ];
+    baseLogger.info(`Found ${mappables.length} mappables`);
+    return mappables;
   } catch (error) {
     throw error;
   }
@@ -127,9 +163,7 @@ export async function upsertUserRoute(
     id,
     idStr,
     map,
-    athlete,
     segments,
-    waypoints,
     ...inputData
   } = routeData
 
@@ -190,19 +224,18 @@ export async function enrichUserRoute(
 export async function upsertSummaryActivity(
   userId: string,
   activity: SummaryActivity
-): Promise<UserActivity> {
+): Promise<Activity> {
   baseLogger.info(`Upserting activity ${activity.name}`);
 
   const activityData = convertKeysToCamelCase<SummaryActivity>(activity);
 
   const {
     map,
-    athlete,
     ...inputData
   } = activityData
 
   try {
-    const activity = await prisma.userActivity.upsert({
+    const activity = await prisma.activity.upsert({
       where: {
         id: inputData.id,
       },
@@ -231,26 +264,20 @@ export async function upsertSummaryActivity(
 export async function upsertDetailedActivity(
   userId: string,
   activity: DetailedActivity
-): Promise<UserActivity> {
+): Promise<Activity> {
   baseLogger.info(`Upserting activity ${activity.name}`);
 
   const activityData = convertKeysToCamelCase<DetailedActivity>(activity);
 
   const {
     map,
-    athlete,
     bestEfforts,
-    gear,
-    photos,
     segmentEfforts,
-    splitsMetric,
-    splitsStandard,
-    laps,
     ...inputData
   } = activityData
 
   try {
-    const activity = await prisma.userActivity.upsert({
+    const activity = await prisma.activity.upsert({
       where: {
         id: inputData.id,
       },
@@ -277,12 +304,15 @@ export async function upsertDetailedActivity(
   }
 }
 
-export async function queryUserActivities(userId: string): Promise<UserActivity[]> {
+export async function queryMappableActivities(userId: string): Promise<MappableActivity[]> {
   try {
     baseLogger.info(`Querying user activities for user ${userId}`);
-    const userActivities = await prisma.userActivity.findMany({
+    const activities = await prisma.activity.findMany({
       where: {
         userId,
+        movingTime: {
+          gt: 0
+        },
         summaryPolyline: {
           not: Prisma.JsonNullValueFilter.JsonNull
         }
@@ -291,20 +321,21 @@ export async function queryUserActivities(userId: string): Promise<UserActivity[
         startDateLocal: "desc"
       }
     });
-    baseLogger.info(`Found ${userActivities.length} activities`);
-    return userActivities;
+    baseLogger.info(`Found ${activities.length} activities`);
+    return activities as Mappable[];
+
   } catch (error) {
     throw error;
   }
 }
 
-export async function queryUserActivity(
+export async function queryActivity(
   userId: string,
   activityId: string
-): Promise<UserActivity | null> {
+): Promise<Activity | null> {
   try {
     baseLogger.info(`Querying user route for user ${userId} and route ${activityId}`);
-    const activity = await prisma.userActivity.findUnique({
+    const activity = await prisma.activity.findUnique({
       where: {
         id_userId: {
           id: activityId,
@@ -319,45 +350,38 @@ export async function queryUserActivity(
   }
 }
 
-export async function upsertDetailedSegment(
-  detailedSegment: DetailedSegment,
+export async function upsertSegment(
+  segment: SummarySegment,
   userId: string,
 ): Promise<void> {
-  baseLogger.info(`Upserting segment ${detailedSegment.name}`);
+  baseLogger.info(`Upserting segment ${segment.name}`);
 
-  const segmentData = convertKeysToCamelCase<DetailedSegment>(detailedSegment);
+  const segmentData = convertKeysToCamelCase<SummarySegment>(segment);
 
   const {
-    athletePrEffort,
     athleteSegmentStats,
-    endLatlng,
-    startLatlng,
-    map,
     ...inputData
   } = segmentData
-
 
   try {
     await prisma.segment.upsert({
       where: {
         id_userId: {
-          id: detailedSegment.id,
+          id: inputData.id,
           userId,
         }
       },
       create: {
         ...inputData,
         userId,
-        polyline: (map.polyline as unknown) as Prisma.InputJsonValue,
       },
       update: {
         ...inputData,
         userId,
-        polyline: (map.polyline as unknown) as Prisma.InputJsonValue,
       }
     });
   } catch (error) {
-    baseLogger.error(`Failed to upsert segment ${detailedSegment.name}: ${error}`);
+    baseLogger.error(`Failed to upsert segment ${segment.name}: ${error}`);
     throw error;
   }
 }

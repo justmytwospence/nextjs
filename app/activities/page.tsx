@@ -1,6 +1,6 @@
 import { auth } from "@/auth";
-import { queryUserActivities } from "@/lib/db";
-import MappablesGrid from "@/components/mappables-grid";
+import { queryMappableActivities } from "@/lib/db";
+import ActivitiesGrid from "./activities-grid";
 import { baseLogger } from "@/lib/logger";
 
 export default async function ActivitiesPage() {
@@ -8,6 +8,6 @@ export default async function ActivitiesPage() {
   if (!session) {
     return null;
   }
-  const activities = await queryUserActivities(session.user.id);
-  return <MappablesGrid mappables={activities} type="activities" />;
+  const activities = await queryMappableActivities(session.user.id);
+  return <ActivitiesGrid activities={activities} />;
 }
