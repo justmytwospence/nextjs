@@ -71,21 +71,35 @@ async function makeStravaRequest(
 
 const validateAndLogExtras = (data: any, schema: z.ZodObject<any> | z.ZodArray<any>): any => {
   try {
-    const validatedData = schema.parse(data);
-    return validatedData;
+    return schema.parse(data);
   } catch (error) {
     if (error instanceof z.ZodError) {
+      // Check if we only have unrecognized keys errors
+      const hasOnlyUnrecognizedKeys = error.errors.every(e => e.code === "unrecognized_keys");
+
       // Log unrecognized fields
       const unrecognizedFields = new Set(error.errors.flatMap((e) => e.code === "unrecognized_keys" ? e.keys : []));
-      baseLogger.warn(`Received unrecognized fields from Strava: ${Array.from(unrecognizedFields).join(", ")}`);
-
-      // Continue with the valid part of the input if desired
-      if (schema instanceof z.ZodObject) {
-        return schema.strip().parse(data);
-      } else if (schema instanceof z.ZodArray) {
-        return z.array(schema.element.strip()).parse(data);
+      if (unrecognizedFields.size > 0) {
+        baseLogger.warn(`Received unrecognized fields from Strava: ${Array.from(unrecognizedFields).join(", ")}`);
       }
+
+      // If we only have unrecognized keys, we can safely strip and continue
+      if (hasOnlyUnrecognizedKeys) {
+        if (schema instanceof z.ZodArray) {
+          const arraySchema = schema.element;
+          if (arraySchema instanceof z.ZodObject) {
+            return data.map((item: any) => arraySchema.strip().parse(item));
+          }
+        }
+        if (schema instanceof z.ZodObject) {
+          return schema.strip().parse(data);
+        }
+      }
+
+      // If we have other validation errors, throw them
+      throw error;
     }
+    throw error;
   }
 };
 

@@ -43,7 +43,7 @@ export const SummarySegmentEffortSchema = z.object({
 // Returned by: /segments/starred 
 // Included in DetailedSegmentEffort.segment
 export const SummarySegmentSchema = z.object({
-  activity_type: z.enum(["Ride", "Run", "BackcountrySki"]), // Type of activity (Ride or Run)
+  activity_type: SportTypeSchema, // Type of activity 
   athlete_segment_stats: SummarySegmentEffortSchema.optional(), // Segment effort details if available
   average_grade: z.number(), // Average grade in percent
   city: z.string().nullable(), // Segment's city
@@ -82,7 +82,7 @@ export const DetailedSegmentSchema = z.object({
   name: z.string(), // Segment name
   private: z.boolean(), // Whether the segment is private
   star_count: z.number().int().optional(), // Number of stars for this segment
-  state: z.string(), // Segment's state or region
+  state: z.string().nullable(), // Segment's state or region
   total_elevation_gain: z.number().optional(), // Total elevation gain in meters
   updated_at: z.string().datetime(), // Date when the segment was last updated
 }).strict();
@@ -110,7 +110,7 @@ export const DetailedSegmentEffortSchema = z.object({
   moving_time: z.number().int(), // Moving time during the effort
   name: z.string(), // Segment name for this effort
   pr_rank: z.number().int().nullable(), // Rank on athlete's leaderboard if in top 3
-  segment: SummarySegmentSchema, // Detailed segment information
+  segment: SummarySegmentSchema.optional(), // Detailed segment information
   start_date: z.string().datetime(), // Start date of the effort
   start_date_local: z.string().datetime(), // Local start date of the effort
   start_index: z.number().int(), // Start index in activity's stream

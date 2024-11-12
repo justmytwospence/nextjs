@@ -407,11 +407,11 @@ export async function upsertSegmentEffort(
       },
       create: {
         ...inputData,
-        segmentId: segment.id,
+        segmentId: segment?.id,
       },
       update: {
         ...inputData,
-        segmentId: segment.id,
+        segmentId: segment?.id,
       }
     });
   } catch (error) {

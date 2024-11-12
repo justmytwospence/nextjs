@@ -5,8 +5,6 @@ import LazyMap from "@/components/lazy-map";
 import { Navigation, TrendingUp } from "lucide-react";
 import ElevationChart from "@/components/elevation-chart";
 import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
-import { ResizeObserverComponent } from "@/components/resize-observer";
-
 
 export default function RouteDetail({ mappable }: { mappable: UserRoute }) {
   return (

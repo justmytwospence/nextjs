@@ -106,13 +106,13 @@ model SegmentEffort {
   movingTime       Int?      @map("moving_time")
   name             String
   prRank           Int?      @map("pr_rank")
-  segmentId        String    @map("segment_id")
+  segmentId        String?   @map("segment_id")
   startDate        DateTime? @map("start_date")
   startDateLocal   DateTime? @map("start_date_local")
   startIndex       Int?      @map("start_index")
 
   activity Activity @relation(fields: [activityId], references: [id])
-  segment  Segment  @relation(fields: [segmentId], references: [id])
+  segment  Segment? @relation(fields: [segmentId], references: [id])
 }
 
 model Segment {

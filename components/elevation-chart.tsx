@@ -61,7 +61,7 @@ export default function ElevationChart({
 
   const createChartOptions = (isLarge = false) => ({
     responsive: true,
-    maintainAspectRatio: false,  // Changed this to always false
+    maintainAspectRatio: false,
     animation: {
       duration: 0 // Set duration to 0 to disable animation
     },
@@ -151,8 +151,6 @@ export default function ElevationChart({
         },
       },
     },
-    maintainAspectRatio: !isLarge,
-    ...(!isLarge && { aspectRatio: 2 }),
   });
 
   return (

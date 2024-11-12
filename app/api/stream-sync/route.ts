@@ -1,10 +1,10 @@
 import { auth } from "@/auth";
-import { NextResponse } from "next/server";
-import { baseLogger } from "@/lib/logger";
-import { enrichUserRoute, upsertSummaryActivity, upsertDetailedActivity, upsertUserRoute, upsertSegmentEffort, upsertSegment } from "@/lib/db";
-import { fetchActivities, fetchDetailedActivity, fetchDetailedSegment, fetchRouteGeoJson, fetchRoutes } from "@/lib/strava-api";
+import { enrichUserRoute, upsertDetailedActivity, upsertSegment, upsertSegmentEffort, upsertSummaryActivity, upsertUserRoute } from "@/lib/db";
 import { HttpError } from "@/lib/errors";
-import { Route, DetailedActivity, SummaryActivity } from "@/schemas/strava";
+import { baseLogger } from "@/lib/logger";
+import { fetchActivities, fetchDetailedActivity, fetchDetailedSegment, fetchRouteGeoJson, fetchRoutes } from "@/lib/strava-api";
+import { DetailedActivity, Route, SummaryActivity } from "@/schemas/strava";
+import { NextResponse } from "next/server";
 
 type Message =
   | { type: "update_total", message: string, n: number }
@@ -247,7 +247,9 @@ async function syncActivities(
         if (detailedActivity.segment_efforts) {
           for (const segmentEffort of detailedActivity.segment_efforts) {
             upsertSegmentEffort(segmentEffort);
-            upsertSegment(segmentEffort?.segment, userId);
+            if (segmentEffort.segment) {
+              upsertSegment(segmentEffort?.segment, userId);
+            }
           }
         }
 
