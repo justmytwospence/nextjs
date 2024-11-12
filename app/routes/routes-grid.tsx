@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, type ReactNode } from "react";
@@ -99,8 +98,8 @@ export default function RoutesGrid({ routes }: { routes: UserRoute[] }) {
         }}
         className="mb-6"
       >
-        <div className="flex justify-between items-center mb-4">
-          <TabsList className="h-10">
+        <div className="flex flex-wrap gap-4 mb-4 sm:flex-nowrap sm:justify-between items-center">
+          <TabsList className="h-10 w-full sm:w-auto">
             <TabsTrigger value="all">All</TabsTrigger>
             {Array.from(new Set(Object.values(ROUTE_TYPES))).map((label: string) => {
               const value = Object.entries(ROUTE_TYPES).find(([_, v]) => v === label)?.[0] ?? "all";
@@ -112,31 +111,33 @@ export default function RoutesGrid({ routes }: { routes: UserRoute[] }) {
             })}
           </TabsList>
 
-          <Pagination>
-            <PaginationContent className="flex items-center">
-              <PaginationItem>
-                <PaginationPrevious
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setCurrentPage(p => Math.max(1, p - 1));
-                  }}
-                  className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
-                />
-              </PaginationItem>
-              {generatePaginationItems()}
-              <PaginationItem>
-                <PaginationNext
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setCurrentPage(p => Math.min(totalPages, p + 1));
-                  }}
-                  className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
-                />
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
+          <div className="w-full flex justify-center sm:w-auto">
+            <Pagination>
+              <PaginationContent className="flex items-center">
+                <PaginationItem>
+                  <PaginationPrevious
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setCurrentPage(p => Math.max(1, p - 1));
+                    }}
+                    className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
+                  />
+                </PaginationItem>
+                {generatePaginationItems()}
+                <PaginationItem>
+                  <PaginationNext
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setCurrentPage(p => Math.min(totalPages, p + 1));
+                    }}
+                    className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          </div>
         </div>
 
         <div className="mt-6">

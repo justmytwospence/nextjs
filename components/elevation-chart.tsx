@@ -155,7 +155,7 @@ export default function ElevationChart({
 
   return (
     <>
-      <div className="w-full h-full">
+      <div className="w-full h-[calc(100vh-64px)]">
         <Line data={createChartData()} options={createChartOptions()} />
       </div>
 
