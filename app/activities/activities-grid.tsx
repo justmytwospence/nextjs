@@ -16,26 +16,24 @@ import {
 } from "@/components/ui/pagination"
 import PleaseSync from "@/components/please-sync";
 
-const ACTIVITY_TYPES = {
-  "Ride": "Ride",
-  "Run": "Run",
-} as const;
-
 export default function ActivitiesGrid({ activities }: { activities: MappableActivity[] }) {
   const router = useRouter();
   const [selectedType, setSelectedType] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 30;
 
-  const validActivities = activities.filter(activity => activity.summaryPolyline);
-
-  if (validActivities.length === 0) {
+  if (activities.length === 0) {
     return <PleaseSync />;
   }
 
+  // Get unique sport types from activities
+  const uniqueSportTypes = Array.from(new Set(activities.map(activity => activity.sportType)));
+  console.log(activities)
+  console.log(uniqueSportTypes);
+
   const filteredActivities = selectedType === "all"
-    ? validActivities
-    : validActivities.filter(activity => activity.type === selectedType);
+    ? activities
+    : activities.filter(activity => activity.sportType === selectedType);
 
   const totalPages = Math.ceil(filteredActivities.length / itemsPerPage);
   const paginatedActivities = filteredActivities.slice(
@@ -97,17 +95,17 @@ export default function ActivitiesGrid({ activities }: { activities: MappableAct
         }}
         className="mb-6"
       >
-        <div className="flex flex-col sm:flex-row sm:justify-between items-center gap-4 mb-4">
-          <TabsList className="h-10">
+        <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
+          <TabsList className="h-10 min-w-[300px]">
             <TabsTrigger value="all">All</TabsTrigger>
-            {Object.values(ACTIVITY_TYPES).map((value) => (
-              <TabsTrigger key={value} value={value}>
-                {value}
+            {uniqueSportTypes.map((type) => (
+              <TabsTrigger key={type} value={type}>
+                {type.replace(/([A-Z])/g, ' $1').trim()}
               </TabsTrigger>
             ))}
           </TabsList>
 
-          <div className="flex justify-center sm:justify-end w-full sm:w-auto">
+          <div className="flex w-full sm:w-auto justify-center sm:justify-end">
             <Pagination>
               <PaginationContent className="flex items-center">
                 <PaginationItem>

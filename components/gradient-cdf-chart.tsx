@@ -70,6 +70,7 @@ export default function GradientCdfChart({
 
   const options = {
     responsive: true,
+    maintainAspectRatio: false,  // Add this line
     animation: {
       duration: 0 // general animation time
     },
@@ -124,5 +125,9 @@ export default function GradientCdfChart({
     },
   };
 
-  return <Line data={data} options={options} />;
+  return (
+    <div className="w-full h-full">
+      <Line data={data} options={options} />
+    </div>
+  );
 };

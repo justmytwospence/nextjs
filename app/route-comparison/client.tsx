@@ -24,7 +24,9 @@ export default function RouteComparison({ routes }) {
         />
       </div>
       <div className="max-w-7xl mx-auto px-4">
-        <GradientCdfChart selectedRoute1={selectedRoute1} selectedRoute2={selectedRoute2} />
+        <div className="h-[400px] w-full">
+          <GradientCdfChart selectedRoute1={selectedRoute1} selectedRoute2={selectedRoute2} />
+        </div>
       </div>
     </>
   )

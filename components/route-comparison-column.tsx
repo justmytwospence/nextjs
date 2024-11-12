@@ -34,9 +34,10 @@ export default function RouteComparisonColumn({ routes, selectedRoute, setSelect
       )}
 
       {selectedRoute && (
-        <ElevationChart mappable={selectedRoute} maxGradient={0.1} />
+        <div className="h-[400px] w-full">
+          <ElevationChart mappable={selectedRoute} maxGradient={0.1} />
+        </div>
       )}
     </div>
   );
 }
-

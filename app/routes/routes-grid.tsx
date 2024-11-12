@@ -16,12 +16,6 @@ import {
 } from "@/components/ui/pagination"
 import PleaseSync from "@/components/please-sync";
 
-const ROUTE_TYPES = {
-  "1": "Ride",
-  "2": "Trail Run",
-  "5": "Run",
-} as const;
-
 export default function RoutesGrid({ routes }: { routes: UserRoute[] }) {
   const router = useRouter();
   const [selectedType, setSelectedType] = useState("all");
@@ -33,6 +27,14 @@ export default function RoutesGrid({ routes }: { routes: UserRoute[] }) {
   if (validRoutes.length === 0) {
     return <PleaseSync />;
   }
+
+  // Get unique route types from the routes
+  const routeTypes = Array.from(new Set(validRoutes.map(route => route.type?.toString() ?? ""))).filter(Boolean);
+  const routeTypeLabels = {
+    "1": "Ride",
+    "2": "Trail Run",
+    "5": "Run",
+  };
 
   const filteredRoutes = selectedType === "all"
     ? validRoutes
@@ -101,14 +103,11 @@ export default function RoutesGrid({ routes }: { routes: UserRoute[] }) {
         <div className="flex flex-wrap gap-4 mb-4 sm:flex-nowrap sm:justify-between items-center">
           <TabsList className="h-10 w-full sm:w-auto">
             <TabsTrigger value="all">All</TabsTrigger>
-            {Array.from(new Set(Object.values(ROUTE_TYPES))).map((label: string) => {
-              const value = Object.entries(ROUTE_TYPES).find(([_, v]) => v === label)?.[0] ?? "all";
-              return (
-                <TabsTrigger key={value} value={value}>
-                  {label}
-                </TabsTrigger>
-              );
-            })}
+            {routeTypes.map((type) => (
+              <TabsTrigger key={type} value={type}>
+                {routeTypeLabels[type as keyof typeof routeTypeLabels] || `Type ${type}`}
+              </TabsTrigger>
+            ))}
           </TabsList>
 
           <div className="w-full flex justify-center sm:w-auto">
