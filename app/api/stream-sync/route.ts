@@ -246,9 +246,10 @@ async function syncActivities(
         // store segment efforts and detailed segments if the activity has them
         if (detailedActivity.segment_efforts) {
           for (const segmentEffort of detailedActivity.segment_efforts) {
-            upsertSegmentEffort(segmentEffort);
             if (segmentEffort.segment) {
+              // Not 100% sure that all segment efforts have a segment
               upsertSegment(segmentEffort?.segment, userId);
+              upsertSegmentEffort(segmentEffort);
             }
           }
         }

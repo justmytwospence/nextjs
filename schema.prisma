@@ -18,11 +18,12 @@ model User {
   image         String?
   name          String?
 
-  accounts   Account[]
-  activities Activity[]
-  routes     UserRoute[]
-  segments   Segment[]
-  sessions   Session[]
+  accounts      Account[]
+  activities    Activity[]
+  routes        UserRoute[]
+  segments      Segment[]
+  sessions      Session[]
+  SegmentEffort SegmentEffort[]
 }
 
 model Account {
@@ -111,6 +112,9 @@ model SegmentEffort {
   startDateLocal   DateTime? @map("start_date_local")
   startIndex       Int?      @map("start_index")
 
+  userId String @map("user_id")
+
+  user     User     @relation(fields: [userId], references: [id])
   activity Activity @relation(fields: [activityId], references: [id])
   segment  Segment? @relation(fields: [segmentId], references: [id])
 }

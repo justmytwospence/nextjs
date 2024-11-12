@@ -56,7 +56,7 @@ export const SummarySegmentSchema = z.object({
   maximum_grade: z.number(), // Maximum grade in percent
   name: z.string(), // Segment name
   private: z.boolean(), // Whether the segment is private
-  state: z.string(), // Segment's state or region
+  state: z.string().nullable(), // Segment's state or region
 });
 export type SummarySegment = z.infer<typeof SummarySegmentSchema>;
 
@@ -155,7 +155,7 @@ export const SummaryActivitySchema = z.object({
   trainer: z.boolean(), // Whether it was recorded on a trainer
   upload_id: z.coerce.string(), // Identifier of the upload that created this activity
   weighted_average_watts: z.number().int().optional(), // Similar to Normalized Power (rides)
-  workout_type: z.number().int().nullable().optional(), // Type of workout
+  workout_type: z.number().int().nullish(), // Type of workout
 }).strict();
 export type SummaryActivity = z.infer<typeof SummaryActivitySchema>;
 export const SummaryActivitiesSchema = z.array(SummaryActivitySchema);
@@ -182,7 +182,7 @@ export const DetailedActivitySchema = z.object({
   flagged: z.boolean(), // Whether it is flagged
   gear_id: z.coerce.string().nullable(), // Gear ID used for the activity
   has_kudoed: z.boolean(), // Whether the logged-in athlete has kudoed this activity
-  hide_from_home: z.boolean(), // If the activity is muted
+  hide_from_home: z.boolean().optional(), // If the activity is muted
   id: z.coerce.string(), // Unique identifier of the activity
   kilojoules: z.number().optional(), // Work done in kilojoules (rides only)
   kudos_count: z.number().int(), // Number of kudos received
@@ -204,7 +204,7 @@ export const DetailedActivitySchema = z.object({
   trainer: z.boolean(), // Whether it was recorded on a trainer
   upload_id: z.coerce.string(), // Identifier of the upload that created this activity
   weighted_average_watts: z.number().int().optional(), // Similar to Normalized Power (rides)
-  workout_type: z.number().int().nullable().optional(), // Type of workout
+  workout_type: z.number().int().nullish(), // Type of workout
 }).strict();
 export type DetailedActivity = z.infer<typeof DetailedActivitySchema>;
 

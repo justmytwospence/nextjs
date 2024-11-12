@@ -8,15 +8,16 @@
  * request validation, and response parsing.
  */
 
-import tj from "@mapbox/togeojson";
-import type { Route, DetailedSegment, DetailedActivity, SummaryActivity } from "@/schemas/strava";
-import { DOMParser } from "@xmldom/xmldom";
-import { prisma } from "@/lib/prisma";
-import { RoutesSchema, DetailedSegmentSchema, DetailedActivitySchema, SummaryActivitiesSchema } from "@/schemas/strava";
-import { baseLogger } from "@/lib/logger";
 import { queryUserAccount } from "@/lib/db";
-import { z } from "zod";
 import { HttpError, type RateLimit } from "@/lib/errors";
+import { baseLogger } from "@/lib/logger";
+import { prisma } from "@/lib/prisma";
+import { deepStrip } from "@/lib/schema-map";
+import type { DetailedActivity, DetailedSegment, Route, SummaryActivity } from "@/schemas/strava";
+import { DetailedActivitySchema, DetailedSegmentSchema, RoutesSchema, SummaryActivitiesSchema } from "@/schemas/strava";
+import tj from "@mapbox/togeojson";
+import { DOMParser } from "@xmldom/xmldom";
+import { z } from "zod";
 
 /**
  * Makes an authenticated request to the Strava API
@@ -69,35 +70,78 @@ async function makeStravaRequest(
   return response;
 }
 
+const recursivelyStripSchema = (schema: z.ZodTypeAny): z.ZodTypeAny => {
+  if (schema instanceof z.ZodObject) {
+    const shape = schema.shape;
+    const strippedShape: Record<string, z.ZodTypeAny> = {};
+    for (const key in shape) {
+      strippedShape[key] = recursivelyStripSchema(shape[key]);
+    }
+    return z.object(strippedShape).strip();
+  } else if (schema instanceof z.ZodArray) {
+    return z.array(recursivelyStripSchema(schema.element));
+  } else if (schema instanceof z.ZodOptional) {
+    return recursivelyStripSchema(schema.unwrap()).optional();
+  } else if (schema instanceof z.ZodNullable) {
+    return recursivelyStripSchema(schema.unwrap()).nullable();
+  } else if (schema instanceof z.ZodNumber) {
+    // Special handling for number fields that might be null
+    return z.number().nullable();
+  } else {
+    return schema;
+  }
+};
+
 const validateAndLogExtras = (data: any, schema: z.ZodObject<any> | z.ZodArray<any>): any => {
   try {
-    return schema.parse(data);
+    baseLogger.debug('Validating data:', data);
+    const validatedData = schema.parse(data);
+    return validatedData;
   } catch (error) {
     if (error instanceof z.ZodError) {
+      baseLogger.debug('Validation error:', error.errors);
+
       // Check if we only have unrecognized keys errors
       const hasOnlyUnrecognizedKeys = error.errors.every(e => e.code === "unrecognized_keys");
 
+      if (hasOnlyUnrecognizedKeys) {
+        const strippedSchema = recursivelyStripSchema(schema);
+        baseLogger.debug('Using stripped schema for:', data);
+        return strippedSchema.parse(data);
+      }
+
       // Log unrecognized fields
-      const unrecognizedFields = new Set(error.errors.flatMap((e) => e.code === "unrecognized_keys" ? e.keys : []));
+      const unrecognizedFields = new Set<string>();
+      error.errors.forEach(e => {
+        if (e.code === "unrecognized_keys") {
+          e.keys.forEach(key => {
+            const path = e.path.filter(p => typeof p === "string").join(".");
+            const fullPath = path ? `${path}.${key}` : key;
+            unrecognizedFields.add(fullPath);
+          });
+        }
+      });
       if (unrecognizedFields.size > 0) {
         baseLogger.warn(`Received unrecognized fields from Strava: ${Array.from(unrecognizedFields).join(", ")}`);
       }
 
-      // If we only have unrecognized keys, we can safely strip and continue
+      // If we only have unrecognized key errors, we can safely strip and continue
       if (hasOnlyUnrecognizedKeys) {
-        if (schema instanceof z.ZodArray) {
-          const arraySchema = schema.element;
-          if (arraySchema instanceof z.ZodObject) {
-            return data.map((item: any) => arraySchema.strip().parse(item));
-          }
-        }
-        if (schema instanceof z.ZodObject) {
-          return schema.strip().parse(data);
-        }
+        baseLogger.debug('Stripping unrecognized keys...');
+
+        const strippedSchema = deepStrip(schema);
+        baseLogger.debug(`Stripped schema: ${strippedSchema.toString()}`);
+
+        const validatedData = strippedSchema.parse(data);
+        baseLogger.debug(`Stripped validated data: ${JSON.stringify(validatedData, null, 2)}`);
+
+        return validatedData;
       }
 
       // If we have other validation errors, throw them
-      throw error;
+      // Remove unrecognized key errors from the error object
+      const filteredErrors = error.errors.filter(e => e.code !== "unrecognized_keys");
+      throw new z.ZodError(filteredErrors);
     }
     throw error;
   }
@@ -212,9 +256,9 @@ export async function fetchDetailedActivity(
 
   const response = await makeStravaRequest(userId, `/activities/${activityId}`);
   const responseData = await response.json();
-  const validatedActivities = validateAndLogExtras(responseData, DetailedActivitySchema);
-  baseLogger.info(`Successfully fetched detailed activity ${activityId} as ${validatedActivities.name} from Strava`);
-  return validatedActivities;
+  const validatedActivity = validateAndLogExtras(responseData, DetailedActivitySchema);
+  baseLogger.info(`Successfully fetched detailed activity ${activityId} as ${validatedActivity.name} from Strava`);
+  return validatedActivity;
 }
 
 export async function refreshToken(userId: string) {

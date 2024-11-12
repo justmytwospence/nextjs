@@ -237,7 +237,11 @@ export async function upsertSummaryActivity(
   try {
     const activity = await prisma.activity.upsert({
       where: {
-        id: inputData.id,
+        id_userId: {
+          id: inputData.id,
+          userId
+        }
+
       },
       create: {
         ...inputData,
@@ -251,7 +255,7 @@ export async function upsertSummaryActivity(
       },
     });
 
-    baseLogger.info(`Activity ${activity.name} upserted successfully`);
+    baseLogger.info(`Summary activity ${activity.name} upserted successfully`);
     return activity
   } catch (error) {
     baseLogger.error(`Failed to upsert activity ${activity.name}: ${error}`);
@@ -279,7 +283,10 @@ export async function upsertDetailedActivity(
   try {
     const activity = await prisma.activity.upsert({
       where: {
-        id: inputData.id,
+        id_userId: {
+          id: inputData.id,
+          userId
+        }
       },
       create: {
         ...inputData,
@@ -397,6 +404,7 @@ export async function upsertSegmentEffort(
     athlete,
     segment,
     activity,
+    activityId, // use activity.id
     ...inputData
   } = segmentEffortData
 
@@ -408,10 +416,12 @@ export async function upsertSegmentEffort(
       create: {
         ...inputData,
         segmentId: segment?.id,
+        activityId: activity?.id,
       },
       update: {
         ...inputData,
         segmentId: segment?.id,
+        activityId: activity?.id,
       }
     });
   } catch (error) {
