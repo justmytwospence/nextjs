@@ -50,100 +50,119 @@ CREATE TABLE "VerificationToken" (
 
 -- CreateTable
 CREATE TABLE "UserRoute" (
-    "id" TEXT NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL,
     "description" TEXT,
     "distance" DOUBLE PRECISION NOT NULL,
     "elevation_gain" DOUBLE PRECISION NOT NULL,
     "estimated_moving_time" DOUBLE PRECISION NOT NULL,
+    "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "polyline" JSONB,
     "private" BOOLEAN NOT NULL,
     "starred" BOOLEAN NOT NULL,
     "sub_type" INTEGER NOT NULL,
     "summary_polyline" JSONB NOT NULL,
-    "timestamp" TIMESTAMP(3) NOT NULL,
+    "timestamp" BIGINT NOT NULL,
     "type" INTEGER,
-    "updated_at" TIMESTAMP(3) NOT NULL,
+    "updated_at" TIMESTAMP(3),
     "user_id" TEXT NOT NULL,
 
     CONSTRAINT "UserRoute_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "UserSegment" (
-    "id" INTEGER NOT NULL,
-    "activity_type" TEXT NOT NULL,
-    "average_grade" DOUBLE PRECISION NOT NULL,
-    "city" TEXT,
-    "climb_category" INTEGER NOT NULL,
-    "country" TEXT,
-    "distance" DOUBLE PRECISION NOT NULL,
-    "effort_count" INTEGER NOT NULL DEFAULT 0,
-    "elevation_high" DOUBLE PRECISION NOT NULL,
-    "elevation_low" DOUBLE PRECISION NOT NULL,
-    "maximum_grade" DOUBLE PRECISION NOT NULL,
+CREATE TABLE "SegmentEffort" (
+    "activity_id" TEXT NOT NULL,
+    "average_cadence" DOUBLE PRECISION,
+    "average_heartrate" DOUBLE PRECISION,
+    "average_watts" DOUBLE PRECISION,
+    "deviceWatts" BOOLEAN,
+    "distance" DOUBLE PRECISION,
+    "elapsed_time" INTEGER,
+    "end_index" INTEGER,
+    "hidden" BOOLEAN,
+    "id" TEXT NOT NULL,
+    "is_kom" BOOLEAN,
+    "kom_rank" INTEGER,
+    "max_heartrate" DOUBLE PRECISION,
+    "moving_time" INTEGER,
     "name" TEXT NOT NULL,
-    "private" BOOLEAN NOT NULL,
-    "state" TEXT NOT NULL,
+    "pr_rank" INTEGER,
+    "segment_id" TEXT NOT NULL,
+    "start_date" TIMESTAMP(3),
+    "start_date_local" TIMESTAMP(3),
+    "start_index" INTEGER,
     "user_id" TEXT NOT NULL,
-    "athlete_count" INTEGER,
-    "created_at" TIMESTAMP(3),
-    "hazardous" BOOLEAN,
-    "map_resource_state" INTEGER,
-    "polyline" JSONB,
-    "pr_activity_id" INTEGER,
-    "pr_date" TIMESTAMP(3),
-    "pr_elapsed_time" INTEGER,
-    "star_count" INTEGER,
-    "starred" BOOLEAN,
-    "summary_polyline" JSONB,
-    "total_elevation_gain" DOUBLE PRECISION,
-    "updated_at" TIMESTAMP(3),
-    "userRouteId" TEXT,
 
-    CONSTRAINT "UserSegment_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "SegmentEffort_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "UserActivity" (
-    "id" TEXT NOT NULL,
-    "achievement_count" INTEGER NOT NULL,
-    "athlete_count" INTEGER NOT NULL,
-    "average_speed" DOUBLE PRECISION,
-    "average_watts" DOUBLE PRECISION,
-    "comment_count" INTEGER NOT NULL,
-    "commute" BOOLEAN NOT NULL,
-    "deviceWatts" BOOLEAN,
-    "distance" DOUBLE PRECISION NOT NULL,
-    "elapsed_time" INTEGER NOT NULL,
+CREATE TABLE "Segment" (
+    "activity_type" TEXT,
+    "athlete_count" INTEGER,
+    "average_grade" DOUBLE PRECISION,
+    "city" TEXT,
+    "climb_category" INTEGER,
+    "country" TEXT,
+    "created_at" TIMESTAMP(3),
+    "distance" DOUBLE PRECISION,
+    "effort_count" INTEGER,
     "elevation_high" DOUBLE PRECISION,
     "elevation_low" DOUBLE PRECISION,
-    "flagged" BOOLEAN NOT NULL,
+    "hazardous" BOOLEAN,
+    "id" TEXT NOT NULL,
+    "maximum_grade" DOUBLE PRECISION,
+    "name" TEXT,
+    "polyline" JSONB,
+    "private" BOOLEAN,
+    "star_count" INTEGER,
+    "state" TEXT,
+    "total_elevation_gain" DOUBLE PRECISION,
+    "updated_at" TIMESTAMP(3),
+    "user_id" TEXT NOT NULL,
+
+    CONSTRAINT "Segment_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Activity" (
+    "achievement_count" INTEGER NOT NULL,
+    "athlete_count" INTEGER,
+    "average_speed" DOUBLE PRECISION,
+    "average_watts" DOUBLE PRECISION,
+    "comment_count" INTEGER,
+    "commute" BOOLEAN,
+    "deviceWatts" BOOLEAN,
+    "distance" DOUBLE PRECISION,
+    "elapsed_time" INTEGER,
+    "elev_high" DOUBLE PRECISION,
+    "elev_low" DOUBLE PRECISION,
+    "flagged" BOOLEAN,
     "gear_id" TEXT,
-    "has_kudoed" BOOLEAN NOT NULL,
-    "hide_from_home" BOOLEAN NOT NULL,
+    "has_kudoed" BOOLEAN,
+    "hide_from_home" BOOLEAN,
+    "id" TEXT NOT NULL,
     "kilojoules" DOUBLE PRECISION,
-    "kudos_count" INTEGER NOT NULL,
-    "manual" BOOLEAN NOT NULL,
+    "kudos_count" INTEGER,
+    "manual" BOOLEAN,
     "max_speed" DOUBLE PRECISION,
     "max_watts" INTEGER,
     "moving_time" INTEGER NOT NULL,
     "name" TEXT NOT NULL,
-    "photo_count" INTEGER NOT NULL,
-    "private" BOOLEAN NOT NULL,
-    "sport_type" TEXT NOT NULL,
-    "start_date" TIMESTAMP(3) NOT NULL,
-    "start_date_local" TIMESTAMP(3) NOT NULL,
+    "photo_count" INTEGER,
+    "private" BOOLEAN,
+    "sport_type" TEXT,
+    "start_date" TIMESTAMP(3),
+    "start_date_local" TIMESTAMP(3),
     "summary_polyline" JSONB,
-    "timezone" TEXT NOT NULL,
-    "total_elevation_gain" DOUBLE PRECISION NOT NULL,
-    "total_photo_count" INTEGER NOT NULL,
-    "trainer" BOOLEAN NOT NULL,
-    "type" TEXT NOT NULL,
-    "upload_id" TEXT NOT NULL,
-    "user_id" TEXT NOT NULL,
-    "weighted_average_watts" INTEGER,
+    "timezone" TEXT,
+    "total_elevation_gain" DOUBLE PRECISION,
+    "total_photo_count" INTEGER,
+    "trainer" BOOLEAN,
+    "type" TEXT,
+    "upload_id" TEXT,
+    "weightedkaverage_watts" INTEGER,
     "workout_type" INTEGER,
     "calories" DOUBLE PRECISION,
     "description" TEXT,
@@ -154,23 +173,9 @@ CREATE TABLE "UserActivity" (
     "polyline" JSONB,
     "splits_metric" JSONB,
     "splits_standard" JSONB,
+    "user_id" TEXT NOT NULL,
 
-    CONSTRAINT "UserActivity_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "ApiQuery" (
-    "id" TEXT NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
-    "accessToken" TEXT NOT NULL,
-    "endpoint" TEXT NOT NULL,
-    "params" JSONB NOT NULL,
-    "provider" TEXT NOT NULL,
-    "userId" TEXT NOT NULL,
-    "sessionSessionToken" TEXT,
-
-    CONSTRAINT "ApiQuery_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "Activity_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
@@ -183,13 +188,10 @@ CREATE UNIQUE INDEX "Session_sessionToken_key" ON "Session"("sessionToken");
 CREATE UNIQUE INDEX "UserRoute_id_user_id_key" ON "UserRoute"("id", "user_id");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "UserSegment_id_user_id_key" ON "UserSegment"("id", "user_id");
+CREATE UNIQUE INDEX "Segment_id_user_id_key" ON "Segment"("id", "user_id");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "UserActivity_id_user_id_key" ON "UserActivity"("id", "user_id");
-
--- CreateIndex
-CREATE INDEX "ApiQuery_provider_createdAt_idx" ON "ApiQuery"("provider", "createdAt");
+CREATE UNIQUE INDEX "Activity_id_user_id_key" ON "Activity"("id", "user_id");
 
 -- AddForeignKey
 ALTER TABLE "Account" ADD CONSTRAINT "Account_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -201,16 +203,16 @@ ALTER TABLE "Session" ADD CONSTRAINT "Session_userId_fkey" FOREIGN KEY ("userId"
 ALTER TABLE "UserRoute" ADD CONSTRAINT "UserRoute_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "UserSegment" ADD CONSTRAINT "UserSegment_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "SegmentEffort" ADD CONSTRAINT "SegmentEffort_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "UserSegment" ADD CONSTRAINT "UserSegment_userRouteId_fkey" FOREIGN KEY ("userRouteId") REFERENCES "UserRoute"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "SegmentEffort" ADD CONSTRAINT "SegmentEffort_activity_id_fkey" FOREIGN KEY ("activity_id") REFERENCES "Activity"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "UserActivity" ADD CONSTRAINT "UserActivity_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "SegmentEffort" ADD CONSTRAINT "SegmentEffort_segment_id_fkey" FOREIGN KEY ("segment_id") REFERENCES "Segment"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "ApiQuery" ADD CONSTRAINT "ApiQuery_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "Segment" ADD CONSTRAINT "Segment_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "ApiQuery" ADD CONSTRAINT "ApiQuery_sessionSessionToken_fkey" FOREIGN KEY ("sessionSessionToken") REFERENCES "Session"("sessionToken") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "Activity" ADD CONSTRAINT "Activity_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
