@@ -46,6 +46,7 @@ STRAVA_WEBHOOK_VERIFY_TOKEN=""
 - [x] Implement webhook for new activites
 - [x] Split sync into route and activity
 - [x] Sync SegmentEffort and Segment models
+- [ ] User settings page
 - [ ] Map brushed linking
 - [ ] Sync Activity streams
 - [ ] Create segment sniper tool
