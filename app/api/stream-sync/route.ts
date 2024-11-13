@@ -108,25 +108,27 @@ async function syncRoutes(userId: string, searchParams: URLSearchParams) {
       n: routes.length,
     });
 
-    const filteredRoutes = routes.filter(async (route: Route) => {
-      const existingRoute = await upsertUserRoute(userId, route);
-      if (existingRoute.polyline) {
-        baseLogger.info(
-          `Route ${route.name} already exists in detailed form, skipping...`
-        );
-        await send({
-          type: "update_current",
-          message: `Found ${routes.length} activities from Strava, already synced ${route.name} `,
-        });
-        return false;
-      }
-      return true;
-    });
+    const filteredRoutes = await Promise.all(
+      routes.map(async (route) => {
+        const existingRoute = await upsertUserRoute(userId, route);
+        if (existingRoute.polyline) {
+          baseLogger.info(
+            `Route ${route.name} already exists in detailed form, skipping...`
+          );
+          await send({
+            type: "update_current",
+            message: `Found ${routes.length} routes from Strava, already synced ${route.name}`,
+          });
+          return null;
+        }
+        return route;
+      })
+    ).then((routes) => routes.filter((route): route is Route => route !== null));
 
     baseLogger.info(`Syncing ${filteredRoutes.length} new routes`);
     await send({
       type: "update_total",
-      message: `Syncing ${filteredRoutes.length} activities from Strava...`,
+      message: `Syncing ${filteredRoutes.length} routes from Strava...`,
       n: routes.length,
     });
 
@@ -177,25 +179,22 @@ async function syncActivities(userId: string, searchParams: URLSearchParams) {
       n: summaryActivities.length,
     });
 
-    const filteredActivities = summaryActivities.filter(
-      async (summaryActivity: SummaryActivity) => {
-        const existingActivity = await upsertSummaryActivity(
-          userId,
-          summaryActivity
-        );
+    const filteredActivities = await Promise.all(
+      summaryActivities.map(async (summaryActivity) => {
+        const existingActivity = await upsertSummaryActivity(userId, summaryActivity);
         if (existingActivity?.polyline) {
           baseLogger.info(
             `Activity ${summaryActivity.name} already exists in detailed form, skipping...`
           );
           await send({
             type: "update_current",
-            message: `Found ${summaryActivities.length} activities from Strava, already synced ${existingActivity.name} `,
+            message: `Found ${summaryActivities.length} activities from Strava, already synced ${existingActivity.name}`,
           });
-          return false;
+          return null;
         }
-        return true;
-      }
-    );
+        return summaryActivity;
+      })
+    ).then((activities) => activities.filter((activity): activity is SummaryActivity => activity !== null));
 
     baseLogger.info(`Syncing ${filteredActivities.length} new activities`);
     await send({
@@ -223,8 +222,8 @@ async function syncActivities(userId: string, searchParams: URLSearchParams) {
           for (const segmentEffort of detailedActivity.segment_efforts) {
             if (segmentEffort.segment) {
               // Not 100% sure that all segment efforts have a segment
-              upsertSegment(segmentEffort?.segment, userId);
-              upsertSegmentEffort(segmentEffort);
+              upsertSegment(segmentEffort.segment, userId);
+              upsertSegmentEffort(segmentEffort, userId);
             }
           }
         }

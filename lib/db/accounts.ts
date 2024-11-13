@@ -17,8 +17,8 @@ export async function queryUserAccount(
       },
     });
     if (!account) {
-      baseLogger.warn("No account found", { provider: accountProvider });
-      throw new Error(`No ${accountProvider} account found for this user`);
+      baseLogger.warn(`No ${accountProvider} account found for user ${userId}`);
+      throw new Error(`No ${accountProvider} account found for user ${userId}`);
     }
     baseLogger.info(
       `Found ${accountProvider} account for user ${userId} with access token ${account.access_token}`

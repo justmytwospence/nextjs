@@ -40,7 +40,8 @@ export async function upsertSegment(
 }
 
 export async function upsertSegmentEffort(
-  segmentEffort: DetailedSegmentEffort
+  segmentEffort: DetailedSegmentEffort,
+  userId: string
 ): Promise<void> {
   baseLogger.info(`Upserting segment effort ${segmentEffort.name}`);
 
@@ -64,13 +65,13 @@ export async function upsertSegmentEffort(
         ...inputData,
         segmentId: segment?.id,
         activityId: activity?.id,
-        userId: athlete?.id,
+        userId
       },
       update: {
         ...inputData,
         segmentId: segment?.id,
         activityId: activity?.id,
-        userId: athlete?.id,
+        userId
       },
     });
   } catch (error) {

@@ -104,8 +104,7 @@ export async function upsertUserRoute(
       create: {
         ...inputData,
         id: idStr,
-        polyline:
-          (map.polyline as unknown as Prisma.InputJsonValue) || undefined,
+        polyline: map.polyline ? (map.polyline as unknown as Prisma.InputJsonValue) : undefined,
         summaryPolyline:
           map.summaryPolyline as unknown as Prisma.InputJsonValue,
         userId: userId,
@@ -113,8 +112,7 @@ export async function upsertUserRoute(
       update: {
         ...inputData,
         id: idStr,
-        polyline:
-          (map.polyline as unknown as Prisma.InputJsonValue) || undefined,
+        polyline: map.polyline ? (map.polyline as unknown as Prisma.InputJsonValue) : undefined,
         summaryPolyline:
           map.summaryPolyline as unknown as Prisma.InputJsonValue,
         userId: userId,

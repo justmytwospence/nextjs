@@ -1,12 +1,13 @@
 import { auth } from "@/auth";
 import { queryUserRoutes } from "@/lib/db";
-import RoutesGrid from "./routes-grid";
 import { baseLogger } from "@/lib/logger";
+import { redirect } from "next/navigation";
+import RoutesGrid from "./routes-grid";
 
 export default async function RoutesPage() {
   const session = await auth();
   if (!session) {
-    return null;
+    redirect("/login");
   }
   const routes = await queryUserRoutes(session.user.id);
   baseLogger.info(`Found ${routes.length} routes`);

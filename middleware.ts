@@ -1,18 +1,10 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-export async function middleware(request: NextRequest) {
-  // We don't call auth directly here because this is an edge runtime and authjs
-  // is using a database session strategy
-  const response = await fetch(`${request.nextUrl.origin}/api/auth/session`, {
-    headers: {
-      // Forward cookies to maintain session state
-      cookie: request.headers.get("cookie") || "",
-    },
-  });
-  const session = response.ok ? await response.json() : null;
+export function middleware(request: NextRequest) {
+  const sessionToken = request.cookies.get("authjs.session-token");
 
-  if (!session) {
+  if (!sessionToken) {
     const loginUrl = new URL("/login", request.url);
     loginUrl.searchParams.set("redirectUrl", request.url);
     return NextResponse.redirect(loginUrl);

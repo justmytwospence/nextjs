@@ -18,12 +18,12 @@ model User {
   image         String?
   name          String?
 
-  accounts      Account[]
-  activities    Activity[]
-  routes        UserRoute[]
-  segments      Segment[]
-  sessions      Session[]
-  SegmentEffort SegmentEffort[]
+  accounts       Account[]
+  activities     Activity[]
+  routes         UserRoute[]
+  segments       Segment[]
+  sessions       Session[]
+  segmentEfforts SegmentEffort[]
 }
 
 model Account {
@@ -114,7 +114,7 @@ model SegmentEffort {
 
   userId String @map("user_id")
 
-  user     User     @relation(fields: [userId], references: [id])
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   activity Activity @relation(fields: [activityId], references: [id])
   segment  Segment? @relation(fields: [segmentId], references: [id])
 }
