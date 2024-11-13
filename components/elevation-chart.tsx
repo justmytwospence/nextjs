@@ -30,14 +30,20 @@ ChartJS.register(
 export default function ElevationChart({
   mappable,
   maxGradient,
+  onHover,
+  hoverIndex = -1,
+  gradients,
 }: {
   mappable: Mappable;
   maxGradient: number;
+  onHover: (index: number) => void;
+  hoverIndex?: number;
+  gradients: number[];
 }) {
   const [dialogOpen, setDialogOpen] = useState(false);
 
   if (!mappable) {
-    return <Spinner className="w-6 h-6 text-blue-500" />;
+    return <Spinner className="w-6 h-6 text-[hsl(var(--chart-primary))]" />;
   }
 
   const distance = computeDistanceMiles(mappable.polyline);
@@ -52,28 +58,25 @@ export default function ElevationChart({
       {
         label: "Elevation (ft)",
         data: elevationData,
-        borderColor: "blue",
-        backgroundColor: "rgba(75, 192, 192, 0.2)",
+        borderColor: "text-blue-500",
+        backgroundColor: "text-blue-500/20",
         yAxisID: "elevation",
-        pointRadius: 0,
+        pointRadius: (ctx) => (ctx.dataIndex === hoverIndex ? 6 : 0),
+        pointBackgroundColor: "blue",
         borderWidth: isLarge ? 2 : 1,
       },
       {
         label: "Gradient (%)",
-        data: gradientData,
-        borderColor: "gray",
-        backgroundColor: "rgba(128, 128, 128, 0.5)", // Transparent gray
+        data: gradients,
+        borderColor: "transparent", // Remove the border line
+        backgroundColor: "rgba(128, 128, 128, 0.2)", // Make gradient area less transparent gray
         yAxisID: "gradient",
         pointRadius: 0,
         fill: true,
-        borderWidth: isLarge ? 2 : 1,
+        borderWidth: 0, // Remove the border line
         segment: {
-          borderColor: (ctx) =>
-            ctx.p0.parsed.y > maxGradient ? "red" : "gray",
-          backgroundColor: (ctx) =>
-            ctx.p0.parsed.y > maxGradient
-              ? "rgba(255, 0, 0, 0.5)"
-              : "rgba(128, 128, 128, 0.5)",
+          borderColor: "transparent",
+          backgroundColor: "rgba(128, 128, 128, 0.5)",
         },
       },
     ],
@@ -92,6 +95,9 @@ export default function ElevationChart({
       title: {
         display: true,
         text: "Elevation and Gradient Profile",
+      },
+      legend: {
+        display: false, // Remove the legend
       },
       tooltip: {
         mode: "index" as const,
@@ -114,6 +120,7 @@ export default function ElevationChart({
       },
     },
     hover: {
+      mode: "index" as const,
       intersect: false,
     },
     interaction: {
@@ -173,6 +180,40 @@ export default function ElevationChart({
           drawBorder: false,
         },
       },
+    },
+    onHover: (event, elements, chart) => {
+      if (!event?.native || !chart?.chartArea) {
+        onHover(-1);
+        return;
+      }
+
+      const chartArea = chart.chartArea;
+      const x = event.native.offsetX;
+      const y = event.native.offsetY;
+
+      if (
+        x < chartArea.left ||
+        x > chartArea.right ||
+        y < chartArea.top ||
+        y > chartArea.bottom
+      ) {
+        onHover(-1);
+        return;
+      }
+
+      // Calculate relative x position within chart area
+      const relativeX =
+        (x - chartArea.left) / (chartArea.right - chartArea.left);
+      const maxDistance = Math.max(...distance);
+      const hoverDistance = relativeX * maxDistance;
+
+      // Find closest point with bounds checking
+      const index = distance.findIndex((d) => d >= hoverDistance);
+      if (index >= 0 && index < mappable.polyline.coordinates.length) {
+        onHover(index);
+      } else {
+        onHover(-1);
+      }
     },
   });
 

@@ -17,10 +17,18 @@ export default function RouteComparisonColumn({
   mappables,
   selectedMappable,
   setSelectedMappable,
+  hoverIndex,
+  onHover,
+  gradientThreshold,
+  gradients,
 }: {
   mappables: { id: string; name: string; type: string }[];
   selectedMappable: Mappable | null;
   setSelectedMappable: (mappable: Mappable | null) => void;
+  hoverIndex: number;
+  onHover: (index: number) => void;
+  gradientThreshold: number | null;
+  gradients: number[];
 }) {
   const routes = mappables.filter((m) => m.type === "route");
   const activities = mappables.filter((m) => m.type === "activity");
@@ -75,13 +83,25 @@ export default function RouteComparisonColumn({
 
       {selectedMappable && (
         <div className="h-[300px] w-full mt-4">
-          <LazyMap mappable={selectedMappable} />
+          <LazyMap
+            mappable={selectedMappable}
+            hoverIndex={hoverIndex}
+            onHover={onHover}
+            gradientThreshold={gradientThreshold}
+            gradients={gradients}
+          />
         </div>
       )}
 
       {selectedMappable && (
         <div className="h-[400px] w-full">
-          <ElevationChart mappable={selectedMappable} maxGradient={0.1} />
+          <ElevationChart
+            mappable={selectedMappable}
+            maxGradient={0.1}
+            hoverIndex={hoverIndex}
+            onHover={onHover}
+            gradients={gradients}
+          />
         </div>
       )}
     </div>

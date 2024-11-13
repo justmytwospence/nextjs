@@ -56,6 +56,13 @@ export async function upsertSegmentEffort(
     ...inputData
   } = segmentEffortData;
 
+  if (!segment) {
+    baseLogger.error(
+      `Segment effort ${segmentEffort.name} does not have a segment`
+    );
+    return;
+  }
+
   try {
     await prisma.segmentEffort.upsert({
       where: {
@@ -63,7 +70,7 @@ export async function upsertSegmentEffort(
       },
       create: {
         ...inputData,
-        segmentId: segment?.id,
+        segmentId: segment.id,
         activityId: activity?.id,
         userId
       },

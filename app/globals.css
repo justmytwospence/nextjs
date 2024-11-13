@@ -24,6 +24,9 @@
     --input: 214.3 31.8% 91.4%;
     --ring: 222.2 84% 4.9%;
     --radius: 0.5rem;
+    --chart-primary: 217 91% 60%; /* blue-500 - main line color */
+    --chart-secondary: 215 20% 65%; /* slate-400 - softer secondary */
+    --chart-highlight: 4 89% 68%; /* rose-500 - gentler highlight */
   }
 
   .dark {
@@ -46,6 +49,9 @@
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 212.7 26.8% 83.9%;
+    --chart-primary: 217 91% 60%;
+    --chart-secondary: 215 20% 65%;
+    --chart-highlight: 4 89% 68%;
   }
 
   body {

@@ -1,21 +1,39 @@
 "use client";
 
-import { UserRoute } from "@prisma/client";
-import LazyMap from "@/components/lazy-map";
-import { Navigation, TrendingUp } from "lucide-react";
 import ElevationChart from "@/components/elevation-chart";
+import GradientCdfChart from "@/components/gradient-cdf-chart";
+import LazyMap from "@/components/lazy-map";
 import {
   Breadcrumb,
-  BreadcrumbList,
   BreadcrumbItem,
   BreadcrumbLink,
+  BreadcrumbList,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { computeGradient } from "@/lib/geo";
+import { UserRoute } from "@prisma/client";
+import { useMemo, useState } from "react";
+import { LineString } from "geojson";
 
 export default function RouteDetail({ mappable }: { mappable: UserRoute }) {
+  const [hoverIndex, setHoverIndex] = useState(-1);
+  const [gradientThreshold, setGradientThreshold] = useState<number | null>(
+    null
+  );
+
+  const gradients = useMemo(() => {
+    if (
+      !mappable.polyline ||
+      (mappable.polyline as unknown as LineString).type !== "LineString"
+    )
+      return [];
+    return computeGradient(mappable.polyline as unknown as LineString);
+  }, [mappable.polyline]);
+
   return (
-    <div className="container mx-auto p-6">
-      <Breadcrumb className="mb-6 text-sm text-muted-foreground" separator="/">
+    <div className="container mx-auto p-4 space-y-6">
+      <Breadcrumb className="text-sm text-muted-foreground" separator="/">
         <BreadcrumbList>
           <BreadcrumbItem>
             <BreadcrumbLink href="/" className="hover:text-primary">
@@ -37,32 +55,51 @@ export default function RouteDetail({ mappable }: { mappable: UserRoute }) {
         </BreadcrumbList>
       </Breadcrumb>
 
-      <h1 className="text-3xl font-bold mb-6">{mappable.name}</h1>
+      <h1 className="text-3xl font-bold">{mappable.name}</h1>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div className="space-y-4">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <Navigation className="h-4 w-4 text-muted-foreground" />
-              <span>{(mappable.distance / 1609.344).toFixed(1)} mi</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
-              <span>{Math.round(mappable.elevationGain)} ft</span>
-            </div>
-          </div>
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        <Card className="w-full">
+          <CardContent className="h-full p-0">
+            {mappable.polyline && (
+              <div className="h-full w-full rounded-lg overflow-hidden">
+                <LazyMap
+                  mappable={mappable}
+                  hoverIndex={hoverIndex}
+                  onHover={setHoverIndex}
+                  gradientThreshold={gradientThreshold}
+                  gradients={gradients}
+                />
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
-          {mappable.polyline && (
-            <div className="h-[400px] rounded-lg overflow-hidden">
-              <LazyMap mappable={mappable} />
-            </div>
-          )}
-        </div>
+        <div className="grid grid-cols-1 gap-6">
+          <Card>
+            <CardContent>
+              <div className="h-[250px] lg:h-[300px]">
+                <ElevationChart
+                  mappable={mappable}
+                  maxGradient={0.1}
+                  onHover={setHoverIndex}
+                  hoverIndex={hoverIndex}
+                  gradients={gradients}
+                />
+              </div>
+            </CardContent>
+          </Card>
 
-        <div className="space-y-4">
-          <div className="h-[200px] md:h-[400px] w-full">
-            <ElevationChart mappable={mappable} maxGradient={0.1} />
-          </div>
+          <Card>
+            <CardContent>
+              <div className="h-[250px] lg:h-[300px]">
+                <GradientCdfChart
+                  routes={[mappable]}
+                  onHoverGradient={setGradientThreshold}
+                  gradients={[gradients]}
+                />
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>

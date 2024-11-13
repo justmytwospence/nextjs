@@ -164,7 +164,7 @@ export const DetailedSegmentEffortSchema = z
     moving_time: z.number().int(), // Moving time during the effort
     name: z.string(), // Segment name for this effort
     pr_rank: z.number().int().nullable(), // Rank on athlete's leaderboard if in top 3
-    segment: SummarySegmentSchema.optional(), // Detailed segment information
+    segment: SummarySegmentSchema.optional(), // Detailed segment information (optional because this might be a best effort)
     start_date: z.string().datetime(), // Start date of the effort
     start_date_local: z.string().datetime(), // Local start date of the effort
     start_index: z.number().int(), // Start index in activity's stream
@@ -225,7 +225,7 @@ export const DetailedActivitySchema = z
     athlete_count: z.number().int(), // Number of athletes involved in the activity
     average_speed: z.number().optional(), // Average speed in meters/second
     average_watts: z.number().optional(), // Average power output in watts (rides only)
-    best_efforts: z.array(DetailedSegmentEffortSchema).optional(), // Collection of best efforts
+    best_efforts: z.array(DetailedSegmentEffortSchema).optional(), // Collection of best efforts 
     calories: z.number().nullable(), // Kilocalories consumed during the activity
     comment_count: z.number().int(), // Number of comments
     commute: z.boolean(), // Whether it's marked as a commute

@@ -37,7 +37,9 @@ export default function RoutesGrid({ routes }: { routes: UserRoute[] }) {
   const routeTypeLabels = {
     "1": "Ride",
     "2": "Trail Run",
+    "4": "Hike",
     "5": "Run",
+    "6": "Gravel",
   };
 
   const filteredRoutes =

@@ -24,82 +24,54 @@ ChartJS.register(
 );
 
 // Move calculation outside component
-const xAxisRange = Array.from({ length: 61 }, (_, i) =>
-  parseFloat((-0.2 + i * 0.01).toFixed(2))
+const xAxisRange = Array.from({ length: 401 }, (_, i) =>
+  parseFloat((-0.2 + i * 0.001).toFixed(3))
 );
 
+const CHART_COLORS = ["text-blue-500", "text-slate-400", "text-rose-500"];
+
 export default function GradientCdfChart({
-  selectedRoute1,
-  selectedRoute2,
+  routes,
+  onHoverGradient,
+  gradients,
 }: {
-  selectedRoute1: Mappable | null;
-  selectedRoute2: Mappable | null;
+  routes: Mappable[];
+  onHoverGradient?: (gradient: number | null) => void;
+  gradients: number[][];
 }) {
-  const [gradients1, setGradients1] = useState<number[]>([]);
-  const [gradients2, setGradients2] = useState<number[]>([]);
-  const [cdf1, setCdf1] = useState<number[]>([]);
-  const [cdf2, setCdf2] = useState<number[]>([]);
+  const [cdfs, setCdfs] = useState<number[][]>([]);
 
-  // First useEffect to calculate gradients
   useEffect(() => {
-    if (selectedRoute1 && selectedRoute2) {
-      const polyline1 =
-        selectedRoute1.polyline || selectedRoute1.summaryPolyline;
-      const polyline2 =
-        selectedRoute2.polyline || selectedRoute2.summaryPolyline;
+    setCdfs(gradients.map((g) => computeCdf(g, xAxisRange)));
+  }, [gradients]);
 
-      const newGradients1 = computeGradient(polyline1);
-      const newGradients2 = computeGradient(polyline2);
+  if (routes.length === 0) return null;
 
-      setGradients1(newGradients1);
-      setGradients2(newGradients2);
-
-      // Calculate CDFs immediately after setting gradients
-      setCdf1(computeCdf(newGradients1, xAxisRange));
-      setCdf2(computeCdf(newGradients2, xAxisRange));
-    }
-  }, [selectedRoute1, selectedRoute2]);
-
-  // Remove second useEffect as it's no longer needed
-
-  if (!selectedRoute1 || !selectedRoute2) {
-    return null;
-  }
-
-  const gradientMin = Math.max(
-    Math.min(...[...gradients1, ...gradients2]),
-    -0.3
-  );
-  const gradientMax = Math.min(
-    Math.max(...[...gradients1, ...gradients2]),
-    0.3
-  );
+  const allGradients = gradients.flat();
+  const gradientMin = Math.max(Math.min(...allGradients), -0.3);
+  const gradientMax = Math.min(Math.max(...allGradients), 0.3);
 
   const data = {
     labels: xAxisRange,
-    datasets: [
-      {
-        label: selectedRoute1.name,
-        data: cdf1,
-        borderColor: "rgba(75,192,192,1)",
-        fill: false,
-        pointRadius: 0,
-      },
-      {
-        label: selectedRoute2.name,
-        data: cdf2,
-        borderColor: "rgba(153,102,255,1)",
-        fill: false,
-        pointRadius: 0,
-      },
-    ],
+    datasets: routes.map((route, index) => ({
+      label: route.name,
+      data: cdfs[index] || [],
+      borderColor: getComputedStyle(document.documentElement).getPropertyValue(
+        `--${CHART_COLORS[index % CHART_COLORS.length]}`
+      ), // Color code the lines
+      backgroundColor: getComputedStyle(
+        document.documentElement
+      ).getPropertyValue(`--${CHART_COLORS[index % CHART_COLORS.length]}`), // Ensure legend color matches line color
+      fill: false,
+      pointRadius: 0,
+    })),
   };
 
   const options = {
     responsive: true,
-    maintainAspectRatio: false, // Add this line
+    maintainAspectRatio: false,
     animation: {
-      duration: 0, // general animation time
+      duration: 0,
     },
     plugins: {
       title: {
@@ -107,8 +79,26 @@ export default function GradientCdfChart({
         text: "Cumulative Density Function of Gradient",
       },
       legend: {
-        display: true,
+        display: routes.length > 1,
         position: "top" as const,
+        labels: {
+          usePointStyle: true, // Use point style for legend
+          pointStyle: "line", // Use line style for legend
+        },
+      },
+      tooltip: {
+        mode: "index" as const,
+        intersect: false,
+        callbacks: {
+          title: function (context) {
+            const label = context[0]?.label;
+            return `Gradient: ${(parseFloat(label) * 100).toFixed(1)}%`;
+          },
+          label: function (context) {
+            const label = context.dataset.label || "";
+            return `${label}: ${(context.parsed.y * 100).toFixed(1)}%`;
+          },
+        },
       },
     },
     hover: {
@@ -118,6 +108,27 @@ export default function GradientCdfChart({
     interaction: {
       mode: "index" as const,
       intersect: false,
+    },
+    onHover: (event, elements, chart) => {
+      if (!event?.native || !chart?.chartArea) {
+        onHoverGradient?.(null);
+        return;
+      }
+
+      const chartArea = chart.chartArea;
+      const x = event.native.offsetX;
+
+      if (x < chartArea.left || x > chartArea.right) {
+        onHoverGradient?.(null);
+        return;
+      }
+
+      // Calculate gradient value at hover position
+      const relativeX =
+        (x - chartArea.left) / (chartArea.right - chartArea.left);
+      const gradientValue =
+        gradientMin + relativeX * (gradientMax - gradientMin);
+      onHoverGradient?.(gradientValue);
     },
     scales: {
       x: {
@@ -153,7 +164,7 @@ export default function GradientCdfChart({
   };
 
   return (
-    <div className="w-full h-full">
+    <div className="w-full h-full" onMouseLeave={() => onHoverGradient?.(null)}>
       <Line data={data} options={options} />
     </div>
   );

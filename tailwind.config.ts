@@ -49,6 +49,12 @@ const config: Config = {
           "3": "hsl(var(--chart-3))",
           "4": "hsl(var(--chart-4))",
           "5": "hsl(var(--chart-5))",
+          primary: "hsl(var(--chart-primary))",
+          secondary: "hsl(var(--chart-secondary))",
+          highlight: "hsl(var(--chart-highlight))",
+          "primary-transparent": "hsl(var(--chart-primary) / 0.2)",
+          "secondary-transparent": "hsl(var(--chart-secondary) / 0.2)",
+          "highlight-transparent": "hsl(var(--chart-highlight) / 0.2)",
         },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
