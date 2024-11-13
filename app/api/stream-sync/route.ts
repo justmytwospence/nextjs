@@ -222,7 +222,7 @@ async function syncActivities(userId: string, searchParams: URLSearchParams) {
           for (const segmentEffort of detailedActivity.segment_efforts) {
             if (segmentEffort.segment) {
               // Not 100% sure that all segment efforts have a segment
-              upsertSegment(segmentEffort.segment, userId);
+              await upsertSegment(segmentEffort.segment, userId);
               upsertSegmentEffort(segmentEffort, userId);
             }
           }
