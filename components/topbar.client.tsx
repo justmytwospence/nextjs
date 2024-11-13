@@ -61,15 +61,11 @@ export default function TopbarClient({ session }: { session: any }) {
 
       {session && (
         <div className="flex items-center gap-4">
-          <SyncStravaButton
-            type={
-              pathname.startsWith("/activities")
-                ? "activities"
-                : pathname.startsWith("/routes")
-                ? "routes"
-                : "all"
-            }
-          />
+          {(pathname === "/routes" || pathname === "/activities") && (
+            <SyncStravaButton
+              type={pathname === "/activities" ? "activities" : "routes"}
+            />
+          )}
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

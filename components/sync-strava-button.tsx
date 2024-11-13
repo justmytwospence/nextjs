@@ -50,7 +50,7 @@ export default function SyncStravaButton({ type }: { type: string }) {
       failedItems: [],
     });
 
-    const PER_PAGE = 8;
+    const PER_PAGE = 200;
     const events = new EventSource(
       `/api/stream-sync?type=${type}&per_page=${PER_PAGE}`
     );
@@ -137,6 +137,8 @@ export default function SyncStravaButton({ type }: { type: string }) {
                 <>
                   <Spinner className="mr-2" />
                   Syncing {type.charAt(0).toUpperCase() + type.slice(1)}...
+                  {progress.totalItems > 0 &&
+                    ` (${progress.currentItem}/${progress.totalItems})`}
                 </>
               ) : (
                 `Sync ${type.charAt(0).toUpperCase() + type.slice(1)}`
@@ -152,7 +154,7 @@ export default function SyncStravaButton({ type }: { type: string }) {
                   />
                 </>
               )}
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-muted-foreground mt-4">
                 {progress.message}
               </p>
             </div>
@@ -164,9 +166,7 @@ export default function SyncStravaButton({ type }: { type: string }) {
         <DialogContent className="max-w-[90vw] md:max-w-[600px] overflow-hidden w-full">
           <DialogHeader>
             <DialogTitle>
-              {isSyncing
-                ? "Syncing... Please do close or refresh the page"
-                : "Sync Complete"}
+              {isSyncing ? "Syncing..." : "Sync Complete"}
             </DialogTitle>
           </DialogHeader>
           <div className="w-full">
@@ -175,7 +175,7 @@ export default function SyncStravaButton({ type }: { type: string }) {
                 value={(progress.currentItem / progress.totalItems) * 100}
               />
             )}
-            <p className="text-sm text-muted-foreground break-words">
+            <p className="text-sm text-muted-foreground break-words mt-4">
               {progress.message}
             </p>
             {progress.details && (

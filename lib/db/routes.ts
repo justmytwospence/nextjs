@@ -53,8 +53,8 @@ export async function queryMappables(userId: string): Promise<Mappable[]> {
       }),
     ]);
     const mappables = [
-      ...routes.map((route) => ({ ...route, type: "route" })),
-      ...activities.map((activity) => ({ ...activity, type: "activity" })),
+      ...routes.map((route) => ({ ...route, mappableType: "route" })),
+      ...activities.map((activity) => ({ ...activity, mappableType: "activity" })),
     ];
     baseLogger.info(`Found ${mappables.length} mappables`);
     return mappables;

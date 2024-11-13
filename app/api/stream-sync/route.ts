@@ -15,6 +15,7 @@ import {
   fetchRouteGeoJson,
   fetchRoutes,
 } from "@/lib/strava";
+import { StravaHttpError } from "@/lib/strava/api";
 import {
   DetailedActivity,
   Route,
@@ -93,7 +94,6 @@ async function syncRoutes(userId: string, searchParams: URLSearchParams) {
     const perPage = parseInt(searchParams.get("per_page") || "1000");
     const page = parseInt(searchParams.get("page") || "1");
 
-    // Direct API call now handles retries
     const routes = await fetchRoutes(userId, perPage, page);
 
     if (!routes || routes.length === 0) {
@@ -141,24 +141,35 @@ async function syncRoutes(userId: string, searchParams: URLSearchParams) {
 
         const geoJson = await fetchRouteGeoJson(userId, route.id_str);
         await enrichUserRoute(userId, route.id_str, geoJson);
-      } catch (error) {
+      } catch (error) { // catch block for for single route
         const errorMessage =
           error instanceof Error ? error.message : "Unknown error";
-        await send({
-          type: "update_failed",
-          name: route.name,
-          error: `Failed to sync route ${route.name}: ${errorMessage}`,
-        });
+        baseLogger.error(
+          `Failed to sync route ${route.name}: ${errorMessage}`
+        );
+        if (error instanceof StravaHttpError && error.status === 429) {
+          throw error
+        } else {
+          await send({
+            type: "update_failed",
+            name: route.name,
+            error: `Failed to sync route ${route.name}: ${errorMessage}`,
+          });
+        }
       }
     }
     await send({ type: "complete" });
-  } catch (error) {
+
+  } catch (error) { // catch block for all routes
     const errorMessage =
       error instanceof Error ? error.message : "Unknown error";
-    baseLogger.error(`Sync failed: ${errorMessage}`);
-    throw error;
+    await send({
+      type: "complete",
+      error: errorMessage,
+    });
   }
 }
+
 
 async function syncActivities(userId: string, searchParams: URLSearchParams) {
   try {
@@ -227,24 +238,32 @@ async function syncActivities(userId: string, searchParams: URLSearchParams) {
             }
           }
         }
-      } catch (error) {
+
+      } catch (error) { // catch block for for single activity
         const errorMessage =
           error instanceof Error ? error.message : "Unknown error";
         baseLogger.error(
           `Failed to sync activity ${summaryActivity.name}: ${errorMessage}`
         );
-        await send({
-          type: "update_failed",
-          name: summaryActivity.name,
-          error: `Failed to sync activity ${summaryActivity.name}: ${errorMessage}`,
-        });
+        if (error instanceof StravaHttpError && error.status === 429) {
+          throw error
+        } else {
+          await send({
+            type: "update_failed",
+            name: summaryActivity.name,
+            error: `Failed to sync activity ${summaryActivity.name}: ${errorMessage}`,
+          });
+        }
       }
     }
     await send({ type: "complete" });
-  } catch (error) {
+
+  } catch (error) { // catch block for all activities
     const errorMessage =
       error instanceof Error ? error.message : "Unknown error";
-    baseLogger.error(`Sync failed: ${errorMessage}`);
-    throw error;
+    await send({
+      type: "complete",
+      error: errorMessage,
+    });
   }
 }

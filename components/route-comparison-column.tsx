@@ -22,37 +22,56 @@ export default function RouteComparisonColumn({
   selectedMappable: Mappable | null;
   setSelectedMappable: (mappable: Mappable | null) => void;
 }) {
+  const routes = mappables.filter((m) => m.type === "route");
+  const activities = mappables.filter((m) => m.type === "activity");
+
   return (
     <div className="space-y-6 p-6 bg-background border rounded-lg">
-      <Select
-        onValueChange={async (value) => {
-          const [id, type] = value.split("|");
-          const fullMappable =
-            type === "route"
-              ? await queryUserRouteAction(id)
-              : await queryActivityAction(id);
-          setSelectedMappable(fullMappable);
-        }}
-      >
-        <SelectTrigger className="w-full">
-          <SelectValue placeholder="Select Route or Activity" />
-          <SelectValue>
-            {selectedMappable
-              ? selectedMappable.name
-              : "Select Route or Activity"}
-          </SelectValue>
-        </SelectTrigger>
-        <SelectContent>
-          {mappables.map((mappable) => (
-            <SelectItem
-              key={mappable.id}
-              value={`${mappable.id}|${mappable.type}`}
-            >
-              {mappable.name} ({mappable.type})
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="text-sm font-medium mb-2 block">Select Route</label>
+          <Select
+            onValueChange={async (value) => {
+              const fullMappable = await queryUserRouteAction(value);
+              setSelectedMappable(fullMappable);
+            }}
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Choose a route" />
+            </SelectTrigger>
+            <SelectContent>
+              {routes.map((route) => (
+                <SelectItem key={route.id} value={route.id}>
+                  {route.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div>
+          <label className="text-sm font-medium mb-2 block">
+            Select Activity
+          </label>
+          <Select
+            onValueChange={async (value) => {
+              const fullMappable = await queryActivityAction(value);
+              setSelectedMappable(fullMappable);
+            }}
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Choose an activity" />
+            </SelectTrigger>
+            <SelectContent>
+              {activities.map((activity) => (
+                <SelectItem key={activity.id} value={activity.id}>
+                  {activity.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
 
       {selectedMappable && (
         <div className="h-[300px] w-full mt-4">

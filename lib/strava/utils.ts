@@ -1,4 +1,4 @@
-import { HttpError } from "./errors";
+import { StravaHttpError } from "./api";
 import { baseLogger } from "../logger";
 
 export function withRetry(maxRetries: number = 5, baseDelay: number = 15000) {
@@ -11,7 +11,7 @@ export function withRetry(maxRetries: number = 5, baseDelay: number = 15000) {
           return await fn(...args);
         } catch (error) {
           if (
-            !(error instanceof HttpError) ||
+            !(error instanceof StravaHttpError) ||
             error.status !== 429 ||
             retryCount >= maxRetries
           ) {
@@ -42,10 +42,9 @@ export function withRetry(maxRetries: number = 5, baseDelay: number = 15000) {
           const shortTermLimit = error.rateLimit?.short?.readLimit || 0;
 
           baseLogger.warn(
-            `Rate limited by Strava, waiting ${
-              delay / 1000
+            `Rate limited by Strava, waiting ${delay / 1000
             } seconds before retry ${retryCount + 1}... ` +
-              `Short term usage: ${shortTermUsage}/${shortTermLimit}`
+            `Short term usage: ${shortTermUsage}/${shortTermLimit}`
           );
 
           await new Promise((resolve) => setTimeout(resolve, delay));
