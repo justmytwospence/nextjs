@@ -1,6 +1,6 @@
 import { NextResponse, NextRequest } from "next/server";
-import { WebhookEventSchema } from "@/schemas/strava-webhook-events";
-import processWebhookEvent from "@/lib/strava-webhook";
+import { WebhookEventSchema } from "@/lib/strava/schemas/strava-webhook-events";
+import processWebhookEvent from "@/lib/strava/webhook";
 import { baseLogger } from "@/lib/logger";
 const STRAVA_DOMAIN = "www.strava.com";
 

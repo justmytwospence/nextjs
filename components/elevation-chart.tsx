@@ -3,19 +3,36 @@
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Spinner } from "@/components/ui/spinner";
 import { Mappable } from "@prisma/client";
-import { CategoryScale, Chart as ChartJS, Filler, LinearScale, LineElement, PointElement, Title, Tooltip } from "chart.js";
+import {
+  CategoryScale,
+  Chart as ChartJS,
+  Filler,
+  LinearScale,
+  LineElement,
+  PointElement,
+  Title,
+  Tooltip,
+} from "chart.js";
 import React, { useState } from "react";
 import { Line } from "react-chartjs-2";
 import { computeDistanceMiles, computeGradient } from "../lib/geo";
 
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Filler);
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Filler
+);
 
 export default function ElevationChart({
   mappable,
-  maxGradient
+  maxGradient,
 }: {
-  mappable: Mappable,
-  maxGradient: number
+  mappable: Mappable;
+  maxGradient: number;
 }) {
   const [dialogOpen, setDialogOpen] = useState(false);
 
@@ -24,7 +41,9 @@ export default function ElevationChart({
   }
 
   const distance = computeDistanceMiles(mappable.polyline);
-  const elevationData = mappable.polyline.coordinates.map(point => point[2] * 3.28084);
+  const elevationData = mappable.polyline.coordinates.map(
+    (point) => point[2] * 3.28084
+  );
   const gradientData = computeGradient(mappable.polyline);
 
   const createChartData = (isLarge = false) => ({
@@ -37,7 +56,7 @@ export default function ElevationChart({
         backgroundColor: "rgba(75, 192, 192, 0.2)",
         yAxisID: "elevation",
         pointRadius: 0,
-        borderWidth: isLarge ? 2 : 1
+        borderWidth: isLarge ? 2 : 1,
       },
       {
         label: "Gradient (%)",
@@ -49,8 +68,12 @@ export default function ElevationChart({
         fill: true,
         borderWidth: isLarge ? 2 : 1,
         segment: {
-          borderColor: ctx => ctx.p0.parsed.y > maxGradient ? "red" : "gray",
-          backgroundColor: ctx => ctx.p0.parsed.y > maxGradient ? "rgba(255, 0, 0, 0.5)" : "rgba(128, 128, 128, 0.5)",
+          borderColor: (ctx) =>
+            ctx.p0.parsed.y > maxGradient ? "red" : "gray",
+          backgroundColor: (ctx) =>
+            ctx.p0.parsed.y > maxGradient
+              ? "rgba(255, 0, 0, 0.5)"
+              : "rgba(128, 128, 128, 0.5)",
         },
       },
     ],
@@ -63,7 +86,7 @@ export default function ElevationChart({
     responsive: true,
     maintainAspectRatio: false,
     animation: {
-      duration: 0 // Set duration to 0 to disable animation
+      duration: 0, // Set duration to 0 to disable animation
     },
     plugins: {
       title: {
@@ -86,9 +109,9 @@ export default function ElevationChart({
               return `Gradient: ${(context.parsed.y * 100).toFixed(1)}%`;
             }
             return label;
-          }
-        }
-      }
+          },
+        },
+      },
     },
     hover: {
       intersect: false,
@@ -109,7 +132,7 @@ export default function ElevationChart({
         },
         title: {
           display: true,
-          text: "Miles"
+          text: "Miles",
         },
       },
       elevation: {

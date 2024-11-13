@@ -1,41 +1,68 @@
 "use client";
 
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import LazyMap from "@/components/lazy-map";
 import { queryUserRouteAction } from "@/app/actions/queryUserRoute";
-import ElevationChart from "./elevation-chart";
+import { queryActivityAction } from "@/app/actions/queryActivity";
+import ElevationChart from "@/components/elevation-chart";
+import { Mappable } from "@prisma/client";
 
-export default function RouteComparisonColumn({ routes, selectedRoute, setSelectedRoute }) {
+export default function RouteComparisonColumn({
+  mappables,
+  selectedMappable,
+  setSelectedMappable,
+}: {
+  mappables: { id: string; name: string; type: string }[];
+  selectedMappable: Mappable | null;
+  setSelectedMappable: (mappable: Mappable | null) => void;
+}) {
   return (
     <div className="space-y-6 p-6 bg-background border rounded-lg">
-      <Select onValueChange={async (value) => {
-        const fullRoute = await queryUserRouteAction(value);
-        setSelectedRoute(fullRoute);
-      }}>
+      <Select
+        onValueChange={async (value) => {
+          const [id, type] = value.split("|");
+          const fullMappable =
+            type === "route"
+              ? await queryUserRouteAction(id)
+              : await queryActivityAction(id);
+          setSelectedMappable(fullMappable);
+        }}
+      >
         <SelectTrigger className="w-full">
-          <SelectValue placeholder="Select Route" />
+          <SelectValue placeholder="Select Route or Activity" />
           <SelectValue>
-            {selectedRoute ? selectedRoute.name : "Select Route"}
+            {selectedMappable
+              ? selectedMappable.name
+              : "Select Route or Activity"}
           </SelectValue>
         </SelectTrigger>
         <SelectContent>
-          {routes.map((route) => (
-            <SelectItem key={route.id} value={route.id}>
-              {route.name}
+          {mappables.map((mappable) => (
+            <SelectItem
+              key={mappable.id}
+              value={`${mappable.id}|${mappable.type}`}
+            >
+              {mappable.name} ({mappable.type})
             </SelectItem>
           ))}
         </SelectContent>
       </Select>
 
-      {selectedRoute && (
+      {selectedMappable && (
         <div className="h-[300px] w-full mt-4">
-          <LazyMap mappable={selectedRoute} />
+          <LazyMap mappable={selectedMappable} />
         </div>
       )}
 
-      {selectedRoute && (
+      {selectedMappable && (
         <div className="h-[400px] w-full">
-          <ElevationChart mappable={selectedRoute} maxGradient={0.1} />
+          <ElevationChart mappable={selectedMappable} maxGradient={0.1} />
         </div>
       )}
     </div>

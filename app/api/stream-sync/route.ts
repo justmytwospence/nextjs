@@ -2,8 +2,8 @@ import { auth } from "@/auth";
 import { enrichUserRoute, upsertDetailedActivity, upsertSegment, upsertSegmentEffort, upsertSummaryActivity, upsertUserRoute } from "@/lib/db";
 import { HttpError } from "@/lib/errors";
 import { baseLogger } from "@/lib/logger";
-import { fetchActivities, fetchDetailedActivity, fetchDetailedSegment, fetchRouteGeoJson, fetchRoutes } from "@/lib/strava-api";
-import { DetailedActivity, Route, SummaryActivity } from "@/schemas/strava";
+import { fetchActivities, fetchDetailedActivity, fetchDetailedSegment, fetchRouteGeoJson, fetchRoutes } from "@/lib/strava";
+import { DetailedActivity, Route, SummaryActivity } from "@/lib/strava/schemas/strava";
 import { NextResponse } from "next/server";
 
 type Message =
@@ -22,50 +22,6 @@ async function send(message: Message) {
   } catch (error) {
     baseLogger.error(`Failed to write to stream: ${error}`);
     throw error;
-  }
-}
-
-async function retryWithBackoff<T>(
-  operation: () => Promise<T>,
-  retryCount = 0
-): Promise<T> {
-  const MAX_RETRIES = 5;
-  const BASE_DELAY = 15000; // 15 seconds
-
-  try {
-    return await operation();
-  } catch (error) {
-    if (!(error instanceof HttpError) || error.status !== 429 || retryCount >= MAX_RETRIES) {
-      baseLogger.error("Non rate-limit error or max retries exceeded, throwing error...");
-      throw error;
-    }
-
-    if (!error.rateLimit) {
-      baseLogger.error("Rate limit exceeded, but no rate limit headers found");
-      throw error;
-    }
-
-    baseLogger.info(`Rate limit headers: ${JSON.stringify(error.rateLimit, null, 2)}`);
-
-    if (error.rateLimit?.long?.readUsage > error.rateLimit?.long?.readLimit) {
-      baseLogger.error("Daily rate limit exceeded, please try again tomorrow");
-      await send({
-        type: "complete",
-        error: "Daily rate limit exceeded, please try again tomorrow"
-      });
-      throw error;
-    }
-
-    const delay = BASE_DELAY * Math.pow(2, retryCount);
-    const shortTermUsage = error.rateLimit?.short?.readUsage || 0;
-    const shortTermLimit = error.rateLimit?.short?.readLimit || 0;
-    baseLogger.warn(`Rate limited by Strava, waiting ${delay / 1000} seconds before retry ${retryCount + 1}... Short term usage: ${shortTermUsage}/${shortTermLimit}`);
-    await send({
-      type: "update_message",
-      message: `Rate limited by Strava (${shortTermUsage} / ${shortTermLimit} in the last 15 minutes), waiting ${delay / 1000} seconds before retry ${retryCount + 1}...`,
-    });
-    await new Promise(resolve => setTimeout(resolve, delay));
-    return retryWithBackoff(operation, retryCount + 1);
   }
 }
 
@@ -121,10 +77,8 @@ async function syncRoutes(
     const perPage = parseInt(searchParams.get("per_page") || "1000");
     const page = parseInt(searchParams.get("page") || "1");
 
-    // Fetch all routes first with backoff
-    const routes = await retryWithBackoff(async () => {
-      return fetchRoutes(userId, perPage, page)
-    });
+    // Direct API call now handles retries
+    const routes = await fetchRoutes(userId, perPage, page);
 
     if (!routes || routes.length === 0) {
       await send({ type: "complete" });
@@ -165,10 +119,8 @@ async function syncRoutes(
           message: `Syncing route ${route.name}...`
         });
 
-        await retryWithBackoff(async () => {
-          const geoJson = await fetchRouteGeoJson(userId, route.id_str);
-          await enrichUserRoute(userId, route.id_str, geoJson);
-        });
+        const geoJson = await fetchRouteGeoJson(userId, route.id_str);
+        await enrichUserRoute(userId, route.id_str, geoJson);
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : "Unknown error";
         await send({
@@ -194,9 +146,8 @@ async function syncActivities(
     const perPage = parseInt(searchParams.get("per_page") || "2");
     const page = parseInt(searchParams.get("page") || "1");
 
-    const summaryActivities = await retryWithBackoff(async () => {
-      return fetchActivities(userId, perPage, page)
-    });
+    // Direct API call now handles retries
+    const summaryActivities = await fetchActivities(userId, perPage, page);
 
     if (!summaryActivities || summaryActivities.length === 0) {
       await send({ type: "complete" });
@@ -237,9 +188,7 @@ async function syncActivities(
           message: `Syncing activity ${summaryActivity.name}...`,
         });
 
-        const detailedActivity = await retryWithBackoff(async () => {
-          return await fetchDetailedActivity(userId, summaryActivity.id);
-        });
+        const detailedActivity = await fetchDetailedActivity(userId, summaryActivity.id);
 
         await upsertDetailedActivity(userId, detailedActivity);
 

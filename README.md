@@ -44,9 +44,10 @@ STRAVA_WEBHOOK_VERIFY_TOKEN=""
 - [X] Handle rate limiting using the headers from Strava
 - [X] Implement webhook for new activites
 - [X] Split sync into route and activity 
-- [ ] Sync UserSegment and Segment models
+- [ ] Sync SegmentEffort and Segment models
 - [ ] Increase athlete headcount
 - [ ] Reattach to existing syncs
 - [ ] Map brushed linking
 - [ ] Write unit and integration tests
 - [ ] Create segment sniper tool
+- [ ] Integrate weather

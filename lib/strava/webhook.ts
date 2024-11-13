@@ -1,7 +1,7 @@
-import { deleteUserAccount, deleteActivity, upsertDetailedActivity } from "@/lib/db";
+import { deleteActivity, deleteUserAccount, upsertDetailedActivity } from "@/lib/db";
 import { baseLogger } from "@/lib/logger";
-import { WebhookEvent } from "@/schemas/strava-webhook-events";
-import { fetchDetailedActivity } from "./strava-api";
+import { fetchDetailedActivity } from "@/lib/strava";
+import { WebhookEvent } from "@/lib/strava/schemas/strava-webhook-events";
 
 export default async function processWebhookEvent(event: WebhookEvent) {
   switch (event.object_type) {

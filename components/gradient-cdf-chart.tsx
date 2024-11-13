@@ -1,20 +1,39 @@
 import React, { useEffect, useState } from "react";
 import { Line } from "react-chartjs-2";
-import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from "chart.js";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+} from "chart.js";
 import { computeCdf, computeGradient } from "@/lib/geo";
 import { Mappable } from "@prisma/client";
 
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 // Move calculation outside component
-const xAxisRange = Array.from({ length: 61 }, (_, i) => parseFloat((-0.2 + i * 0.01).toFixed(2)));
+const xAxisRange = Array.from({ length: 61 }, (_, i) =>
+  parseFloat((-0.2 + i * 0.01).toFixed(2))
+);
 
 export default function GradientCdfChart({
   selectedRoute1,
-  selectedRoute2
+  selectedRoute2,
 }: {
-  selectedRoute1: Mappable | null,
-  selectedRoute2: Mappable | null
+  selectedRoute1: Mappable | null;
+  selectedRoute2: Mappable | null;
 }) {
   const [gradients1, setGradients1] = useState<number[]>([]);
   const [gradients2, setGradients2] = useState<number[]>([]);
@@ -24,8 +43,10 @@ export default function GradientCdfChart({
   // First useEffect to calculate gradients
   useEffect(() => {
     if (selectedRoute1 && selectedRoute2) {
-      const polyline1 = selectedRoute1.polyline || selectedRoute1.summaryPolyline;
-      const polyline2 = selectedRoute2.polyline || selectedRoute2.summaryPolyline;
+      const polyline1 =
+        selectedRoute1.polyline || selectedRoute1.summaryPolyline;
+      const polyline2 =
+        selectedRoute2.polyline || selectedRoute2.summaryPolyline;
 
       const newGradients1 = computeGradient(polyline1);
       const newGradients2 = computeGradient(polyline2);
@@ -45,8 +66,14 @@ export default function GradientCdfChart({
     return null;
   }
 
-  const gradientMin = Math.max(Math.min(...[...gradients1, ...gradients2]), -0.3);
-  const gradientMax = Math.min(Math.max(...[...gradients1, ...gradients2]), 0.3);
+  const gradientMin = Math.max(
+    Math.min(...[...gradients1, ...gradients2]),
+    -0.3
+  );
+  const gradientMax = Math.min(
+    Math.max(...[...gradients1, ...gradients2]),
+    0.3
+  );
 
   const data = {
     labels: xAxisRange,
@@ -70,9 +97,9 @@ export default function GradientCdfChart({
 
   const options = {
     responsive: true,
-    maintainAspectRatio: false,  // Add this line
+    maintainAspectRatio: false, // Add this line
     animation: {
-      duration: 0 // general animation time
+      duration: 0, // general animation time
     },
     plugins: {
       title: {
@@ -130,4 +157,4 @@ export default function GradientCdfChart({
       <Line data={data} options={options} />
     </div>
   );
-};
+}
