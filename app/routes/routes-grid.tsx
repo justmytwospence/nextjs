@@ -4,16 +4,18 @@ import { useState, type ReactNode } from "react";
 import LazyMap from "@/components/lazy-map";
 import { Navigation, TrendingUp } from "lucide-react";
 import { useRouter } from "next/navigation";
-import {
-  Card,
-  CardHeader,
-} from "@/components/ui/card";
+import { Card, CardHeader } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { UserRoute } from "@prisma/client";
 import {
-  Pagination, PaginationContent, PaginationEllipsis, PaginationItem,
-  PaginationLink, PaginationNext, PaginationPrevious
-} from "@/components/ui/pagination"
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 import PleaseSync from "@/components/please-sync";
 
 export default function RoutesGrid({ routes }: { routes: UserRoute[] }) {
@@ -22,23 +24,28 @@ export default function RoutesGrid({ routes }: { routes: UserRoute[] }) {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 30;
 
-  const validRoutes = routes.filter(route => route.summaryPolyline);
+  const validRoutes = routes.filter((route) => route.summaryPolyline);
 
   if (validRoutes.length === 0) {
     return <PleaseSync />;
   }
 
   // Get unique route types from the routes
-  const routeTypes = Array.from(new Set(validRoutes.map(route => route.type?.toString() ?? ""))).filter(Boolean);
+  const routeTypes = Array.from(
+    new Set(validRoutes.map((route) => route.type?.toString() ?? ""))
+  ).filter(Boolean);
   const routeTypeLabels = {
     "1": "Ride",
     "2": "Trail Run",
     "5": "Run",
   };
 
-  const filteredRoutes = selectedType === "all"
-    ? validRoutes
-    : validRoutes.filter(route => (route.type ?? "").toString() === selectedType);
+  const filteredRoutes =
+    selectedType === "all"
+      ? validRoutes
+      : validRoutes.filter(
+          (route) => (route.type ?? "").toString() === selectedType
+        );
 
   const totalPages = Math.ceil(filteredRoutes.length / itemsPerPage);
   const paginatedRoutes = filteredRoutes.slice(
@@ -105,7 +112,8 @@ export default function RoutesGrid({ routes }: { routes: UserRoute[] }) {
             <TabsTrigger value="all">All</TabsTrigger>
             {routeTypes.map((type) => (
               <TabsTrigger key={type} value={type}>
-                {routeTypeLabels[type as keyof typeof routeTypeLabels] || `Type ${type}`}
+                {routeTypeLabels[type as keyof typeof routeTypeLabels] ||
+                  `Type ${type}`}
               </TabsTrigger>
             ))}
           </TabsList>
@@ -118,9 +126,11 @@ export default function RoutesGrid({ routes }: { routes: UserRoute[] }) {
                     href="#"
                     onClick={(e) => {
                       e.preventDefault();
-                      setCurrentPage(p => Math.max(1, p - 1));
+                      setCurrentPage((p) => Math.max(1, p - 1));
                     }}
-                    className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
+                    className={
+                      currentPage === 1 ? "pointer-events-none opacity-50" : ""
+                    }
                   />
                 </PaginationItem>
                 {generatePaginationItems()}
@@ -129,9 +139,13 @@ export default function RoutesGrid({ routes }: { routes: UserRoute[] }) {
                     href="#"
                     onClick={(e) => {
                       e.preventDefault();
-                      setCurrentPage(p => Math.min(totalPages, p + 1));
+                      setCurrentPage((p) => Math.min(totalPages, p + 1));
                     }}
-                    className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
+                    className={
+                      currentPage === totalPages
+                        ? "pointer-events-none opacity-50"
+                        : ""
+                    }
                   />
                 </PaginationItem>
               </PaginationContent>
@@ -167,7 +181,10 @@ export default function RoutesGrid({ routes }: { routes: UserRoute[] }) {
                     <div className="flex items-center gap-2 justify-end">
                       <TrendingUp className="h-4 w-4 text-muted-foreground" />
                       <span className="text-sm">
-                        {Math.round(route.elevationGain * 3.28084).toLocaleString()}ft
+                        {Math.round(
+                          route.elevationGain * 3.28084
+                        ).toLocaleString()}
+                        ft
                       </span>
                     </div>
                   </div>

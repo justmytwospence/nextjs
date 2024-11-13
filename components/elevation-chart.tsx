@@ -15,7 +15,7 @@ import {
 } from "chart.js";
 import React, { useState } from "react";
 import { Line } from "react-chartjs-2";
-import { computeDistanceMiles, computeGradient } from "../lib/geo";
+import { computeDistanceMiles, computeGradient } from "@/lib/geo";
 
 ChartJS.register(
   CategoryScale,

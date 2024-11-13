@@ -1,9 +1,17 @@
-
-import { baseLogger, prisma, convertKeysToCamelCase, Prisma } from "./shared";
-import type { DetailedActivity, SummaryActivity } from "@/lib/strava/schemas/strava";
+import { baseLogger } from "@/lib/logger";
+import { prisma } from "@/lib/prisma";
+import type {
+  DetailedActivity,
+  SummaryActivity,
+} from "@/lib/strava/schemas/strava";
+import { convertKeysToCamelCase } from "@/lib/utils";
 import type { Activity, MappableActivity } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 
-export async function deleteActivity(userId: string, activityId: string): Promise<void> {
+export async function deleteActivity(
+  userId: string,
+  activityId: string
+): Promise<void> {
   try {
     baseLogger.info(`Deleting activity ${activityId}`);
     await prisma.activity.delete({
@@ -11,8 +19,8 @@ export async function deleteActivity(userId: string, activityId: string): Promis
         id_userId: {
           id: activityId,
           userId,
-        }
-      }
+        },
+      },
     });
     baseLogger.info(`Deleted activity ${activityId}`);
   } catch (error) {
@@ -20,41 +28,47 @@ export async function deleteActivity(userId: string, activityId: string): Promis
   }
 }
 
-export async function queryMappableActivities(userId: string): Promise<MappableActivity[]> {
+export async function queryMappableActivities(
+  userId: string
+): Promise<MappableActivity[]> {
   try {
     baseLogger.info(`Querying user activities for user ${userId}`);
     const activities = await prisma.activity.findMany({
       where: {
         userId,
         movingTime: {
-          gt: 0
+          gt: 0,
         },
         summaryPolyline: {
-          not: Prisma.JsonNullValueFilter.JsonNull
-        }
+          not: Prisma.JsonNullValueFilter.JsonNull,
+        },
       },
       orderBy: {
-        startDateLocal: "desc"
-      }
+        startDateLocal: "desc",
+      },
     });
     baseLogger.info(`Found ${activities.length} activities`);
     return activities as MappableActivity[];
-
   } catch (error) {
     throw error;
   }
 }
 
-export async function queryActivity(userId: string, activityId: string): Promise<Activity | null> {
+export async function queryActivity(
+  userId: string,
+  activityId: string
+): Promise<Activity | null> {
   try {
-    baseLogger.info(`Querying user route for user ${userId} and route ${activityId}`);
+    baseLogger.info(
+      `Querying user route for user ${userId} and route ${activityId}`
+    );
     const activity = await prisma.activity.findUnique({
       where: {
         id_userId: {
           id: activityId,
           userId,
-        }
-      }
+        },
+      },
     });
     baseLogger.info(`Found route ${activityId} to be ${activity?.name}`);
     return activity;
@@ -63,39 +77,42 @@ export async function queryActivity(userId: string, activityId: string): Promise
   }
 }
 
-export async function upsertSummaryActivity(userId: string, activity: SummaryActivity): Promise<Activity> {
+export async function upsertSummaryActivity(
+  userId: string,
+  activity: SummaryActivity
+): Promise<Activity> {
   baseLogger.info(`Upserting activity ${activity.name}`);
 
   const activityData = convertKeysToCamelCase<SummaryActivity>(activity);
 
-  const {
-    map,
-    ...inputData
-  } = activityData
+  const { map, ...inputData } = activityData;
 
   try {
     const activity = await prisma.activity.upsert({
       where: {
         id_userId: {
           id: inputData.id,
-          userId
-        }
-
+          userId,
+        },
       },
       create: {
         ...inputData,
-        summaryPolyline: (map.summaryPolyline as unknown) as Prisma.InputJsonValue || undefined,
+        summaryPolyline:
+          (map.summaryPolyline as unknown as Prisma.InputJsonValue) ||
+          undefined,
         userId: userId,
       },
       update: {
         ...inputData,
-        summaryPolyline: (map.summaryPolyline as unknown) as Prisma.InputJsonValue || undefined,
+        summaryPolyline:
+          (map.summaryPolyline as unknown as Prisma.InputJsonValue) ||
+          undefined,
         userId: userId,
       },
     });
 
     baseLogger.info(`Summary activity ${activity.name} upserted successfully`);
-    return activity
+    return activity;
   } catch (error) {
     baseLogger.error(`Failed to upsert activity ${activity.name}: ${error}`);
     throw error;
@@ -104,41 +121,41 @@ export async function upsertSummaryActivity(userId: string, activity: SummaryAct
   }
 }
 
-export async function upsertDetailedActivity(userId: string, activity: DetailedActivity): Promise<Activity> {
+export async function upsertDetailedActivity(
+  userId: string,
+  activity: DetailedActivity
+): Promise<Activity> {
   baseLogger.info(`Upserting activity ${activity.name}`);
 
   const activityData = convertKeysToCamelCase<DetailedActivity>(activity);
 
-  const {
-    map,
-    bestEfforts,
-    segmentEfforts,
-    ...inputData
-  } = activityData
+  const { map, bestEfforts, segmentEfforts, ...inputData } = activityData;
 
   try {
     const activity = await prisma.activity.upsert({
       where: {
         id_userId: {
           id: inputData.id,
-          userId
-        }
+          userId,
+        },
       },
       create: {
         ...inputData,
-        polyline: (map.polyline as unknown) as Prisma.InputJsonValue,
-        summaryPolyline: (map.summary_polyline as unknown) as Prisma.InputJsonValue,
+        polyline: map.polyline as unknown as Prisma.InputJsonValue,
+        summaryPolyline:
+          map.summary_polyline as unknown as Prisma.InputJsonValue,
         userId: userId,
       },
       update: {
         ...inputData,
-        polyline: (map.polyline as unknown) as Prisma.InputJsonValue,
-        summaryPolyline: (map.summary_polyline as unknown) as Prisma.InputJsonValue,
+        polyline: map.polyline as unknown as Prisma.InputJsonValue,
+        summaryPolyline:
+          map.summary_polyline as unknown as Prisma.InputJsonValue,
         userId: userId,
       },
     });
     baseLogger.info(`Activity ${activity.name} upserted successfully`);
-    return activity
+    return activity;
   } catch (error) {
     baseLogger.error(`Failed to upsert activity ${activity.name}: ${error}`);
     throw error;

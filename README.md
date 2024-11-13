@@ -20,7 +20,7 @@ Advanced route analysis and comparison tools for Strava users. Work in Progress.
 DATABASE_URL=""
 STRAVA_CLIENT_ID=""
 STRAVA_CLIENT_SECRET=""
-AUTH_SECRET="" # Added by `npx auth`. 
+AUTH_SECRET="" # Added by `npx auth`.
 STRAVA_WEBHOOK_VERIFY_TOKEN=""
 ```
 
@@ -30,24 +30,26 @@ STRAVA_WEBHOOK_VERIFY_TOKEN=""
 - **Staging**: The `staging` branch is automatically deployed to the staging.$DOMAIN and migrations are run against the staging database.
 
 ## TODO
-- [X] Set up database
-- [X] Implement authentication
-- [X] Integrate Strava API for fetching routes
-- [X] Add maps using Leaflet and React Leaflet
-- [X] Implement logging with Winston
-- [X] Ensure type safety with TypeScript and Zod
-- [X] Set up deployment pipeline
-- [X] Create route comparison tools 
-- [X] Implement logic for dealing with Strava rate limits
-- [X] Implement webhook for account deletion per API terms
-- [X] Refactor functions to take userId instead of session
-- [X] Handle rate limiting using the headers from Strava
-- [X] Implement webhook for new activites
-- [X] Split sync into route and activity 
-- [ ] Sync SegmentEffort and Segment models
+
+- [x] Set up database
+- [x] Implement authentication
+- [x] Integrate Strava API for fetching routes
+- [x] Add maps using Leaflet and React Leaflet
+- [x] Implement logging with Winston
+- [x] Ensure type safety with TypeScript and Zod
+- [x] Set up deployment pipeline
+- [x] Create route comparison tools
+- [x] Implement logic for dealing with Strava rate limits
+- [x] Implement webhook for account deletion per API terms
+- [x] Refactor functions to take userId instead of session
+- [x] Handle rate limiting using the headers from Strava
+- [x] Implement webhook for new activites
+- [x] Split sync into route and activity
+- [x] Sync SegmentEffort and Segment models
+- [ ] Map brushed linking
+- [ ] Sync Activity streams
+- [ ] Create segment sniper tool
 - [ ] Increase athlete headcount
 - [ ] Reattach to existing syncs
-- [ ] Map brushed linking
 - [ ] Write unit and integration tests
-- [ ] Create segment sniper tool
 - [ ] Integrate weather

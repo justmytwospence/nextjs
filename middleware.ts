@@ -8,7 +8,7 @@ export async function middleware(request: NextRequest) {
     headers: {
       // Forward cookies to maintain session state
       cookie: request.headers.get("cookie") || "",
-    }
+    },
   });
   const session = response.ok ? await response.json() : null;
 
@@ -31,6 +31,6 @@ export const config = {
      * 4. /static (static files)
      * 5. /favicon.ico, etc. (static files)
      */
-    "/((?!api/|login|logout|_next|static|favicon.ico).*)"
-  ]
+    "/((?!api/|login|logout|_next|static|favicon.ico).*)",
+  ],
 };

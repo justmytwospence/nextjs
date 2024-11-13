@@ -51,14 +51,14 @@
   body {
     @apply bg-background text-foreground;
   }
-  
+
   /* Ensure modals and dialogs have solid backgrounds */
   [role="dialog"],
   [data-dialog],
   [role="modal"] {
     @apply bg-background;
   }
-  
+
   /* Ensure headers/navbars have solid backgrounds */
   header,
   nav,
@@ -67,6 +67,13 @@
   }
 }
 
-.leaflet-control { z-index: 0 !important}
-.leaflet-pane { z-index: 0 !important}
-.leaflet-top, .leaflet-bottom {z-index: 0 !important}
+.leaflet-control {
+  z-index: 0 !important;
+}
+.leaflet-pane {
+  z-index: 0 !important;
+}
+.leaflet-top,
+.leaflet-bottom {
+  z-index: 0 !important;
+}

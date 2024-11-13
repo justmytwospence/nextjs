@@ -18,8 +18,11 @@ function smoothArray(arr: number[], windowSize: number = 10): number[] {
   for (let i = 0; i < arr.length; i++) {
     let sum = 0;
     let count = 0;
-    for (let j = Math.max(0, i - Math.floor(windowSize / 2));
-      j <= Math.min(arr.length - 1, i + Math.floor(windowSize / 2)); j++) {
+    for (
+      let j = Math.max(0, i - Math.floor(windowSize / 2));
+      j <= Math.min(arr.length - 1, i + Math.floor(windowSize / 2));
+      j++
+    ) {
       sum += arr[j];
       count++;
     }
@@ -47,7 +50,7 @@ export function computeCdf(data: number[], range: number[]): number[] {
   let cumulativeCount = 0;
   let dataIndex = 0;
 
-  range.forEach(x => {
+  range.forEach((x) => {
     while (dataIndex < sorted.length && sorted[dataIndex] <= x) {
       cumulativeCount++;
       dataIndex++;

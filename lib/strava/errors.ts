@@ -1,16 +1,16 @@
 export interface RateLimit {
   short: {
-    usage: number,
-    limit: number,
-    readUsage: number,
-    readLimit: number,
-  },
+    usage: number;
+    limit: number;
+    readUsage: number;
+    readLimit: number;
+  };
   long: {
-    usage: number,
-    limit: number,
-    readUsage: number,
-    readLimit: number,
-  }
+    usage: number;
+    limit: number;
+    readUsage: number;
+    readLimit: number;
+  };
 }
 
 export class HttpError extends Error {

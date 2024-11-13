@@ -31,13 +31,18 @@ export async function GET(request: NextRequest) {
   const hub_mode = searchParams.get("hub.mode");
   const hub_verify_token = searchParams.get("hub.verify_token");
   const hub_challenge = searchParams.get("hub.challenge");
-  baseLogger.info(`Received Strava webhook GET request with params: ${hub_mode}, ${hub_verify_token}, ${hub_challenge}`);
+  baseLogger.info(
+    `Received Strava webhook GET request with params: ${hub_mode}, ${hub_verify_token}, ${hub_challenge}`
+  );
 
   // if (!isStravaOrigin(request) && hub_verify_token == process.env.STRAVA_WEBHOOK_VERIFY_TOKEN) {
   //   return new NextResponse(null, { status: 403 });
   // }
 
-  if (hub_mode === "subscribe" && hub_verify_token === process.env.STRAVA_WEBHOOK_VERIFY_TOKEN) {
+  if (
+    hub_mode === "subscribe" &&
+    hub_verify_token === process.env.STRAVA_WEBHOOK_VERIFY_TOKEN
+  ) {
     return NextResponse.json({ "hub.challenge": hub_challenge });
   } else {
     return new NextResponse(null, { status: 403 });
@@ -55,7 +60,13 @@ export async function POST(request: NextRequest) {
     const validationResult = WebhookEventSchema.safeParse(requestJson);
 
     if (!validationResult.success) {
-      baseLogger.error(`Invalid webhook event data: ${JSON.stringify(validationResult.error, null, 2)}`);
+      baseLogger.error(
+        `Invalid webhook event data: ${JSON.stringify(
+          validationResult.error,
+          null,
+          2
+        )}`
+      );
       throw new Error("Invalid webhook event data");
     } else {
       await processWebhookEvent(validationResult.data).catch(baseLogger.error);

@@ -1,8 +1,17 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Progress } from "@/components/ui/progress";
 import { Spinner } from "@/components/ui/spinner";
 import { useRouter } from "next/navigation";
@@ -17,7 +26,7 @@ type ProgressState = {
     name: string;
     error: string;
   }[];
-}
+};
 
 export default function SyncStravaButton({ type }: { type: string }) {
   const router = useRouter();
@@ -38,18 +47,20 @@ export default function SyncStravaButton({ type }: { type: string }) {
       currentItem: 0,
       totalItems: 0,
       message: "Sync starting...",
-      failedItems: []
+      failedItems: [],
     });
 
     const PER_PAGE = 8;
-    const events = new EventSource(`/api/stream-sync?type=${type}&per_page=${PER_PAGE}`);
+    const events = new EventSource(
+      `/api/stream-sync?type=${type}&per_page=${PER_PAGE}`
+    );
 
     events.onmessage = (event) => {
       const data = JSON.parse(event.data);
 
       switch (data.type) {
         case "update_total":
-          setProgress(prev => ({
+          setProgress((prev) => ({
             ...prev,
             totalItems: data.n,
             currentItem: 0,
@@ -57,32 +68,32 @@ export default function SyncStravaButton({ type }: { type: string }) {
           }));
           break;
         case "update_current":
-          setProgress(prev => ({
+          setProgress((prev) => ({
             ...prev,
             currentItem: Math.min(prev.currentItem + 1, prev.totalItems),
             message: data.message,
           }));
           break;
         case "update_failed":
-          setProgress(prev => ({
+          setProgress((prev) => ({
             ...prev,
             failedItems: [
               ...prev.failedItems,
-              { name: data.name, error: data.error }
+              { name: data.name, error: data.error },
             ],
           }));
           break;
         case "update_message":
-          setProgress(prev => ({
+          setProgress((prev) => ({
             ...prev,
             message: data.message,
           }));
-          break
+          break;
         case "complete":
           events.close();
-          setProgress(prev => ({
+          setProgress((prev) => ({
             ...prev,
-            message: data.error
+            message: data.error,
           }));
           setIsSyncing(false);
           if (!data.error && progress.failedItems.length === 0) {
@@ -95,7 +106,7 @@ export default function SyncStravaButton({ type }: { type: string }) {
 
     events.onerror = () => {
       events.close();
-      setProgress(prev => ({
+      setProgress((prev) => ({
         ...prev,
         message: "Sync Failed: Connection error",
       }));
@@ -105,8 +116,11 @@ export default function SyncStravaButton({ type }: { type: string }) {
 
   return (
     <>
-      <Popover open={isHovered && (isSyncing)}>
-        <div onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
+      <Popover open={isHovered && isSyncing}>
+        <div
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+        >
           <PopoverTrigger asChild>
             <Button
               className="ml-auto font-bold"
@@ -117,7 +131,8 @@ export default function SyncStravaButton({ type }: { type: string }) {
                   sync();
                   setShowModal(true);
                 }
-              }}>
+              }}
+            >
               {isSyncing ? (
                 <>
                   <Spinner className="mr-2" />
@@ -132,10 +147,14 @@ export default function SyncStravaButton({ type }: { type: string }) {
             <div className="space-y-2">
               {progress.totalItems > 0 && (
                 <>
-                  <Progress value={(progress.currentItem / progress.totalItems) * 100} />
+                  <Progress
+                    value={(progress.currentItem / progress.totalItems) * 100}
+                  />
                 </>
               )}
-              <p className="text-sm text-muted-foreground">{progress.message}</p>
+              <p className="text-sm text-muted-foreground">
+                {progress.message}
+              </p>
             </div>
           </PopoverContent>
         </div>
@@ -145,24 +164,36 @@ export default function SyncStravaButton({ type }: { type: string }) {
         <DialogContent className="max-w-[90vw] md:max-w-[600px] overflow-hidden w-full">
           <DialogHeader>
             <DialogTitle>
-              {isSyncing ? "Syncing... Please do close or refresh the page" : "Sync Complete"}
+              {isSyncing
+                ? "Syncing... Please do close or refresh the page"
+                : "Sync Complete"}
             </DialogTitle>
           </DialogHeader>
           <div className="w-full">
             {progress.totalItems > 0 && (
-              <Progress value={(progress.currentItem / progress.totalItems) * 100} />
+              <Progress
+                value={(progress.currentItem / progress.totalItems) * 100}
+              />
             )}
-            <p className="text-sm text-muted-foreground break-words">{progress.message}</p>
+            <p className="text-sm text-muted-foreground break-words">
+              {progress.message}
+            </p>
             {progress.details && (
-              <p className="text-sm text-muted-foreground break-words">{progress.details}</p>
+              <p className="text-sm text-muted-foreground break-words">
+                {progress.details}
+              </p>
             )}
             {progress.failedItems.length > 0 && (
               <div className="mt-4">
-                <p className="text-sm font-medium text-destructive mb-2">{progress.failedItems.length} Failed items:</p>
+                <p className="text-sm font-medium text-destructive mb-2">
+                  {progress.failedItems.length} Failed items:
+                </p>
                 <div className="max-h-[40vh] overflow-y-auto overflow-x-hidden rounded-md border border-border p-4 space-y-2">
                   {progress.failedItems.map((item, i) => (
                     <div key={i} className="space-y-1 w-full">
-                      <p className="text-sm font-bold break-words">{item.name}</p>
+                      <p className="text-sm font-bold break-words">
+                        {item.name}
+                      </p>
                       <pre className="text-xs bg-muted p-2 rounded-md whitespace-pre-wrap break-all w-full">
                         <code>
                           {typeof item.error === "string"
@@ -180,4 +211,4 @@ export default function SyncStravaButton({ type }: { type: string }) {
       </Dialog>
     </>
   );
-};
+}

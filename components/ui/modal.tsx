@@ -7,7 +7,12 @@ interface ModalProps {
   className?: string;
 }
 
-export function Modal({ isOpen, onClose, children, className = "" }: ModalProps) {
+export function Modal({
+  isOpen,
+  onClose,
+  children,
+  className = "",
+}: ModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {

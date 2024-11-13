@@ -1,8 +1,8 @@
-import { prisma } from "@/lib/prisma"
-import { refreshToken } from "@/lib/strava-api"
-import { PrismaAdapter } from "@auth/prisma-adapter"
-import { default as NextAuth, Session, type DefaultSession } from "next-auth"
-import StravaProvider from "next-auth/providers/strava"
+import { prisma } from "@/lib/prisma";
+import { refreshToken } from "@/lib/strava";
+import { PrismaAdapter } from "@auth/prisma-adapter";
+import { default as NextAuth, Session, type DefaultSession } from "next-auth";
+import StravaProvider from "next-auth/providers/strava";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   adapter: PrismaAdapter(prisma),
@@ -12,8 +12,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       authorization: {
         params: {
           approval_prompt: "force",
-          scope: "read_all,profile:read_all,activity:read_all"
-        }
+          scope: "read_all,profile:read_all,activity:read_all",
+        },
       },
       clientId: process.env.STRAVA_CLIENT_ID,
       clientSecret: process.env.STRAVA_CLIENT_SECRET,
@@ -27,13 +27,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           image: profile.profile,
         };
       },
-    })
+    }),
   ],
   callbacks: {
-    async session({ session, user }: { session: Session, user: any }) {
-      session.user.id = user.id
-      await refreshToken(user.id)
-      return session
+    async session({ session, user }: { session: Session; user: any }) {
+      session.user.id = user.id;
+      await refreshToken(user.id);
+      return session;
     },
-  }
-})
+  },
+});

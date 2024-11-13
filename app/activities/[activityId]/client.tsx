@@ -2,14 +2,23 @@
 
 import ElevationChart from "@/components/elevation-chart";
 import LazyMap from "@/components/lazy-map";
-import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
+import {
+  Breadcrumb,
+  BreadcrumbList,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 import { MappableActivity } from "@prisma/client";
 import { Navigation, TrendingUp } from "lucide-react";
 
-export default function ActivityDetail({ activity }: { activity: MappableActivity }) {
+export default function ActivityDetail({
+  activity,
+}: {
+  activity: MappableActivity;
+}) {
   return (
     <div className="container mx-auto p-6">
-
       <Breadcrumb className="mb-6 text-sm text-muted-foreground" separator="/">
         <BreadcrumbList>
           <BreadcrumbItem>

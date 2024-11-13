@@ -9,7 +9,7 @@ export default async function RoutePage({ params }) {
     return null;
   }
 
-  const { routeId } = await params
+  const { routeId } = await params;
 
   const route = await queryUserRoute(session.user.id, routeId);
   if (!route) {

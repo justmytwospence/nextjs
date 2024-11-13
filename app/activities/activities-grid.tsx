@@ -4,19 +4,25 @@ import { useState, type ReactNode } from "react";
 import LazyMap from "@/components/lazy-map";
 import { Navigation, TrendingUp, Clock } from "lucide-react";
 import { useRouter } from "next/navigation";
-import {
-  Card,
-  CardHeader,
-} from "@/components/ui/card";
+import { Card, CardHeader } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { MappableActivity } from "@prisma/client";
 import {
-  Pagination, PaginationContent, PaginationEllipsis, PaginationItem,
-  PaginationLink, PaginationNext, PaginationPrevious
-} from "@/components/ui/pagination"
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 import PleaseSync from "@/components/please-sync";
 
-export default function ActivitiesGrid({ activities }: { activities: MappableActivity[] }) {
+export default function ActivitiesGrid({
+  activities,
+}: {
+  activities: MappableActivity[];
+}) {
   const router = useRouter();
   const [selectedType, setSelectedType] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
@@ -27,13 +33,16 @@ export default function ActivitiesGrid({ activities }: { activities: MappableAct
   }
 
   // Get unique sport types from activities
-  const uniqueSportTypes = Array.from(new Set(activities.map(activity => activity.sportType)));
-  console.log(activities)
+  const uniqueSportTypes = Array.from(
+    new Set(activities.map((activity) => activity.sportType))
+  );
+  console.log(activities);
   console.log(uniqueSportTypes);
 
-  const filteredActivities = selectedType === "all"
-    ? activities
-    : activities.filter(activity => activity.sportType === selectedType);
+  const filteredActivities =
+    selectedType === "all"
+      ? activities
+      : activities.filter((activity) => activity.sportType === selectedType);
 
   const totalPages = Math.ceil(filteredActivities.length / itemsPerPage);
   const paginatedActivities = filteredActivities.slice(
@@ -100,7 +109,7 @@ export default function ActivitiesGrid({ activities }: { activities: MappableAct
             <TabsTrigger value="all">All</TabsTrigger>
             {uniqueSportTypes.map((type) => (
               <TabsTrigger key={type} value={type}>
-                {type.replace(/([A-Z])/g, ' $1').trim()}
+                {type.replace(/([A-Z])/g, " $1").trim()}
               </TabsTrigger>
             ))}
           </TabsList>
@@ -113,9 +122,11 @@ export default function ActivitiesGrid({ activities }: { activities: MappableAct
                     href="#"
                     onClick={(e) => {
                       e.preventDefault();
-                      setCurrentPage(p => Math.max(1, p - 1));
+                      setCurrentPage((p) => Math.max(1, p - 1));
                     }}
-                    className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
+                    className={
+                      currentPage === 1 ? "pointer-events-none opacity-50" : ""
+                    }
                   />
                 </PaginationItem>
                 {generatePaginationItems()}
@@ -124,9 +135,13 @@ export default function ActivitiesGrid({ activities }: { activities: MappableAct
                     href="#"
                     onClick={(e) => {
                       e.preventDefault();
-                      setCurrentPage(p => Math.min(totalPages, p + 1));
+                      setCurrentPage((p) => Math.min(totalPages, p + 1));
                     }}
-                    className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
+                    className={
+                      currentPage === totalPages
+                        ? "pointer-events-none opacity-50"
+                        : ""
+                    }
                   />
                 </PaginationItem>
               </PaginationContent>

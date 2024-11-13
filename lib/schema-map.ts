@@ -18,16 +18,19 @@ import { z, type ZodDiscriminatedUnionOption } from "zod";
 
 const RESOLVING = Symbol("mapOnSchema/resolving");
 
-export function mapOnSchema<T extends z.ZodTypeAny, TResult extends z.ZodTypeAny>(
-  schema: T,
-  fn: (schema: z.ZodTypeAny) => TResult,
-): TResult;
+export function mapOnSchema<
+  T extends z.ZodTypeAny,
+  TResult extends z.ZodTypeAny
+>(schema: T, fn: (schema: z.ZodTypeAny) => TResult): TResult;
 
-/** 
+/**
  * Applies {@link fn} to each element of the schema recursively, replacing every schema with its return value.
  * The rewriting is applied bottom-up (ie. {@link fn} will get called on "children" first).
  */
-export function mapOnSchema(schema: z.ZodTypeAny, fn: (schema: z.ZodTypeAny) => z.ZodTypeAny): z.ZodTypeAny {
+export function mapOnSchema(
+  schema: z.ZodTypeAny,
+  fn: (schema: z.ZodTypeAny) => z.ZodTypeAny
+): z.ZodTypeAny {
   // Cache results to support recursive schemas
   const results = new Map<z.ZodTypeAny, z.ZodTypeAny | typeof RESOLVING>();
 
@@ -135,7 +138,7 @@ export function mapOnSchema(schema: z.ZodTypeAny, fn: (schema: z.ZodTypeAny) => 
         [...schema.optionsMap.entries()].map(([k, v]) => [
           k,
           mapElement(v) as ZodDiscriminatedUnionOption<string>,
-        ]),
+        ])
       );
 
       return new z.ZodDiscriminatedUnion({
@@ -146,7 +149,9 @@ export function mapOnSchema(schema: z.ZodTypeAny, fn: (schema: z.ZodTypeAny) => 
     } else if (schema instanceof z.ZodUnion) {
       return new z.ZodUnion({
         ...schema._def,
-        options: schema._def.options.map((option: z.ZodTypeAny) => mapElement(option)),
+        options: schema._def.options.map((option: z.ZodTypeAny) =>
+          mapElement(option)
+        ),
       });
     } else if (schema instanceof z.ZodIntersection) {
       return new z.ZodIntersection({
@@ -169,20 +174,28 @@ export function mapOnSchema(schema: z.ZodTypeAny, fn: (schema: z.ZodTypeAny) => 
 }
 
 export function deepPartial<T extends z.ZodTypeAny>(schema: T): T {
-  return mapOnSchema(schema, (s) => (s instanceof z.ZodObject ? s.partial() : s)) as T;
+  return mapOnSchema(schema, (s) =>
+    s instanceof z.ZodObject ? s.partial() : s
+  ) as T;
 }
 
 /** Make all object schemas "strict" (ie. fail on unknown keys), except if they are marked as `.passthrough()` */
 export function deepStrict<T extends z.ZodTypeAny>(schema: T): T {
   return mapOnSchema(schema, (s) =>
-    s instanceof z.ZodObject && s._def.unknownKeys !== "passthrough" ? s.strict() : s,
+    s instanceof z.ZodObject && s._def.unknownKeys !== "passthrough"
+      ? s.strict()
+      : s
   ) as T;
 }
 
 export function deepStrictAll<T extends z.ZodTypeAny>(schema: T): T {
-  return mapOnSchema(schema, (s) => (s instanceof z.ZodObject ? s.strict() : s)) as T;
+  return mapOnSchema(schema, (s) =>
+    s instanceof z.ZodObject ? s.strict() : s
+  ) as T;
 }
 
 export function deepStrip<T extends z.ZodTypeAny>(schema: T): T {
-  return mapOnSchema(schema, (s) => (s instanceof z.ZodObject ? s.strip() : s)) as T;
+  return mapOnSchema(schema, (s) =>
+    s instanceof z.ZodObject ? s.strip() : s
+  ) as T;
 }

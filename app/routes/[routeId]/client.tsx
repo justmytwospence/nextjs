@@ -4,7 +4,13 @@ import { UserRoute } from "@prisma/client";
 import LazyMap from "@/components/lazy-map";
 import { Navigation, TrendingUp } from "lucide-react";
 import ElevationChart from "@/components/elevation-chart";
-import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
+import {
+  Breadcrumb,
+  BreadcrumbList,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 
 export default function RouteDetail({ mappable }: { mappable: UserRoute }) {
   return (

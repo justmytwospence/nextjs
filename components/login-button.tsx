@@ -10,7 +10,9 @@ export function SignIn({ redirectUrl }) {
         await signIn("strava", { redirectTo: redirectUrl });
       }}
     >
-      <Button className="w-full font-bold" type="submit">Sign in with Strava</Button>
+      <Button className="w-full font-bold" type="submit">
+        Sign in with Strava
+      </Button>
     </form>
   );
 }
@@ -23,7 +25,9 @@ export function SignOut({ session }) {
         await signOut();
       }}
     >
-      <Button className="w-full font-bold" type="submit">Sign Out</Button>
+      <Button className="w-full font-bold" type="submit">
+        Sign Out
+      </Button>
     </form>
   );
 }

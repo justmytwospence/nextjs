@@ -1,4 +1,3 @@
-
 import { baseLogger } from "@/lib/logger";
 import { deepStrip } from "@/lib/schema-map";
 import { z } from "zod";
@@ -25,14 +24,19 @@ export const recursivelyStripSchema = (schema: z.ZodTypeAny): z.ZodTypeAny => {
   }
 };
 
-export const validateAndLogExtras = (data: any, schema: z.ZodObject<any> | z.ZodArray<any>): any => {
+export const validateAndLogExtras = (
+  data: any,
+  schema: z.ZodObject<any> | z.ZodArray<any>
+): any => {
   try {
     const validatedData = schema.parse(data);
     return validatedData;
   } catch (error) {
     if (error instanceof z.ZodError) {
       // Check if we only have unrecognized keys errors
-      const hasOnlyUnrecognizedKeys = error.errors.every(e => e.code === "unrecognized_keys");
+      const hasOnlyUnrecognizedKeys = error.errors.every(
+        (e) => e.code === "unrecognized_keys"
+      );
 
       if (hasOnlyUnrecognizedKeys) {
         const strippedSchema = recursivelyStripSchema(schema);
@@ -42,17 +46,21 @@ export const validateAndLogExtras = (data: any, schema: z.ZodObject<any> | z.Zod
 
       // Log unrecognized fields
       const unrecognizedFields = new Set<string>();
-      error.errors.forEach(e => {
+      error.errors.forEach((e) => {
         if (e.code === "unrecognized_keys") {
-          e.keys.forEach(key => {
-            const path = e.path.filter(p => typeof p === "string").join(".");
+          e.keys.forEach((key) => {
+            const path = e.path.filter((p) => typeof p === "string").join(".");
             const fullPath = path ? `${path}.${key}` : key;
             unrecognizedFields.add(fullPath);
           });
         }
       });
       if (unrecognizedFields.size > 0) {
-        baseLogger.warn(`Received unrecognized fields from Strava: ${Array.from(unrecognizedFields).join(", ")}`);
+        baseLogger.warn(
+          `Received unrecognized fields from Strava: ${Array.from(
+            unrecognizedFields
+          ).join(", ")}`
+        );
       }
 
       // If we only have unrecognized key errors, we can safely strip and continue
@@ -64,7 +72,9 @@ export const validateAndLogExtras = (data: any, schema: z.ZodObject<any> | z.Zod
 
       // If we have other validation errors, throw them
       // Remove unrecognized key errors from the error object
-      const filteredErrors = error.errors.filter(e => e.code !== "unrecognized_keys");
+      const filteredErrors = error.errors.filter(
+        (e) => e.code !== "unrecognized_keys"
+      );
       throw new z.ZodError(filteredErrors);
     }
     throw error;

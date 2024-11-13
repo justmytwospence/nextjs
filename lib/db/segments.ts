@@ -1,15 +1,20 @@
-import { baseLogger, prisma, convertKeysToCamelCase } from "./shared";
-import type { DetailedSegmentEffort, SummarySegment } from "@/lib/strava/schemas/strava";
+import { baseLogger } from "@/lib/logger";
+import { prisma } from "@/lib/prisma";
+import type {
+  DetailedSegmentEffort,
+  SummarySegment,
+} from "@/lib/strava/schemas/strava";
+import { convertKeysToCamelCase } from "../utils";
 
-export async function upsertSegment(segment: SummarySegment, userId: string): Promise<void> {
+export async function upsertSegment(
+  segment: SummarySegment,
+  userId: string
+): Promise<void> {
   baseLogger.info(`Upserting segment ${segment.name}`);
 
   const segmentData = convertKeysToCamelCase<SummarySegment>(segment);
 
-  const {
-    athleteSegmentStats,
-    ...inputData
-  } = segmentData
+  const { athleteSegmentStats, ...inputData } = segmentData;
 
   try {
     await prisma.segment.upsert({
@@ -17,7 +22,7 @@ export async function upsertSegment(segment: SummarySegment, userId: string): Pr
         id_userId: {
           id: inputData.id,
           userId,
-        }
+        },
       },
       create: {
         ...inputData,
@@ -26,7 +31,7 @@ export async function upsertSegment(segment: SummarySegment, userId: string): Pr
       update: {
         ...inputData,
         userId,
-      }
+      },
     });
   } catch (error) {
     baseLogger.error(`Failed to upsert segment ${segment.name}: ${error}`);
@@ -34,10 +39,13 @@ export async function upsertSegment(segment: SummarySegment, userId: string): Pr
   }
 }
 
-export async function upsertSegmentEffort(segmentEffort: DetailedSegmentEffort): Promise<void> {
+export async function upsertSegmentEffort(
+  segmentEffort: DetailedSegmentEffort
+): Promise<void> {
   baseLogger.info(`Upserting segment effort ${segmentEffort.name}`);
 
-  const segmentEffortData = convertKeysToCamelCase<DetailedSegmentEffort>(segmentEffort);
+  const segmentEffortData =
+    convertKeysToCamelCase<DetailedSegmentEffort>(segmentEffort);
 
   const {
     athlete,
@@ -45,26 +53,30 @@ export async function upsertSegmentEffort(segmentEffort: DetailedSegmentEffort):
     activity,
     activityId, // use activity.id
     ...inputData
-  } = segmentEffortData
+  } = segmentEffortData;
 
   try {
     await prisma.segmentEffort.upsert({
       where: {
-        id: inputData.id
+        id: inputData.id,
       },
       create: {
         ...inputData,
         segmentId: segment?.id,
         activityId: activity?.id,
+        userId: athlete?.id,
       },
       update: {
         ...inputData,
         segmentId: segment?.id,
         activityId: activity?.id,
-      }
+        userId: athlete?.id,
+      },
     });
   } catch (error) {
-    baseLogger.error(`Failed to upsert segment effort ${segmentEffort.name}: ${error}`);
+    baseLogger.error(
+      `Failed to upsert segment effort ${segmentEffort.name}: ${error}`
+    );
     throw error;
   }
 }

@@ -12,13 +12,19 @@ export const baseLogger = winston.createLogger({
     winston.format.colorize(),
     winston.format.timestamp(),
     winston.format.printf(({ timestamp, level, message, ...metadata }) => {
-      const metaString = Object.keys(metadata).map(key => `${winston.format.colorize().colorize("info", key)}: ${metadata[key]}`).join(" ") + " ";
+      const metaString =
+        Object.keys(metadata)
+          .map(
+            (key) =>
+              `${winston.format.colorize().colorize("info", key)}: ${
+                metadata[key]
+              }`
+          )
+          .join(" ") + " ";
       return `${timestamp} ${metaString}${level}: ${message}`;
     })
   ),
-  transports: [
-    new winston.transports.Console(),
-  ]
+  transports: [new winston.transports.Console()],
 });
 
 export function createSessionLogger(session: Session | null) {

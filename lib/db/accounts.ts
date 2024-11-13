@@ -13,18 +13,20 @@ export async function queryUserAccount(
         userId_provider: {
           userId,
           provider: accountProvider,
-        }
+        },
       },
-    })
+    });
     if (!account) {
       baseLogger.warn("No account found", { provider: accountProvider });
       throw new Error(`No ${accountProvider} account found for this user`);
     }
-    baseLogger.info(`Found ${accountProvider} account for user ${userId} with access token ${account.access_token}`);
+    baseLogger.info(
+      `Found ${accountProvider} account for user ${userId} with access token ${account.access_token}`
+    );
     return account;
   } catch {
     throw new Error(`No ${accountProvider} account found for this user`);
-  };
+  }
 }
 
 export async function deleteUserAccount(
@@ -38,8 +40,8 @@ export async function deleteUserAccount(
         userId_provider: {
           userId,
           provider: accountProvider,
-        }
-      }
+        },
+      },
     });
     baseLogger.info(`Deleted ${accountProvider} account for user ${userId}`);
   } catch (error) {

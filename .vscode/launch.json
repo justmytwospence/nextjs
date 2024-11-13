@@ -19,9 +19,7 @@
       "type": "node",
       "request": "launch",
       "program": "${workspaceFolder}/node_modules/.bin/next",
-      "runtimeArgs": [
-        "--inspect"
-      ],
+      "runtimeArgs": ["--inspect"],
       "skipFiles": [
         "<node_internals>/**",
         "${workspaceFolder}/node_modules/**/*.js",

@@ -12,12 +12,12 @@ export async function queryUserRoutes(userId: string): Promise<UserRoute[]> {
       where: {
         userId,
         summaryPolyline: {
-          not: Prisma.JsonNullValueFilter.JsonNull
-        }
+          not: Prisma.JsonNullValueFilter.JsonNull,
+        },
       },
       orderBy: {
-        createdAt: "desc"
-      }
+        createdAt: "desc",
+      },
     });
     baseLogger.info(`Found ${routes.length} routes`);
     return routes;
@@ -35,26 +35,26 @@ export async function queryMappables(userId: string): Promise<Mappable[]> {
           userId,
           OR: [
             { summaryPolyline: { not: Prisma.JsonNullValueFilter.JsonNull } },
-            { polyline: { not: Prisma.JsonNullValueFilter.JsonNull } }
-          ]
+            { polyline: { not: Prisma.JsonNullValueFilter.JsonNull } },
+          ],
         },
       }),
       prisma.activity.findMany({
         where: {
           userId,
           movingTime: {
-            gt: 0
+            gt: 0,
           },
           OR: [
             { summaryPolyline: { not: Prisma.JsonNullValueFilter.JsonNull } },
-            { polyline: { not: Prisma.JsonNullValueFilter.JsonNull } }
-          ]
+            { polyline: { not: Prisma.JsonNullValueFilter.JsonNull } },
+          ],
         },
-      })
+      }),
     ]);
     const mappables = [
-      ...routes.map(route => ({ ...route, type: "route" })),
-      ...activities.map(activity => ({ ...activity, type: "activity" }))
+      ...routes.map((route) => ({ ...route, type: "route" })),
+      ...activities.map((activity) => ({ ...activity, type: "activity" })),
     ];
     baseLogger.info(`Found ${mappables.length} mappables`);
     return mappables;
@@ -68,14 +68,16 @@ export async function queryUserRoute(
   routeId: string
 ): Promise<UserRoute | null> {
   try {
-    baseLogger.info(`Querying user route for user ${userId} and route ${routeId}`);
+    baseLogger.info(
+      `Querying user route for user ${userId} and route ${routeId}`
+    );
     const route = await prisma.userRoute.findUnique({
       where: {
         id_userId: {
           id: routeId,
           userId,
-        }
-      }
+        },
+      },
     });
     baseLogger.info(`Found route ${routeId} to be ${route?.name}`);
     return route;
@@ -92,13 +94,7 @@ export async function upsertUserRoute(
 
   const routeData = convertKeysToCamelCase<Route>(route);
 
-  const {
-    id,
-    idStr,
-    map,
-    segments,
-    ...inputData
-  } = routeData
+  const { id, idStr, map, segments, ...inputData } = routeData;
 
   try {
     const route = await prisma.userRoute.upsert({
@@ -108,21 +104,25 @@ export async function upsertUserRoute(
       create: {
         ...inputData,
         id: idStr,
-        polyline: (map.polyline as unknown) as Prisma.InputJsonValue || undefined,
-        summaryPolyline: (map.summaryPolyline as unknown) as Prisma.InputJsonValue,
+        polyline:
+          (map.polyline as unknown as Prisma.InputJsonValue) || undefined,
+        summaryPolyline:
+          map.summaryPolyline as unknown as Prisma.InputJsonValue,
         userId: userId,
       },
       update: {
         ...inputData,
         id: idStr,
-        polyline: (map.polyline as unknown) as Prisma.InputJsonValue || undefined,
-        summaryPolyline: (map.summaryPolyline as unknown) as Prisma.InputJsonValue,
+        polyline:
+          (map.polyline as unknown as Prisma.InputJsonValue) || undefined,
+        summaryPolyline:
+          map.summaryPolyline as unknown as Prisma.InputJsonValue,
         userId: userId,
       },
     });
 
     baseLogger.info(`Route ${route.name} upserted successfully`);
-    return route
+    return route;
   } catch (error) {
     throw error;
   } finally {
@@ -144,8 +144,8 @@ export async function enrichUserRoute(
         userId,
       },
       data: {
-        polyline: (route as unknown) as Prisma.InputJsonValue
-      }
+        polyline: route as unknown as Prisma.InputJsonValue,
+      },
     });
   } catch (error) {
     throw error;

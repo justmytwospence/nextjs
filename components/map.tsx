@@ -20,7 +20,7 @@ const GeoJSONLayer = ({ polyline }) => {
 
       // Clean up the layer when the component unmounts
       return () => {
-        map.removeLayer(geoJsonLayer)
+        map.removeLayer(geoJsonLayer);
       };
     }
   }, [polyline, map]);
@@ -30,10 +30,10 @@ const GeoJSONLayer = ({ polyline }) => {
 
 export default function Map({
   mappable,
-  interactive = true
+  interactive = true,
 }: {
   mappable: Mappable;
-  interactive?: boolean
+  interactive?: boolean;
 }) {
   return (
     <MapContainer
@@ -48,7 +48,9 @@ export default function Map({
       doubleClickZoom={interactive}
     >
       <TileLayer url="https://tile.jawg.io/jawg-terrain/{z}/{x}/{y}{r}.png?access-token=bDE5WHMnFV1P973D59QWuGaq6hebBcjPSyud6vVGYqqi2r4kZyaShdbC3SF2Bc7y" />
-      {mappable.summaryPolyline && <GeoJSONLayer polyline={mappable.summaryPolyline} />}
+      {mappable.summaryPolyline && (
+        <GeoJSONLayer polyline={mappable.summaryPolyline} />
+      )}
     </MapContainer>
   );
-};
+}

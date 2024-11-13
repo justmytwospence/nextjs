@@ -19,7 +19,10 @@ export default function SettingsClient({ session }: { session: any }) {
             <Avatar className="h-24 w-24">
               <AvatarImage src={session?.user?.image} alt="Profile" />
               <AvatarFallback>
-                {session?.user?.name?.split(" ").map(n => n[0]).join("") || "?"}
+                {session?.user?.name
+                  ?.split(" ")
+                  .map((n) => n[0])
+                  .join("") || "?"}
               </AvatarFallback>
             </Avatar>
             <div>

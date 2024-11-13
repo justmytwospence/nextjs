@@ -1,4 +1,3 @@
-
 import { auth } from "@/auth";
 import SettingsClient from "./settings.client";
 import { redirect } from "next/navigation";

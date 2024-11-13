@@ -1,8 +1,8 @@
-import { clsx, type ClassValue } from "clsx"
-import { twMerge } from "tailwind-merge"
+import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
+  return twMerge(clsx(inputs));
 }
 
 type SnakeToCamelCase<S extends string> = S extends `${infer T}_${infer U}`
@@ -13,10 +13,12 @@ type ConvertKeysToCamelCase<T> = T extends Array<infer U>
   ? Array<ConvertKeysToCamelCase<U>>
   : T extends object
   ? {
-    [K in keyof T as SnakeToCamelCase<string & K>]: T[K] extends object | Array<any>
-    ? ConvertKeysToCamelCase<T[K]>
-    : T[K];
-  }
+      [K in keyof T as SnakeToCamelCase<string & K>]: T[K] extends
+        | object
+        | Array<any>
+        ? ConvertKeysToCamelCase<T[K]>
+        : T[K];
+    }
   : T;
 
 function toCamelCase(str: string): string {
@@ -25,7 +27,9 @@ function toCamelCase(str: string): string {
 
 export function convertKeysToCamelCase<T>(obj: T): ConvertKeysToCamelCase<T> {
   if (Array.isArray(obj)) {
-    return obj.map((item) => convertKeysToCamelCase(item)) as ConvertKeysToCamelCase<T>;
+    return obj.map((item) =>
+      convertKeysToCamelCase(item)
+    ) as ConvertKeysToCamelCase<T>;
   } else if (obj !== null && typeof obj === "object") {
     return Object.keys(obj).reduce((acc, key) => {
       const camelKey = toCamelCase(key);

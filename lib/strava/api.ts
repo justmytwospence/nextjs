@@ -1,6 +1,5 @@
-
 import { queryUserAccount } from "@/lib/db";
-import { HttpError, type RateLimit } from "@/lib/errors";
+import { HttpError, type RateLimit } from "@/lib/strava/errors";
 import { baseLogger } from "@/lib/logger";
 
 /**
@@ -24,7 +23,7 @@ export async function makeStravaRequest(
 
   baseLogger.info(`Fetching from URL: ${url.toString()}`);
   const response = await fetch(url.toString(), {
-    headers: { "Authorization": `Bearer ${userAccount.access_token}` }
+    headers: { Authorization: `Bearer ${userAccount.access_token}` },
   });
 
   if (response.status === 429) {
@@ -32,15 +31,23 @@ export async function makeStravaRequest(
       short: {
         usage: Number(response.headers.get("X-RateLimit-Usage")?.split(",")[0]),
         limit: Number(response.headers.get("X-RateLimit-Limit")?.split(",")[0]),
-        readUsage: Number(response.headers.get("X-ReadRateLimit-Usage")?.split(",")[0]),
-        readLimit: Number(response.headers.get("X-ReadRateLimit-Limit")?.split(",")[0])
+        readUsage: Number(
+          response.headers.get("X-ReadRateLimit-Usage")?.split(",")[0]
+        ),
+        readLimit: Number(
+          response.headers.get("X-ReadRateLimit-Limit")?.split(",")[0]
+        ),
       },
       long: {
         usage: Number(response.headers.get("X-RateLimit-Usage")?.split(",")[1]),
         limit: Number(response.headers.get("X-RateLimit-Limit")?.split(",")[1]),
-        readUsage: Number(response.headers.get("X-ReadRateLimit-Usage")?.split(",")[1]),
-        readLimit: Number(response.headers.get("X-ReadRateLimit-Limit")?.split(",")[1])
-      }
+        readUsage: Number(
+          response.headers.get("X-ReadRateLimit-Usage")?.split(",")[1]
+        ),
+        readLimit: Number(
+          response.headers.get("X-ReadRateLimit-Limit")?.split(",")[1]
+        ),
+      },
     };
 
     throw new HttpError(429, "Rate limit exceeded", rateLimit);
