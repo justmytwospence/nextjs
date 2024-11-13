@@ -2,7 +2,12 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 export function middleware(request: NextRequest) {
-  const sessionToken = request.cookies.get("authjs.session-token");
+  let sessionToken;
+  if (process.env.NODE_ENV === "production") {
+    sessionToken = request.cookies.get("__Secure-authjs.session-token");
+  } else {
+    sessionToken = request.cookies.get("authjs.session-token");
+  }
 
   if (!sessionToken) {
     const loginUrl = new URL("/login", request.url);
