@@ -22,7 +22,7 @@ import {
   SummaryActivity,
 } from "@/lib/strava/schemas/strava";
 import { NextResponse } from "next/server";
-import pLimit from 'p-limit';
+import pLimit from "p-limit";
 
 type Message =
   | { type: "update_total"; message: string; n: number }
