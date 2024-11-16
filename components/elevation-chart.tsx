@@ -29,7 +29,7 @@ ChartJS.register(
 
 export default function ElevationChart({ mappable }: { mappable: Mappable }) {
   const chartRef = useRef<ChartJS<"line">>(null);
-  const { setHoverIndex } = useStore();
+  const { hoveredGradient, setHoverIndex } = useStore();
 
   // Compute values immediately
   const computedDistances = computeDistanceMiles(mappable.polyline.coordinates);
@@ -67,7 +67,7 @@ export default function ElevationChart({ mappable }: { mappable: Mappable }) {
         segment: {
           backgroundColor: (ctx) => {
             const gradientValue = ctx.p0.parsed.y;
-            return gradientValue >= 0
+            return hoveredGradient && gradientValue >= hoveredGradient
               ? "rgba(255, 0, 0, 0.4)"
               : "rgba(128, 128, 128, 0.4)";
           },
@@ -223,35 +223,6 @@ export default function ElevationChart({ mappable }: { mappable: Mappable }) {
     );
     return unsubHoverIndex;
   }, [computedDistances, elevation]);
-
-  // hoveredGradient
-  useEffect(() => {
-    const unsubHoveredGradient = useStore.subscribe(
-      (state) => state.hoveredGradient,
-      (hoveredGradient) => {
-        if (!chartRef.current) return;
-
-        // Update the gradient segment colors
-        chartRef.current.data.datasets[1].segment = {
-          backgroundColor: (ctx) => {
-            if (hoveredGradient) {
-              const gradientValue = ctx.p0.parsed.y;
-              return gradientValue >= hoveredGradient
-                ? "rgba(255, 0, 0, 0.4)"
-                : "rgba(128, 128, 128, 0.4)";
-            }
-          },
-        };
-
-        console.log(chartRef.current.data.datasets[1].label);
-        chartRef.current.data.datasets[1].label = "foobar";
-        console.log(chartRef.current.data.datasets[1].label);
-        chartRef.current.update();
-        console.log(chartRef.current.data.datasets[1].label);
-      }
-    );
-    return unsubHoveredGradient;
-  }, []);
 
   return <Line ref={chartRef} data={initialData} options={initialOptions} />;
 }
