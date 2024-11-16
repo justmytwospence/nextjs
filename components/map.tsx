@@ -41,7 +41,11 @@ const GeoJSONLayer = ({
           type: "LineString",
           coordinates: [coord, polyline.coordinates[i + 1]],
         },
-      }));
+      }))
+      // Sort features so higher gradients are rendered last (on top)
+      .sort(
+        (a, b) => (a.properties?.gradient || 0) - (b.properties?.gradient || 0)
+      );
 
     // Set map bounds with conditional padding
     const bounds = L.latLngBounds(
@@ -53,14 +57,16 @@ const GeoJSONLayer = ({
     geoJsonRef.current = L.geoJSON(
       { type: "FeatureCollection", features } as FeatureCollection,
       {
-        style: (feature) => ({
-          color:
-            feature?.properties?.gradient >= (hoveredGradient ?? 0)
-              ? "red"
-              : "blue",
-          weight: 3,
-          opacity: 0.8,
-        }),
+        style: (feature) => {
+          const isHighGradient =
+            feature?.properties?.gradient >= (hoveredGradient ?? 0);
+          return {
+            color: isHighGradient ? "red" : "blue",
+            weight: 3,
+            opacity: 0.8,
+            zIndex: isHighGradient ? 1000 : 1, // Higher z-index for red segments
+          };
+        },
       }
     ).addTo(map);
 
