@@ -1,7 +1,7 @@
 "use client";
 
 import { computeCdf, computeGradient } from "@/lib/geo";
-import { useStore } from "@/store";
+import { gradientStore } from "@/store";
 import { Mappable } from "@prisma/client";
 import type { ChartEvent, ChartOptions } from "chart.js";
 import {
@@ -35,7 +35,7 @@ export default function GradientCdfChart({
   mappables: Mappable[];
 }) {
   const chartRef = useRef<ChartJS<"line">>(null);
-  const { setHoveredGradient } = useStore();
+  const { setHoveredGradient } = gradientStore();
   const [isGradientLocked, setIsGradientLocked] = useState(false);
 
   // Compute gradients and get range

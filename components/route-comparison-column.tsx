@@ -12,7 +12,8 @@ import { queryUserRouteAction } from "@/app/actions/queryUserRoute";
 import { queryActivityAction } from "@/app/actions/queryActivity";
 import ElevationChart from "@/components/elevation-chart";
 import { Mappable } from "@prisma/client";
-import { useStore } from "@/store";
+import { useMemo } from "react";
+import { createHoverIndexStore, createGradientStore } from "@/store";
 
 export default function RouteComparisonColumn({
   mappables,
@@ -23,10 +24,10 @@ export default function RouteComparisonColumn({
   selectedMappable: Mappable | null;
   setSelectedMappable: (mappable: Mappable | null) => void;
 }) {
-  const { hoverIndex, setHoverIndex, hoveredGradient } = useStore();
-
   const routes = mappables.filter((m) => m.type === "route");
   const activities = mappables.filter((m) => m.type === "activity");
+
+  const hoverIndexStore = useMemo(() => createHoverIndexStore(), []);
 
   return (
     <div className="space-y-6 p-6 bg-background border rounded-lg">
@@ -78,13 +79,19 @@ export default function RouteComparisonColumn({
 
       {selectedMappable && (
         <div className="h-[300px] w-full mt-4">
-          <LazyMap mappable={selectedMappable} />
+          <LazyMap
+            mappable={selectedMappable}
+            hoverIndexStore={hoverIndexStore}
+          />
         </div>
       )}
 
       {selectedMappable && (
         <div className="h-[400px] w-full">
-          <ElevationChart mappable={selectedMappable} />
+          <ElevationChart
+            mappable={selectedMappable}
+            hoverIndexStore={hoverIndexStore}
+          />
         </div>
       )}
     </div>

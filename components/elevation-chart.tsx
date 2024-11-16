@@ -1,9 +1,10 @@
 "use client";
 
 import { computeDistanceMiles, computeGradient } from "@/lib/geo";
-import { useStore } from "@/store";
+import type { HoverIndexStore } from "@/store";
+import { createHoverIndexStore, gradientStore } from "@/store";
 import { Mappable } from "@prisma/client";
-import type { Chart, ChartData, ChartOptions } from "chart.js";
+import type { ChartData, ChartOptions } from "chart.js";
 import {
   CategoryScale,
   Chart as ChartJS,
@@ -27,9 +28,16 @@ ChartJS.register(
   Filler
 );
 
-export default function ElevationChart({ mappable }: { mappable: Mappable }) {
+export default function ElevationChart({
+  mappable,
+  hoverIndexStore = createHoverIndexStore(),
+}: {
+  mappable: Mappable;
+  hoverIndexStore: HoverIndexStore;
+}) {
   const chartRef = useRef<ChartJS<"line">>(null);
-  const { hoveredGradient, setHoverIndex } = useStore();
+  const { setHoverIndex } = hoverIndexStore();
+  const { hoveredGradient } = gradientStore();
 
   // Compute values immediately
   const computedDistances = computeDistanceMiles(mappable.polyline.coordinates);
@@ -198,7 +206,7 @@ export default function ElevationChart({ mappable }: { mappable: Mappable }) {
 
   // hoverIndex
   useEffect(() => {
-    const unsubHoverIndex = useStore.subscribe(
+    const unsubHoverIndex = hoverIndexStore.subscribe(
       (state) => state.hoverIndex,
       (hoverIndex) => {
         if (!chartRef.current) return;
@@ -229,7 +237,7 @@ export default function ElevationChart({ mappable }: { mappable: Mappable }) {
       }
     );
     return unsubHoverIndex;
-  }, [computedDistances, elevation]);
+  }, [computedDistances, elevation, hoverIndexStore]);
 
   return <Line ref={chartRef} data={initialData} options={initialOptions} />;
 }

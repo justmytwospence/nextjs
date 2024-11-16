@@ -1,26 +1,30 @@
 "use client";
 
+import { computeDistanceMiles, computeGradient } from "@/lib/geo";
 import { baseLogger } from "@/lib/logger";
+import type { HoverIndexStore } from "@/store";
+import { createHoverIndexStore, gradientStore } from "@/store";
 import { Mappable } from "@prisma/client";
+import type { Feature, FeatureCollection, LineString } from "geojson";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { useEffect, useRef, useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { MapContainer, TileLayer, useMap } from "react-leaflet";
-import type { FeatureCollection, Feature, LineString } from "geojson";
-import { useStore } from "@/store"; // Import the store instance
-import { computeGradient, computeDistanceMiles } from "@/lib/geo";
 
 const GeoJSONLayer = ({
   polyline,
   mappableId,
+  hoverIndexStore = createHoverIndexStore(),
 }: {
   polyline: { coordinates: [number, number][] };
   mappableId: string;
+  hoverIndexStore: HoverIndexStore;
 }) => {
   const map = useMap();
   const geoJsonRef = useRef<L.GeoJSON | null>(null);
   const hoverMarkerRef = useRef<L.Marker | null>(null);
-  const { setHoverIndex, hoveredGradient } = useStore();
+  const { setHoverIndex } = hoverIndexStore();
+  const { hoveredGradient } = gradientStore();
 
   // polyline useEffect
   useEffect(() => {
@@ -117,14 +121,14 @@ const GeoJSONLayer = ({
 
   // hoverIndex useEffect
   useEffect(() => {
-    const unsub = useStore.subscribe(
+    const unsub = hoverIndexStore.subscribe(
       (state) => state.hoverIndex,
       (hoverIndex) => {
         updateHoverPoint(hoverIndex);
       }
     );
     return unsub;
-  }, [updateHoverPoint]);
+  }, [updateHoverPoint, hoverIndexStore]);
 
   // respond to hoveredGradient
 
@@ -142,23 +146,25 @@ const GeoJSONLayer = ({
 
   // hoveredGradient useEffect
   useEffect(() => {
-    const unsub = useStore.subscribe(
+    const unsub = gradientStore.subscribe(
       (state) => state.hoveredGradient,
       (hoveredGradient) => {
         updateGradients(hoveredGradient);
       }
     );
     return unsub;
-  }, [updateGradients]);
+  }, [updateGradients, gradientStore]);
   return null;
 };
 
 export default function Map({
   mappable,
   interactive = true,
+  hoverIndexStore = createHoverIndexStore(),
 }: {
   mappable: Mappable;
   interactive?: boolean;
+  hoverIndexStore: HoverIndexStore;
 }) {
   return (
     <MapContainer
@@ -174,7 +180,11 @@ export default function Map({
     >
       <TileLayer url="https://tile.jawg.io/jawg-terrain/{z}/{x}/{y}{r}.png?access-token=bDE5WHMnFV1P973D59QWuGaq6hebBcjPSyud6vVGYqqi2r4kZyaShdbC3SF2Bc7y" />
       {mappable.polyline && (
-        <GeoJSONLayer polyline={mappable.polyline} mappableId={mappable.id} />
+        <GeoJSONLayer
+          polyline={mappable.polyline}
+          mappableId={mappable.id}
+          hoverIndexStore={hoverIndexStore}
+        />
       )}
     </MapContainer>
   );
