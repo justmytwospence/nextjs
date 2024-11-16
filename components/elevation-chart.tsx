@@ -37,6 +37,9 @@ export default function ElevationChart({ mappable }: { mappable: Mappable }) {
   const elevation = mappable.polyline.coordinates.map(
     (point) => point[2] * 3.28084
   );
+  const elevationMin = Math.min(...elevation);
+  const elevationMax = Math.max(...elevation);
+  const elevationPadding = (elevationMax - elevationMin) * 0.1;
   const gradientMin = Math.max(Math.min(...computedGradients), -0.3);
   const gradientMax = Math.min(Math.max(...computedGradients), 0.3);
 
@@ -100,7 +103,8 @@ export default function ElevationChart({ mappable }: { mappable: Mappable }) {
       },
       elevation: {
         display: true,
-        min: 0,
+        min: Math.floor(elevationMin - elevationPadding),
+        max: Math.ceil(elevationMax + elevationPadding),
         position: "left" as const,
         type: "linear" as const,
         title: {
@@ -108,7 +112,10 @@ export default function ElevationChart({ mappable }: { mappable: Mappable }) {
           text: "Elevation (ft)",
         },
         ticks: {
-          stepSize: 500,
+          stepSize: 100,
+          callback: function (value) {
+            return Math.round(value).toLocaleString();
+          },
         },
         grid: {
           drawOnChartArea: false,

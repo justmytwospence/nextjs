@@ -1,21 +1,21 @@
 "use client";
 
-import React, { useRef, useEffect } from "react";
-import { Line } from "react-chartjs-2";
+import { computeCdf, computeGradient } from "@/lib/geo";
 import { useStore } from "@/store";
+import { Mappable } from "@prisma/client";
+import type { ChartEvent, ChartOptions } from "chart.js";
 import {
-  Chart as ChartJS,
   CategoryScale,
+  Chart as ChartJS,
+  Legend,
   LinearScale,
-  PointElement,
   LineElement,
+  PointElement,
   Title,
   Tooltip,
-  Legend,
 } from "chart.js";
-import type { ChartEvent, ChartOptions } from "chart.js";
-import { computeCdf, computeGradient } from "@/lib/geo";
-import { Mappable } from "@prisma/client";
+import { useRef, useState } from "react";
+import { Line } from "react-chartjs-2";
 
 ChartJS.register(
   CategoryScale,
@@ -27,10 +27,6 @@ ChartJS.register(
   Legend
 );
 
-const xAxisRange = Array.from({ length: 401 }, (_, i) =>
-  parseFloat((-0.2 + i * 0.001).toFixed(3))
-);
-
 const CHART_COLORS = ["#3b82f6", "#64748b", "#f43f5e"];
 
 export default function GradientCdfChart({
@@ -40,14 +36,20 @@ export default function GradientCdfChart({
 }) {
   const chartRef = useRef<ChartJS<"line">>(null);
   const { setHoveredGradient } = useStore();
+  const [isGradientLocked, setIsGradientLocked] = useState(false);
 
   // Compute gradients and get range
   const gradients = mappables.map((m) =>
     computeGradient(m.polyline.coordinates)
   );
+
   const allGradients = gradients.flat();
-  const gradientMin = Math.max(Math.min(...allGradients), -0.3);
-  const gradientMax = Math.min(Math.max(...allGradients), 0.3);
+  const gradientMin = Math.min(...allGradients);
+  const gradientMax = Math.max(...allGradients);
+  const xAxisRange = Array.from(
+    { length: Math.round((gradientMax - gradientMin) / 0.001) + 1 },
+    (_, i) => parseFloat((gradientMin + i * 0.001).toFixed(3))
+  );
 
   // Compute CDFs
   const cdfs = gradients.map((g) => computeCdf(g, xAxisRange));
@@ -119,9 +121,11 @@ export default function GradientCdfChart({
     },
     onHover: (event: ChartEvent, elements: any[], chart: ChartJS) => {
       if (!event?.native || !chart?.chartArea) {
-        setHoveredGradient(null);
+        if (!isGradientLocked) setHoveredGradient(null);
         return;
       }
+
+      if (isGradientLocked) return;
 
       const rect = (
         event.native.target as HTMLCanvasElement
@@ -136,10 +140,30 @@ export default function GradientCdfChart({
         setHoveredGradient(null);
       }
     },
+    onClick: (event: ChartEvent, elements: any[], chart: ChartJS) => {
+      if (!event?.native || !chart?.chartArea) return;
+
+      const rect = (
+        event.native.target as HTMLCanvasElement
+      ).getBoundingClientRect();
+      const x = (event.native as MouseEvent).clientX - rect.left;
+      const xAxis = chart.scales.x;
+
+      if (x >= xAxis.left && x <= xAxis.right) {
+        const value = xAxis.getValueForPixel(x);
+        setHoveredGradient(value);
+        setIsGradientLocked(true);
+      }
+    },
   };
 
   return (
-    <div className="w-full h-full p-4">
+    <div
+      className="w-full h-full p-4"
+      onMouseLeave={() => {
+        setIsGradientLocked(false);
+      }}
+    >
       <Line ref={chartRef} data={initialData} options={initialOptions} />
     </div>
   );

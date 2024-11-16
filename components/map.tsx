@@ -19,7 +19,7 @@ const GeoJSONLayer = ({
 }) => {
   const map = useMap();
   const geoJsonRef = useRef<L.GeoJSON | null>(null);
-  const hoverCircleRef = useRef<L.Circle | null>(null);
+  const hoverMarkerRef = useRef<L.Marker | null>(null);
   const { setHoverIndex, hoveredGradient } = useStore();
 
   // polyline useEffect
@@ -82,7 +82,7 @@ const GeoJSONLayer = ({
     // geoJSON cleanup
     return () => {
       geoJsonRef.current?.remove();
-      hoverCircleRef.current?.remove();
+      hoverMarkerRef.current?.remove();
       map.off("mousemove", handleMouseMove);
       map.off("mouseout");
     };
@@ -93,21 +93,23 @@ const GeoJSONLayer = ({
   const updateHoverPoint = useCallback(
     (index: number) => {
       if (index < 0 || !polyline.coordinates[index]) {
-        hoverCircleRef.current?.remove();
-        hoverCircleRef.current = null;
+        hoverMarkerRef.current?.remove();
+        hoverMarkerRef.current = null;
         return;
       }
 
       const point = polyline.coordinates[index];
-      if (!hoverCircleRef.current) {
-        hoverCircleRef.current = L.circle([point[1], point[0]], {
-          radius: 200,
-          color: "black",
-          fillColor: "black",
-          fillOpacity: 0.5,
+      if (!hoverMarkerRef.current) {
+        hoverMarkerRef.current = L.marker([point[1], point[0]], {
+          icon: L.divIcon({
+            className: "hover-marker",
+            html: '<div class="marker-inner"></div>',
+            iconSize: [12, 12],
+            iconAnchor: [6, 6],
+          }),
         }).addTo(map);
       } else {
-        hoverCircleRef.current.setLatLng([point[1], point[0]]);
+        hoverMarkerRef.current.setLatLng([point[1], point[0]]);
       }
     },
     [polyline]

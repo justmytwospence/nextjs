@@ -29,8 +29,14 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased relative`}
       >
-        <Topbar />
-        <main className="relative">{children}</main>
+        <div className="border-b">
+          <div className="max-w-7xl mx-auto">
+            <Topbar />
+          </div>
+        </div>
+        <main className="relative">
+          <div className="max-w-7xl mx-auto px-6">{children}</div>
+        </main>
       </body>
     </html>
   );

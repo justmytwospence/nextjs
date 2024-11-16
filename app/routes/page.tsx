@@ -1,3 +1,5 @@
+export const revalidate = 3600;
+
 import { auth } from "@/auth";
 import { queryUserRoutes } from "@/lib/db";
 import { baseLogger } from "@/lib/logger";

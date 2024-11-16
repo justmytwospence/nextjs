@@ -3,10 +3,8 @@
 import GradientCdfChart from "@/components/gradient-cdf-chart";
 import RouteComparisonColumn from "@/components/route-comparison-column";
 import { Card, CardContent } from "@/components/ui/card";
-import { computeGradient } from "@/lib/geo";
 import { Mappable } from "@prisma/client";
-import { useMemo, useState, useEffect } from "react";
-import { useStore } from "@/store";
+import { useMemo, useState } from "react";
 
 export default function RouteComparison({ mappables }) {
   const [selectedMappable1, setSelectedMappable1] = useState<Mappable | null>(
@@ -15,7 +13,6 @@ export default function RouteComparison({ mappables }) {
   const [selectedMappable2, setSelectedMappable2] = useState<Mappable | null>(
     null
   );
-  const { setGradients } = useStore();
 
   const selectedRoutes = useMemo(
     () =>
@@ -24,19 +21,6 @@ export default function RouteComparison({ mappables }) {
       ),
     [selectedMappable1, selectedMappable2]
   );
-
-  const computedGradients = useMemo(
-    () =>
-      selectedRoutes.map((route) =>
-        route.polyline ? computeGradient(route.polyline) : []
-      ),
-    [selectedRoutes]
-  );
-
-  // Only update gradients when computedGradients actually changes
-  useEffect(() => {
-    setGradients(computedGradients);
-  }, [computedGradients]);
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -51,9 +35,9 @@ export default function RouteComparison({ mappables }) {
         setSelectedMappable={setSelectedMappable2}
       />
       {selectedRoutes.length > 0 && (
-        <Card className="max-w-7xl mx-auto px-4 h-[500px] w-full">
+        <Card className="max-w-7xl mx-auto px-4 h-[500px] w-full lg:col-span-2">
           <CardContent className="h-full">
-            <GradientCdfChart routes={selectedRoutes} />
+            <GradientCdfChart mappables={selectedRoutes} />
           </CardContent>
         </Card>
       )}

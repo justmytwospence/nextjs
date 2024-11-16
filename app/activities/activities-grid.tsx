@@ -1,12 +1,8 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
 import LazyMap from "@/components/lazy-map";
-import { Navigation, TrendingUp, Clock } from "lucide-react";
-import { useRouter } from "next/navigation";
+import PleaseSync from "@/components/please-sync";
 import { Card, CardHeader } from "@/components/ui/card";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import type { MappableActivity } from "@prisma/client";
 import {
   Pagination,
   PaginationContent,
@@ -16,7 +12,18 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
-import PleaseSync from "@/components/please-sync";
+import { ChevronDown } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import type { MappableActivity } from "@prisma/client";
+import { Clock, Navigation, TrendingUp } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState, type ReactNode } from "react";
 
 export default function ActivitiesGrid({
   activities,
@@ -96,23 +103,39 @@ export default function ActivitiesGrid({
     <div className="container mx-auto p-6">
       <h1 className="text-3xl font-bold mb-6">My Activities</h1>
 
-      <Tabs
-        value={selectedType}
-        onValueChange={(value) => {
-          setSelectedType(value);
-          setCurrentPage(1);
-        }}
-        className="mb-6"
-      >
+      <div className="mb-6">
         <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
-          <TabsList className="h-10 min-w-[300px]">
-            <TabsTrigger value="all">All</TabsTrigger>
-            {uniqueSportTypes.map((type) => (
-              <TabsTrigger key={type} value={type}>
-                {type.replace(/([A-Z])/g, " $1").trim()}
-              </TabsTrigger>
-            ))}
-          </TabsList>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline">
+                {selectedType === "all"
+                  ? "All Activities"
+                  : selectedType.replace(/([A-Z])/g, " $1").trim()}
+                <ChevronDown className="ml-2 h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem
+                onClick={() => {
+                  setSelectedType("all");
+                  setCurrentPage(1);
+                }}
+              >
+                All Activities
+              </DropdownMenuItem>
+              {uniqueSportTypes.map((type) => (
+                <DropdownMenuItem
+                  key={type}
+                  onClick={() => {
+                    setSelectedType(type);
+                    setCurrentPage(1);
+                  }}
+                >
+                  {type.replace(/([A-Z])/g, " $1").trim()}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
 
           <div className="flex w-full sm:w-auto justify-center sm:justify-end">
             <Pagination>
@@ -186,7 +209,7 @@ export default function ActivitiesGrid({
             ))}
           </div>
         </div>
-      </Tabs>
+      </div>
     </div>
   );
 }
