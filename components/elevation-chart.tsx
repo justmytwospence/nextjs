@@ -62,7 +62,7 @@ export default function ElevationChart({
         backgroundColor: "text-blue-500/20",
         yAxisID: "elevation",
         pointRadius: (ctx) => (ctx.dataIndex === hoverIndex ? 6 : 0),
-        pointBackgroundColor: "blue",
+        pointBackgroundColor: "black",
         borderWidth: isLarge ? 2 : 1,
       },
       {
