@@ -16,12 +16,12 @@ import { MapContainer, TileLayer, useMap } from "react-leaflet";
 
 const GeoJSONLayer = ({
   polyline,
-  mappableId,
-  hoverIndexStore = defaultHoverIndexStore,
+  hoverIndexStore,
+  interactive = true,
 }: {
   polyline: { coordinates: [number, number][] };
-  mappableId: string;
   hoverIndexStore: HoverIndexStore;
+  interactive?: boolean;
 }) => {
   const map = useMap();
   const geoJsonRef = useRef<L.GeoJSON | null>(null);
@@ -43,11 +43,11 @@ const GeoJSONLayer = ({
         },
       }));
 
-    // Set map bounds
+    // Set map bounds with conditional padding
     const bounds = L.latLngBounds(
       polyline.coordinates.map(([lng, lat]) => [lat, lng])
     );
-    map.fitBounds(bounds, { padding: [50, 50] });
+    map.fitBounds(bounds, { padding: interactive ? [20, 20] : [5, 5] });
 
     // Create GeoJSON layer
     geoJsonRef.current = L.geoJSON(
@@ -93,7 +93,7 @@ const GeoJSONLayer = ({
       map.off("mousemove", handleMouseMove);
       map.off("mouseout");
     };
-  }, [polyline]);
+  }, [polyline, interactive]);
 
   // respond to hoverIndex
 
@@ -124,12 +124,9 @@ const GeoJSONLayer = ({
 
   // hoverIndex useEffect
   useEffect(() => {
-    const unsub = hoverIndexStore.subscribe(
-      (state) => state.hoverIndex,
-      (hoverIndex) => {
-        updateHoverPoint(hoverIndex);
-      }
-    );
+    const unsub = hoverIndexStore.subscribe((state) => {
+      updateHoverPoint(state.hoverIndex);
+    });
     return unsub;
   }, [updateHoverPoint, hoverIndexStore]);
 
@@ -167,7 +164,7 @@ export default function Map({
 }: {
   mappable: Mappable;
   interactive?: boolean;
-  hoverIndexStore: HoverIndexStore;
+  hoverIndexStore?: HoverIndexStore;
 }) {
   return (
     <MapContainer
@@ -185,8 +182,8 @@ export default function Map({
       {mappable.polyline && (
         <GeoJSONLayer
           polyline={mappable.polyline}
-          mappableId={mappable.id}
           hoverIndexStore={hoverIndexStore}
+          interactive={interactive}
         />
       )}
     </MapContainer>

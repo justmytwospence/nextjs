@@ -151,7 +151,7 @@ export default function GradientCdfChart({
 
       if (x >= xAxis.left && x <= xAxis.right) {
         const value = xAxis.getValueForPixel(x);
-        setHoveredGradient(value);
+        setHoveredGradient(value ?? null);
         setIsGradientLocked(true);
       }
     },

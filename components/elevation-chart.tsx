@@ -125,7 +125,7 @@ export default function ElevationChart({
         ticks: {
           stepSize: 100,
           callback: function (value) {
-            return Math.round(value).toLocaleString();
+            return Math.round(Number(value)).toLocaleString();
           },
         },
         grid: {
@@ -209,36 +209,45 @@ export default function ElevationChart({
 
   // hoverIndex
   useEffect(() => {
-    const unsubHoverIndex = hoverIndexStore.subscribe(
-      (state) => state.hoverIndex,
-      (hoverIndex) => {
-        if (!chartRef.current) return;
-        const chart = chartRef.current;
-        if (hoverIndex >= 0) {
-          chart.setActiveElements([
+    interface HoverIndexState {
+      hoverIndex: number;
+    }
+
+    interface ChartRef {
+      current: ChartJS<"line"> | null;
+    }
+
+    const unsubHoverIndex = hoverIndexStore.subscribe((state) => {
+      if (!chartRef.current) return;
+      const chart = chartRef.current as ChartJS<"line">;
+      if (state.hoverIndex >= 0) {
+        chart.setActiveElements([
+          {
+            datasetIndex: 0,
+            index: state.hoverIndex,
+          },
+        ]);
+        chart.tooltip?.setActiveElements(
+          [
             {
               datasetIndex: 0,
-              index: hoverIndex,
+              index: state.hoverIndex,
             },
-          ]);
-          chart.tooltip?.setActiveElements(
-            [
-              {
-                datasetIndex: 0,
-                index: hoverIndex,
-              },
-            ],
-            {
-              x: chart.scales.x.getPixelForValue(computedDistances[hoverIndex]),
-              y: chart.scales.elevation.getPixelForValue(elevation[hoverIndex]),
-            }
-          );
-        } else {
-          chart.setActiveElements([]);
-          chart.tooltip?.setActiveElements([], { x: 0, y: 0 });
-        }
+          ],
+          {
+            x: chart.scales.x.getPixelForValue(
+              computedDistances[state.hoverIndex]
+            ),
+            y: chart.scales.elevation.getPixelForValue(
+              elevation[state.hoverIndex]
+            ),
+          }
+        );
+      } else {
+        chart.setActiveElements([]);
+        chart.tooltip?.setActiveElements([], { x: 0, y: 0 });
       }
-    );
+    });
     return unsubHoverIndex;
   }, [computedDistances, elevation, hoverIndexStore]);
 
