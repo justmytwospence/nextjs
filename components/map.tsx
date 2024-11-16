@@ -3,7 +3,10 @@
 import { computeDistanceMiles, computeGradient } from "@/lib/geo";
 import { baseLogger } from "@/lib/logger";
 import type { HoverIndexStore } from "@/store";
-import { createHoverIndexStore, gradientStore } from "@/store";
+import {
+  hoverIndexStore as defaultHoverIndexStore,
+  gradientStore,
+} from "@/store";
 import { Mappable } from "@prisma/client";
 import type { Feature, FeatureCollection, LineString } from "geojson";
 import L from "leaflet";
@@ -14,7 +17,7 @@ import { MapContainer, TileLayer, useMap } from "react-leaflet";
 const GeoJSONLayer = ({
   polyline,
   mappableId,
-  hoverIndexStore = createHoverIndexStore(),
+  hoverIndexStore = defaultHoverIndexStore,
 }: {
   polyline: { coordinates: [number, number][] };
   mappableId: string;
@@ -160,7 +163,7 @@ const GeoJSONLayer = ({
 export default function Map({
   mappable,
   interactive = true,
-  hoverIndexStore = createHoverIndexStore(),
+  hoverIndexStore = defaultHoverIndexStore,
 }: {
   mappable: Mappable;
   interactive?: boolean;

@@ -2,7 +2,10 @@
 
 import { computeDistanceMiles, computeGradient } from "@/lib/geo";
 import type { HoverIndexStore } from "@/store";
-import { createHoverIndexStore, gradientStore } from "@/store";
+import {
+  hoverIndexStore as defaultHoverIndexStore,
+  gradientStore,
+} from "@/store";
 import { Mappable } from "@prisma/client";
 import type { ChartData, ChartOptions } from "chart.js";
 import {
@@ -30,7 +33,7 @@ ChartJS.register(
 
 export default function ElevationChart({
   mappable,
-  hoverIndexStore = createHoverIndexStore(),
+  hoverIndexStore = defaultHoverIndexStore,
 }: {
   mappable: Mappable;
   hoverIndexStore: HoverIndexStore;
