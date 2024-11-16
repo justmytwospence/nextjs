@@ -14,7 +14,7 @@ import {
   Title,
   Tooltip,
 } from "chart.js";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { Line } from "react-chartjs-2";
 
 ChartJS.register(
@@ -29,7 +29,7 @@ ChartJS.register(
 
 export default function ElevationChart({ mappable }: { mappable: Mappable }) {
   const chartRef = useRef<ChartJS<"line">>(null);
-  const setHoverIndex = useStore((state) => state.setHoverIndex);
+  const { setHoverIndex } = useStore();
 
   // Compute values immediately
   const computedDistances = computeDistanceMiles(mappable.polyline.coordinates);
@@ -47,10 +47,14 @@ export default function ElevationChart({ mappable }: { mappable: Mappable }) {
       {
         label: "Elevation (ft)",
         data: elevation,
-        borderColor: "text-blue-500",
-        backgroundColor: "text-blue-500/20",
+        borderColor: "rgb(59, 130, 246)",
+        backgroundColor: "transparent",
         yAxisID: "elevation",
+        borderWidth: 1,
+        pointRadius: 0,
+        pointHoverRadius: 4,
         pointBackgroundColor: "black",
+        tension: 0.1,
       },
       {
         label: "Gradient (%)",
@@ -60,7 +64,14 @@ export default function ElevationChart({ mappable }: { mappable: Mappable }) {
         pointRadius: 0,
         fill: true,
         borderWidth: 0,
-        segment: { borderColor: "transparent" },
+        segment: {
+          backgroundColor: (ctx) => {
+            const gradientValue = ctx.p0.parsed.y;
+            return gradientValue >= 0
+              ? "rgba(255, 0, 0, 0.4)"
+              : "rgba(128, 128, 128, 0.4)";
+          },
+        },
       },
     ],
   };
@@ -71,7 +82,6 @@ export default function ElevationChart({ mappable }: { mappable: Mappable }) {
     animation: {
       duration: 0,
     },
-
     scales: {
       x: {
         type: "linear" as const,
@@ -80,7 +90,7 @@ export default function ElevationChart({ mappable }: { mappable: Mappable }) {
         ticks: {
           stepSize: 1,
           callback: function (value) {
-            return value.toFixed(1);
+            return Number(value).toFixed(1);
           },
         },
         title: {
@@ -89,16 +99,16 @@ export default function ElevationChart({ mappable }: { mappable: Mappable }) {
         },
       },
       elevation: {
-        type: "linear" as const,
         display: true,
+        min: 0,
         position: "left" as const,
+        type: "linear" as const,
         title: {
           display: true,
           text: "Elevation (ft)",
         },
         ticks: {
           stepSize: 500,
-          min: 0,
         },
         grid: {
           drawOnChartArea: false,
@@ -117,17 +127,15 @@ export default function ElevationChart({ mappable }: { mappable: Mappable }) {
         ticks: {
           stepSize: 0.01,
           callback: function (value) {
-            return (value * 100).toFixed(0) + "%";
+            return (Number(value) * 100).toFixed(0) + "%";
           },
         },
         grid: {
           drawOnChartArea: true,
           drawTicks: true,
-          drawBorder: false,
         },
       },
     },
-
     plugins: {
       title: {
         display: true,
@@ -137,8 +145,6 @@ export default function ElevationChart({ mappable }: { mappable: Mappable }) {
         display: false,
       },
       tooltip: {
-        mode: "index" as const,
-        intersect: false,
         callbacks: {
           title: function (context) {
             const label = context[0]?.label;
@@ -158,12 +164,8 @@ export default function ElevationChart({ mappable }: { mappable: Mappable }) {
         },
       },
     },
-
-    hover: {
-      mode: "index" as const,
-      intersect: false,
-    },
     interaction: {
+      mode: "index",
       intersect: false,
     },
     onHover: (event, elements, chart) => {
@@ -174,13 +176,12 @@ export default function ElevationChart({ mappable }: { mappable: Mappable }) {
 
       const elementsAtEvent = chart.getElementsAtEventForMode(
         event.native,
-        "nearest",
+        "index",
         { intersect: false },
         false
       );
 
       if (elementsAtEvent.length > 0) {
-        console.log(`Hovering over ${elementsAtEvent[0].index} on chart`);
         setHoverIndex(elementsAtEvent[0].index);
       } else {
         setHoverIndex(-1);
@@ -190,41 +191,66 @@ export default function ElevationChart({ mappable }: { mappable: Mappable }) {
 
   // hoverIndex
   useEffect(() => {
-    if (!chartRef.current) return;
-    const chart = chartRef.current;
-    console.log("Subscribing to hoverIndex on chart");
-    const unsub = useStore.subscribe(
+    const unsubHoverIndex = useStore.subscribe(
       (state) => state.hoverIndex,
       (hoverIndex) => {
-        console.log(`Receiving hoverIndex: ${hoverIndex} on chart`);
-        chart.data.datasets[0].pointRadius = (ctx) =>
-          ctx.dataIndex === hoverIndex ? 6 : 0;
-        chart.update("none");
+        if (!chartRef.current) return;
+        const chart = chartRef.current;
+        if (hoverIndex >= 0) {
+          chart.setActiveElements([
+            {
+              datasetIndex: 0,
+              index: hoverIndex,
+            },
+          ]);
+          chart.tooltip?.setActiveElements(
+            [
+              {
+                datasetIndex: 0,
+                index: hoverIndex,
+              },
+            ],
+            {
+              x: chart.scales.x.getPixelForValue(computedDistances[hoverIndex]),
+              y: chart.scales.elevation.getPixelForValue(elevation[hoverIndex]),
+            }
+          );
+        } else {
+          chart.setActiveElements([]);
+          chart.tooltip?.setActiveElements([], { x: 0, y: 0 });
+        }
       }
     );
-
-    return () => unsub();
-  }, []);
+    return unsubHoverIndex;
+  }, [computedDistances, elevation]);
 
   // hoveredGradient
   useEffect(() => {
-    if (!chartRef.current) return;
-    const chart = chartRef.current;
-    const unsub = useStore.subscribe(
+    const unsubHoveredGradient = useStore.subscribe(
       (state) => state.hoveredGradient,
       (hoveredGradient) => {
-        console.log(hoveredGradient);
-        chart.data.datasets[1].backgroundColor = (ctx) => {
-          const gradientValue = computedGradients[ctx.dataIndex];
-          return hoveredGradient !== null && gradientValue >= hoveredGradient
-            ? "rgba(255, 0, 0, 0.2)"
-            : "rgba(128, 128, 128, 0.2)";
+        if (!chartRef.current) return;
+
+        // Update the gradient segment colors
+        chartRef.current.data.datasets[1].segment = {
+          backgroundColor: (ctx) => {
+            if (hoveredGradient) {
+              const gradientValue = ctx.p0.parsed.y;
+              return gradientValue >= hoveredGradient
+                ? "rgba(255, 0, 0, 0.4)"
+                : "rgba(128, 128, 128, 0.4)";
+            }
+          },
         };
-        chart.update("none");
+
+        console.log(chartRef.current.data.datasets[1].label);
+        chartRef.current.data.datasets[1].label = "foobar";
+        console.log(chartRef.current.data.datasets[1].label);
+        chartRef.current.update();
+        console.log(chartRef.current.data.datasets[1].label);
       }
     );
-
-    return () => unsub();
+    return unsubHoveredGradient;
   }, []);
 
   return <Line ref={chartRef} data={initialData} options={initialOptions} />;

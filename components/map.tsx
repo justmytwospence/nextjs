@@ -100,7 +100,7 @@ const GeoJSONLayer = ({
       const point = polyline.coordinates[index];
       if (!hoverCircleRef.current) {
         hoverCircleRef.current = L.circle([point[1], point[0]], {
-          radius: 50,
+          radius: 200,
           color: "black",
           fillColor: "black",
           fillOpacity: 0.5,
