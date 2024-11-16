@@ -58,10 +58,18 @@ const GeoJSONLayer = ({
       { type: "FeatureCollection", features } as FeatureCollection,
       {
         style: (feature) => {
+          if (!interactive) {
+            return {
+              color: "#4475ff", // Use single color when not interactive
+              weight: 3,
+              opacity: 0.8,
+              zIndex: 1,
+            };
+          }
           const isHighGradient =
             feature?.properties?.gradient >= (hoveredGradient ?? 0);
           return {
-            color: isHighGradient ? "#ff6b6b" : "#4475ff", // Pleasing coral red and navy blue
+            color: isHighGradient ? "#ff6b6b" : "#4475ff",
             weight: 3,
             opacity: 0.8,
             zIndex: isHighGradient ? 1000 : 1, // Higher z-index for red segments
@@ -130,6 +138,7 @@ const GeoJSONLayer = ({
 
   // hoverIndex useEffect
   useEffect(() => {
+    if (!interactive) return;
     const unsub = hoverIndexStore.subscribe((state) => {
       updateHoverPoint(state.hoverIndex);
     });
@@ -138,20 +147,24 @@ const GeoJSONLayer = ({
 
   // respond to hoveredGradient
 
-  const updateGradients = useCallback((hoveredGradient: number | null) => {
-    if (!geoJsonRef.current) return;
-    geoJsonRef.current.setStyle((feature) => ({
-      color:
-        feature?.properties?.gradient >= (hoveredGradient ?? 0)
-          ? "#ff6b6b"
-          : "#4475ff",
-      weight: 3,
-      opacity: 0.8,
-    }));
-  }, []);
+  const updateGradients = useCallback(
+    (hoveredGradient: number | null) => {
+      if (!geoJsonRef.current || !interactive) return;
+      geoJsonRef.current.setStyle((feature) => ({
+        color:
+          feature?.properties?.gradient >= (hoveredGradient ?? 0)
+            ? "#ff6b6b"
+            : "#4475ff",
+        weight: 3,
+        opacity: 0.8,
+      }));
+    },
+    [interactive]
+  );
 
   // hoveredGradient useEffect
   useEffect(() => {
+    if (!interactive) return;
     const unsub = gradientStore.subscribe(
       (state) => state.hoveredGradient,
       (hoveredGradient) => {

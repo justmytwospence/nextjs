@@ -30,13 +30,13 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased relative`}
       >
         <div className="border-b">
-          <div className="max-w-7xl mx-auto">
+          <div className="max-w-7xl mx-auto px-6">
             <Topbar />
           </div>
         </div>
-        <main className="relative">
-          <div className="max-w-7xl mx-auto px-6">{children}</div>
-        </main>
+        <div className="max-w-7xl mx-auto px-6">
+          <main className="relative">{children}</main>
+        </div>
       </body>
     </html>
   );

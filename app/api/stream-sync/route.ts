@@ -22,6 +22,7 @@ import {
   SummaryActivity,
 } from "@/lib/strava/schemas/strava";
 import { NextResponse } from "next/server";
+import pLimit from 'p-limit';
 
 type Message =
   | { type: "update_total"; message: string; n: number }
@@ -108,21 +109,24 @@ async function syncRoutes(userId: string, searchParams: URLSearchParams) {
       n: routes.length,
     });
 
+    const limit = pLimit(5); // Limit to 5 concurrent promises
     const filteredRoutes = await Promise.all(
-      routes.map(async (route) => {
-        const existingRoute = await upsertUserRoute(userId, route);
-        if (existingRoute.polyline) {
-          baseLogger.info(
-            `Route ${route.name} already exists in detailed form, skipping...`
-          );
-          await send({
-            type: "update_current",
-            message: `Found ${routes.length} routes from Strava, already synced ${route.name}`,
-          });
-          return null;
-        }
-        return route;
-      })
+      routes.map((route) =>
+        limit(async () => {
+          const existingRoute = await upsertUserRoute(userId, route);
+          if (existingRoute.polyline) {
+            baseLogger.info(
+              `Route ${route.name} already exists in detailed form, skipping...`
+            );
+            await send({
+              type: "update_current",
+              message: `Found ${routes.length} routes from Strava, already synced ${route.name}`,
+            });
+            return null;
+          }
+          return route;
+        })
+      )
     ).then((routes) => routes.filter((route): route is Route => route !== null));
 
     baseLogger.info(`Syncing ${filteredRoutes.length} new routes`);
@@ -169,7 +173,6 @@ async function syncRoutes(userId: string, searchParams: URLSearchParams) {
     });
   }
 }
-
 
 async function syncActivities(userId: string, searchParams: URLSearchParams) {
   try {

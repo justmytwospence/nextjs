@@ -41,7 +41,7 @@ export default function RouteDetail({ mappable }: { mappable: UserRoute }) {
       <h1 className="text-3xl font-bold">{mappable.name}</h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="w-full aspect-square">
+        <Card className="w-full aspect-[2/1] lg:aspect-square">
           <CardContent className="h-full p-0">
             {mappable.polyline && (
               <div className="h-full w-full rounded-lg overflow-hidden">
@@ -52,7 +52,7 @@ export default function RouteDetail({ mappable }: { mappable: UserRoute }) {
         </Card>
 
         <div className="grid grid-cols-1 lg:grid-rows-2 gap-6">
-          <Card className="h-full">
+          <Card className="h-[350px] lg:h-full">
             <CardContent className="h-full">
               <div className="h-full">
                 <ElevationChart mappable={mappable} />
@@ -60,7 +60,7 @@ export default function RouteDetail({ mappable }: { mappable: UserRoute }) {
             </CardContent>
           </Card>
 
-          <Card className="h-full">
+          <Card className="h-[350px] lg:h-full">
             <CardContent className="h-full p-0">
               <div className="h-full">
                 <GradientCdfChart mappables={[mappable]} />

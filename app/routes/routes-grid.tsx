@@ -104,7 +104,7 @@ export default function RoutesGrid({ routes }: { routes: UserRoute[] }) {
   };
 
   return (
-    <div className="container mx-auto p-6">
+    <div className="py-6">
       <h1 className="text-3xl font-bold mb-6">My Routes</h1>
 
       <div className="flex flex-wrap gap-4 mb-6 sm:flex-nowrap sm:justify-between items-center">
