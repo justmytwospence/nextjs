@@ -44,11 +44,13 @@ const GeoJSONLayer = ({
 
     // Create GeoJSON layer
     geoJsonRef.current = L.geoJSON(
-      { type: "FeatureCollection", features },
+      { type: "FeatureCollection", features } as FeatureCollection,
       {
         style: (feature) => ({
           color:
-            feature?.properties?.gradient >= hoveredGradient ? "red" : "blue",
+            feature?.properties?.gradient >= (hoveredGradient ?? 0)
+              ? "red"
+              : "blue",
           weight: 3,
           opacity: 0.8,
         }),
@@ -71,7 +73,6 @@ const GeoJSONLayer = ({
         }
       }
 
-      console.log(`Hovering over ${closestIndex} on map`);
       setHoverIndex(minDist < 100 ? closestIndex : -1);
     };
 
@@ -114,11 +115,9 @@ const GeoJSONLayer = ({
 
   // hoverIndex useEffect
   useEffect(() => {
-    console.log("Subscribing to hoverIndex on map");
     const unsub = useStore.subscribe(
       (state) => state.hoverIndex,
       (hoverIndex) => {
-        console.log(`Receiving hoverIndex: ${hoverIndex} on map`);
         updateHoverPoint(hoverIndex);
       }
     );
@@ -130,7 +129,10 @@ const GeoJSONLayer = ({
   const updateGradients = useCallback((hoveredGradient: number | null) => {
     if (!geoJsonRef.current) return;
     geoJsonRef.current.setStyle((feature) => ({
-      color: feature?.properties?.gradient >= hoveredGradient ? "red" : "blue",
+      color:
+        feature?.properties?.gradient >= (hoveredGradient ?? 0)
+          ? "red"
+          : "blue",
       weight: 3,
       opacity: 0.8,
     }));

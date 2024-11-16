@@ -13,6 +13,7 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
+import type { ChartEvent, ChartOptions } from "chart.js";
 import { computeCdf, computeGradient } from "@/lib/geo";
 import { Mappable } from "@prisma/client";
 
@@ -65,7 +66,7 @@ export default function GradientCdfChart({
     })),
   };
 
-  const initialOptions = {
+  const initialOptions: ChartOptions<"line"> = {
     responsive: true,
     maintainAspectRatio: false,
     scales: {
@@ -113,7 +114,7 @@ export default function GradientCdfChart({
       },
     },
     interaction: {
-      mode: "index",
+      mode: "index" as const,
       intersect: false,
     },
     onHover: (event: ChartEvent, elements: any[], chart: ChartJS) => {
@@ -125,12 +126,12 @@ export default function GradientCdfChart({
       const rect = (
         event.native.target as HTMLCanvasElement
       ).getBoundingClientRect();
-      const x = event.native.clientX - rect.left;
+      const x = (event.native as MouseEvent).clientX - rect.left;
       const xAxis = chart.scales.x;
 
       if (x >= xAxis.left && x <= xAxis.right) {
         const value = xAxis.getValueForPixel(x);
-        setHoveredGradient(value);
+        setHoveredGradient(value ?? null);
       } else {
         setHoveredGradient(null);
       }
