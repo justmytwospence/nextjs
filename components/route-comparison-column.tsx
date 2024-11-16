@@ -12,24 +12,19 @@ import { queryUserRouteAction } from "@/app/actions/queryUserRoute";
 import { queryActivityAction } from "@/app/actions/queryActivity";
 import ElevationChart from "@/components/elevation-chart";
 import { Mappable } from "@prisma/client";
+import { useStore } from "@/store";
 
 export default function RouteComparisonColumn({
   mappables,
   selectedMappable,
   setSelectedMappable,
-  hoverIndex,
-  onHover,
-  gradientThreshold,
-  gradients,
 }: {
   mappables: { id: string; name: string; type: string }[];
   selectedMappable: Mappable | null;
   setSelectedMappable: (mappable: Mappable | null) => void;
-  hoverIndex: number;
-  onHover: (index: number) => void;
-  gradientThreshold: number | null;
-  gradients: number[];
 }) {
+  const { hoverIndex, setHoverIndex, hoveredGradient, gradients } = useStore();
+
   const routes = mappables.filter((m) => m.type === "route");
   const activities = mappables.filter((m) => m.type === "activity");
 
@@ -86,8 +81,8 @@ export default function RouteComparisonColumn({
           <LazyMap
             mappable={selectedMappable}
             hoverIndex={hoverIndex}
-            onHover={onHover}
-            gradientThreshold={gradientThreshold}
+            onHover={setHoverIndex}
+            hoveredGradient={hoveredGradient}
             gradients={gradients}
           />
         </div>
@@ -97,10 +92,10 @@ export default function RouteComparisonColumn({
         <div className="h-[400px] w-full">
           <ElevationChart
             mappable={selectedMappable}
-            maxGradient={0.1}
             hoverIndex={hoverIndex}
-            onHover={onHover}
+            onHover={setHoverIndex}
             gradients={gradients}
+            hoveredGradient={hoveredGradient}
           />
         </div>
       )}

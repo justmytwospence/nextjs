@@ -1,9 +1,8 @@
 import * as turf from "@turf/turf";
-import { GeoJSON } from "geojson";
 
-export function computeDistanceMiles(polyline: GeoJSON.LineString): number[] {
+export function computeDistanceMiles(coordinates: number[][]): number[] {
   let cumulativeDistance = 0;
-  return polyline.coordinates.map((point, index, coords) => {
+  return coordinates.map((point, index, coords) => {
     if (index === 0) return 0;
     const from = turf.point(coords[index - 1]);
     const to = turf.point(point);
@@ -31,13 +30,15 @@ function smoothArray(arr: number[], windowSize: number = 10): number[] {
   return result;
 }
 
-export function computeGradient(polyline: GeoJSON.LineString): number[] {
-  const rawGradients = polyline.coordinates.map((point, index, coords) => {
+export function computeGradient(coordinates: number[][]): number[] {
+  const rawGradients = coordinates.map((point, index, coords) => {
     if (index === 0) return 0;
-    const from = turf.point(coords[index - 1]);
-    const to = turf.point(point);
-    const distance = turf.distance(from, to, { units: "meters" });
-    const elevationChange = (point[2] - coords[index - 1][2]) * 0.3048;
+    const distance = turf.distance(
+      turf.point(coords[index - 1]), // from
+      turf.point(point),  // to
+      { units: "meters" }
+    );
+    const elevationChange = (point[2] - coords[index - 1][2]);
     return elevationChange / distance;
   });
 

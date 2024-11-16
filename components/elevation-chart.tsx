@@ -1,8 +1,9 @@
 "use client";
 
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { Spinner } from "@/components/ui/spinner";
+import { computeDistanceMiles, computeGradient } from "@/lib/geo";
+import { useStore } from "@/store";
 import { Mappable } from "@prisma/client";
+import type { Chart, ChartData, ChartOptions } from "chart.js";
 import {
   CategoryScale,
   Chart as ChartJS,
@@ -13,9 +14,8 @@ import {
   Title,
   Tooltip,
 } from "chart.js";
-import React, { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Line } from "react-chartjs-2";
-import { computeDistanceMiles, computeGradient } from "@/lib/geo";
 
 ChartJS.register(
   CategoryScale,
@@ -27,114 +27,60 @@ ChartJS.register(
   Filler
 );
 
-export default function ElevationChart({
-  mappable,
-  maxGradient,
-  onHover,
-  hoverIndex = -1,
-  gradients,
-}: {
-  mappable: Mappable;
-  maxGradient: number;
-  onHover: (index: number) => void;
-  hoverIndex?: number;
-  gradients: number[];
-}) {
-  const [dialogOpen, setDialogOpen] = useState(false);
+export default function ElevationChart({ mappable }: { mappable: Mappable }) {
+  const chartRef = useRef<ChartJS<"line">>(null);
+  const setHoverIndex = useStore((state) => state.setHoverIndex);
 
-  if (!mappable) {
-    return <Spinner className="w-6 h-6 text-[hsl(var(--chart-primary))]" />;
-  }
-
-  const distance = computeDistanceMiles(mappable.polyline);
-  const elevationData = mappable.polyline.coordinates.map(
+  // Compute values immediately
+  const computedDistances = computeDistanceMiles(mappable.polyline.coordinates);
+  const computedGradients = computeGradient(mappable.polyline.coordinates);
+  const elevation = mappable.polyline.coordinates.map(
     (point) => point[2] * 3.28084
   );
-  const gradientData = computeGradient(mappable.polyline);
+  const gradientMin = Math.max(Math.min(...computedGradients), -0.3);
+  const gradientMax = Math.min(Math.max(...computedGradients), 0.3);
 
-  const createChartData = (isLarge = false) => ({
-    labels: distance,
+  // Initial chart configuration
+  const initialData: ChartData<"line"> = {
+    labels: computedDistances,
     datasets: [
       {
         label: "Elevation (ft)",
-        data: elevationData,
+        data: elevation,
         borderColor: "text-blue-500",
         backgroundColor: "text-blue-500/20",
         yAxisID: "elevation",
-        pointRadius: (ctx) => (ctx.dataIndex === hoverIndex ? 6 : 0),
         pointBackgroundColor: "black",
-        borderWidth: isLarge ? 2 : 1,
       },
       {
         label: "Gradient (%)",
-        data: gradients,
-        borderColor: "transparent", // Remove the border line
-        backgroundColor: "rgba(128, 128, 128, 0.2)", // Make gradient area less transparent gray
+        data: computedGradients,
+        borderColor: "transparent",
         yAxisID: "gradient",
         pointRadius: 0,
         fill: true,
-        borderWidth: 0, // Remove the border line
-        segment: {
-          borderColor: "transparent",
-          backgroundColor: "rgba(128, 128, 128, 0.5)",
-        },
+        borderWidth: 0,
+        segment: { borderColor: "transparent" },
       },
     ],
-  });
+  };
 
-  const gradientMin = Math.max(Math.min(...gradientData), -0.3);
-  const gradientMax = Math.min(Math.max(...gradientData), 0.3);
-
-  const createChartOptions = (isLarge = false) => ({
+  const initialOptions: ChartOptions<"line"> = {
     responsive: true,
     maintainAspectRatio: false,
     animation: {
-      duration: 0, // Set duration to 0 to disable animation
+      duration: 0,
     },
-    plugins: {
-      title: {
-        display: true,
-        text: "Elevation and Gradient Profile",
-      },
-      legend: {
-        display: false, // Remove the legend
-      },
-      tooltip: {
-        mode: "index" as const,
-        intersect: false,
-        callbacks: {
-          title: function (context) {
-            const label = context[0]?.label;
-            return `Distance: ${parseFloat(label).toFixed(1)} miles`;
-          },
-          label: function (context) {
-            const label = context.dataset.label || "";
-            if (label === "Elevation (ft)") {
-              return `Elevation: ${context.parsed.y.toFixed(0)} ft`;
-            } else if (label === "Gradient (%)") {
-              return `Gradient: ${(context.parsed.y * 100).toFixed(1)}%`;
-            }
-            return label;
-          },
-        },
-      },
-    },
-    hover: {
-      mode: "index" as const,
-      intersect: false,
-    },
-    interaction: {
-      intersect: false,
-    },
+
     scales: {
       x: {
         type: "linear" as const,
         min: 0,
-        max: Math.max(...distance),
+        max: Math.max(...computedDistances),
         ticks: {
           stepSize: 1,
           callback: function (value) {
-            return value.toFixed(1); // Format as one decimal point
+            return value.toFixed(1);
           },
         },
         title: {
@@ -155,7 +101,7 @@ export default function ElevationChart({
           min: 0,
         },
         grid: {
-          drawOnChartArea: false, // Disable grid lines for y1 axis
+          drawOnChartArea: false,
         },
       },
       gradient: {
@@ -171,7 +117,7 @@ export default function ElevationChart({
         ticks: {
           stepSize: 0.01,
           callback: function (value) {
-            return (value * 100).toFixed(0) + "%"; // Format as percentage
+            return (value * 100).toFixed(0) + "%";
           },
         },
         grid: {
@@ -181,59 +127,105 @@ export default function ElevationChart({
         },
       },
     },
+
+    plugins: {
+      title: {
+        display: true,
+        text: "Elevation and Gradient Profile",
+      },
+      legend: {
+        display: false,
+      },
+      tooltip: {
+        mode: "index" as const,
+        intersect: false,
+        callbacks: {
+          title: function (context) {
+            const label = context[0]?.label;
+            return `Distance: ${parseFloat(label).toFixed(1)} miles`;
+          },
+          label: function (context) {
+            const label = context.dataset.label || "";
+            if (label === "Elevation (ft)") {
+              return `Elevation: ${Math.round(
+                context.parsed.y
+              ).toLocaleString()} ft`;
+            } else if (label === "Gradient (%)") {
+              return `Gradient: ${(context.parsed.y * 100).toFixed(1)}%`;
+            }
+            return label;
+          },
+        },
+      },
+    },
+
+    hover: {
+      mode: "index" as const,
+      intersect: false,
+    },
+    interaction: {
+      intersect: false,
+    },
     onHover: (event, elements, chart) => {
       if (!event?.native || !chart?.chartArea) {
-        onHover(-1);
+        setHoverIndex(-1);
         return;
       }
 
-      const chartArea = chart.chartArea;
-      const x = event.native.offsetX;
-      const y = event.native.offsetY;
+      const elementsAtEvent = chart.getElementsAtEventForMode(
+        event.native,
+        "nearest",
+        { intersect: false },
+        false
+      );
 
-      if (
-        x < chartArea.left ||
-        x > chartArea.right ||
-        y < chartArea.top ||
-        y > chartArea.bottom
-      ) {
-        onHover(-1);
-        return;
-      }
-
-      // Calculate relative x position within chart area
-      const relativeX =
-        (x - chartArea.left) / (chartArea.right - chartArea.left);
-      const maxDistance = Math.max(...distance);
-      const hoverDistance = relativeX * maxDistance;
-
-      // Find closest point with bounds checking
-      const index = distance.findIndex((d) => d >= hoverDistance);
-      if (index >= 0 && index < mappable.polyline.coordinates.length) {
-        onHover(index);
+      if (elementsAtEvent.length > 0) {
+        console.log(`Hovering over ${elementsAtEvent[0].index} on chart`);
+        setHoverIndex(elementsAtEvent[0].index);
       } else {
-        onHover(-1);
+        setHoverIndex(-1);
       }
     },
-  });
+  };
 
-  return (
-    <>
-      <div className="w-full h-full">
-        <Line data={createChartData()} options={createChartOptions()} />
-      </div>
+  // hoverIndex
+  useEffect(() => {
+    if (!chartRef.current) return;
+    const chart = chartRef.current;
+    console.log("Subscribing to hoverIndex on chart");
+    const unsub = useStore.subscribe(
+      (state) => state.hoverIndex,
+      (hoverIndex) => {
+        console.log(`Receiving hoverIndex: ${hoverIndex} on chart`);
+        chart.data.datasets[0].pointRadius = (ctx) =>
+          ctx.dataIndex === hoverIndex ? 6 : 0;
+        chart.update("none");
+      }
+    );
 
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogTitle />
-        <DialogContent className="max-w-[90vw] max-h-[90vh] w-[1200px]">
-          <div className="h-[600px]">
-            <Line
-              data={createChartData(true)}
-              options={createChartOptions(true)}
-            />
-          </div>
-        </DialogContent>
-      </Dialog>
-    </>
-  );
+    return () => unsub();
+  }, []);
+
+  // hoveredGradient
+  useEffect(() => {
+    if (!chartRef.current) return;
+    const chart = chartRef.current;
+    const unsub = useStore.subscribe(
+      (state) => state.hoveredGradient,
+      (hoveredGradient) => {
+        console.log(hoveredGradient);
+        chart.data.datasets[1].backgroundColor = (ctx) => {
+          const gradientValue = computedGradients[ctx.dataIndex];
+          return hoveredGradient !== null && gradientValue >= hoveredGradient
+            ? "rgba(255, 0, 0, 0.2)"
+            : "rgba(128, 128, 128, 0.2)";
+        };
+        chart.update("none");
+      }
+    );
+
+    return () => unsub();
+  }, []);
+
+  return <Line ref={chartRef} data={initialData} options={initialOptions} />;
 }

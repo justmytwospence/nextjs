@@ -4,146 +4,157 @@ import { baseLogger } from "@/lib/logger";
 import { Mappable } from "@prisma/client";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { useEffect } from "react";
+import { useEffect, useRef, useCallback, useState } from "react";
 import { MapContainer, TileLayer, useMap } from "react-leaflet";
-import { GeoJsonObject, FeatureCollection, Feature, LineString } from "geojson";
-
-type Polyline = {
-  coordinates: [number, number][];
-  features?: FeatureCollection<LineString>;
-};
+import type { FeatureCollection, Feature, LineString } from "geojson";
+import { useStore } from "@/store"; // Import the store instance
+import { computeGradient, computeDistanceMiles } from "@/lib/geo";
 
 const GeoJSONLayer = ({
   polyline,
-  hoverIndex,
-  onHover,
-  gradientThreshold,
-  gradients = [], // Default to an empty array if gradients is not provided
+  mappableId,
 }: {
-  polyline: Polyline; // Use custom type
-  hoverIndex: number;
-  onHover: (index: number) => void;
-  gradientThreshold: number | null;
-  gradients: number[];
+  polyline: { coordinates: [number, number][] };
+  mappableId: string;
 }) => {
   const map = useMap();
+  const geoJsonRef = useRef<L.GeoJSON | null>(null);
+  const hoverCircleRef = useRef<L.Circle | null>(null);
+  const { setHoverIndex, hoveredGradient } = useStore();
 
+  // polyline useEffect
   useEffect(() => {
-    if (polyline) {
-      // Convert polyline to GeoJSON with gradient properties
-      const geoJson: FeatureCollection<LineString> = {
-        type: "FeatureCollection",
-        features: polyline.coordinates.slice(0, -1).map((coord, i) => ({
-          type: "Feature",
-          properties: {
-            gradient: gradients[i],
-          },
-          geometry: {
-            type: "LineString",
-            coordinates: [coord, polyline.coordinates[i + 1]],
-          },
-        })),
-      };
-
-      const geoJsonLayer = L.geoJSON(geoJson, {
-        style: (feature) => {
-          if (!feature) return {}; // Ensure feature is defined
-          const color = window
-            .getComputedStyle(document.documentElement)
-            .getPropertyValue(
-              gradientThreshold !== null &&
-                feature.properties.gradient >= gradientThreshold
-                ? "--chart-highlight"
-                : "--chart-primary"
-            );
-          return {
-            color: `hsl(${color})`,
-            weight: 3,
-          };
+    const computedGradients = computeGradient(polyline.coordinates);
+    const features: Feature<LineString>[] = polyline.coordinates
+      .slice(0, -1)
+      .map((coord, i) => ({
+        type: "Feature",
+        properties: { gradient: computedGradients[i] },
+        geometry: {
+          type: "LineString",
+          coordinates: [coord, polyline.coordinates[i + 1]],
         },
-      });
+      }));
 
-      geoJsonLayer.addTo(map);
+    // Set map bounds
+    const bounds = L.latLngBounds(
+      polyline.coordinates.map(([lng, lat]) => [lat, lng])
+    );
+    map.fitBounds(bounds, { padding: [50, 50] });
 
-      // Add mousemove handler to the map
-      const handleMouseMove = (e) => {
-        if (!polyline.coordinates) return;
-
-        // Find closest point
-        const mousePoint = [e.latlng.lng, e.latlng.lat];
-        let minDist = Infinity;
-        let closestIndex = -1;
-
-        polyline.coordinates.forEach((coord, index) => {
-          const dist = Math.hypot(
-            mousePoint[0] - coord[0],
-            mousePoint[1] - coord[1]
-          );
-          if (dist < minDist) {
-            minDist = dist;
-            closestIndex = index;
-          }
-        });
-
-        // Only trigger if mouse is close enough to the path
-        if (minDist < 0.001) {
-          // Adjust threshold as needed
-          onHover(closestIndex);
-        } else {
-          onHover(-1);
-        }
-      };
-
-      map.on("mousemove", handleMouseMove);
-      map.on("mouseout", () => onHover(-1));
-
-      // Add padding to fitBounds for better visibility
-      map.fitBounds(geoJsonLayer.getBounds());
-
-      return () => {
-        map.removeLayer(geoJsonLayer);
-        map.off("mousemove", handleMouseMove);
-        map.off("mouseout");
-      };
-    }
-  }, [polyline, map, onHover, gradientThreshold, gradients]);
-
-  // Add circle for hovered point
-  useEffect(() => {
-    if (hoverIndex >= 0 && polyline?.coordinates) {
-      const point = polyline.coordinates[hoverIndex];
-      if (point) {
-        const circle = L.circle([point[1], point[0]], {
-          radius: 50,
-          color: "black", // Change circle color to black
-          fillColor: "black", // Change circle fill color to black
-          fillOpacity: 0.5,
-        });
-        circle.addTo(map);
-        return () => {
-          map.removeLayer(circle);
-        };
+    // Create GeoJSON layer
+    geoJsonRef.current = L.geoJSON(
+      { type: "FeatureCollection", features },
+      {
+        style: (feature) => ({
+          color:
+            feature?.properties?.gradient >= hoveredGradient ? "red" : "blue",
+          weight: 3,
+          opacity: 0.8,
+        }),
       }
-    }
-  }, [hoverIndex, polyline, map]);
+    ).addTo(map);
 
+    // handlers
+    const handleMouseMove = (e: L.LeafletMouseEvent) => {
+      const mousePoint = L.latLng(e.latlng.lat, e.latlng.lng);
+      let minDist = Infinity;
+      let closestIndex = -1;
+
+      for (let i = 0; i < polyline.coordinates.length; i++) {
+        const coord = polyline.coordinates[i];
+        const point = L.latLng(coord[1], coord[0]);
+        const dist = mousePoint.distanceTo(point);
+        if (dist < minDist) {
+          minDist = dist;
+          closestIndex = i;
+        }
+      }
+
+      console.log(`Hovering over ${closestIndex} on map`);
+      setHoverIndex(minDist < 100 ? closestIndex : -1);
+    };
+
+    map.on("mousemove", handleMouseMove);
+    map.on("mouseout", () => setHoverIndex(-1));
+
+    // geoJSON cleanup
+    return () => {
+      geoJsonRef.current?.remove();
+      hoverCircleRef.current?.remove();
+      map.off("mousemove", handleMouseMove);
+      map.off("mouseout");
+    };
+  }, [polyline]);
+
+  // respond to hoverIndex
+
+  const updateHoverPoint = useCallback(
+    (index: number) => {
+      if (index < 0 || !polyline.coordinates[index]) {
+        hoverCircleRef.current?.remove();
+        hoverCircleRef.current = null;
+        return;
+      }
+
+      const point = polyline.coordinates[index];
+      if (!hoverCircleRef.current) {
+        hoverCircleRef.current = L.circle([point[1], point[0]], {
+          radius: 50,
+          color: "black",
+          fillColor: "black",
+          fillOpacity: 0.5,
+        }).addTo(map);
+      } else {
+        hoverCircleRef.current.setLatLng([point[1], point[0]]);
+      }
+    },
+    [polyline]
+  );
+
+  // hoverIndex useEffect
+  useEffect(() => {
+    console.log("Subscribing to hoverIndex on map");
+    const unsub = useStore.subscribe(
+      (state) => state.hoverIndex,
+      (hoverIndex) => {
+        console.log(`Receiving hoverIndex: ${hoverIndex} on map`);
+        updateHoverPoint(hoverIndex);
+      }
+    );
+    return unsub;
+  }, [updateHoverPoint]);
+
+  // respond to hoveredGradient
+
+  const updateGradients = useCallback((hoveredGradient: number | null) => {
+    if (!geoJsonRef.current) return;
+    geoJsonRef.current.setStyle((feature) => ({
+      color: feature?.properties?.gradient >= hoveredGradient ? "red" : "blue",
+      weight: 3,
+      opacity: 0.8,
+    }));
+  }, []);
+
+  // hoveredGradient useEffect
+  useEffect(() => {
+    const unsub = useStore.subscribe(
+      (state) => state.hoveredGradient,
+      (hoveredGradient) => {
+        updateGradients(hoveredGradient);
+      }
+    );
+    return unsub;
+  }, [updateGradients]);
   return null;
 };
 
 export default function Map({
   mappable,
   interactive = true,
-  hoverIndex = -1,
-  onHover = () => {},
-  gradientThreshold = null,
-  gradients = [], // Default to an empty array if gradients is not provided
 }: {
   mappable: Mappable;
   interactive?: boolean;
-  hoverIndex?: number;
-  onHover?: (index: number) => void;
-  gradientThreshold?: number | null;
-  gradients?: number[]; // Make gradients optional
 }) {
   return (
     <MapContainer
@@ -158,14 +169,8 @@ export default function Map({
       doubleClickZoom={interactive}
     >
       <TileLayer url="https://tile.jawg.io/jawg-terrain/{z}/{x}/{y}{r}.png?access-token=bDE5WHMnFV1P973D59QWuGaq6hebBcjPSyud6vVGYqqi2r4kZyaShdbC3SF2Bc7y" />
-      {mappable.summaryPolyline && (
-        <GeoJSONLayer
-          polyline={mappable.summaryPolyline}
-          hoverIndex={hoverIndex}
-          onHover={onHover}
-          gradientThreshold={gradientThreshold}
-          gradients={gradients}
-        />
+      {mappable.polyline && (
+        <GeoJSONLayer polyline={mappable.polyline} mappableId={mappable.id} />
       )}
     </MapContainer>
   );
