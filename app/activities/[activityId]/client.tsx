@@ -69,7 +69,7 @@ export default function ActivityDetail({
 
         {activity.polyline && (
           <div className="h-[200px] lg:h-[600px]">
-            <ElevationChart mappable={activity} maxGradient={0.1} />
+            <ElevationChart mappable={activity} />
           </div>
         )}
       </div>

@@ -35,10 +35,10 @@ const GeoJSONLayer = ({
     const features: Feature<LineString>[] = polyline.coordinates
       .slice(0, -1)
       .map((coord, i) => ({
-        type: "Feature",
+        type: "Feature" as const,
         properties: { gradient: computedGradients[i] },
         geometry: {
-          type: "LineString",
+          type: "LineString" as const,
           coordinates: [coord, polyline.coordinates[i + 1]],
         },
       }))
@@ -61,7 +61,7 @@ const GeoJSONLayer = ({
           const isHighGradient =
             feature?.properties?.gradient >= (hoveredGradient ?? 0);
           return {
-            color: isHighGradient ? "red" : "blue",
+            color: isHighGradient ? "#ff6b6b" : "#4475ff", // Pleasing coral red and navy blue
             weight: 3,
             opacity: 0.8,
             zIndex: isHighGradient ? 1000 : 1, // Higher z-index for red segments
@@ -143,8 +143,8 @@ const GeoJSONLayer = ({
     geoJsonRef.current.setStyle((feature) => ({
       color:
         feature?.properties?.gradient >= (hoveredGradient ?? 0)
-          ? "red"
-          : "blue",
+          ? "#ff6b6b"
+          : "#4475ff",
       weight: 3,
       opacity: 0.8,
     }));

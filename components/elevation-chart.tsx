@@ -36,7 +36,7 @@ export default function ElevationChart({
   hoverIndexStore = defaultHoverIndexStore,
 }: {
   mappable: Mappable;
-  hoverIndexStore: HoverIndexStore;
+  hoverIndexStore?: HoverIndexStore;
 }) {
   const chartRef = useRef<ChartJS<"line">>(null);
   const { setHoverIndex } = hoverIndexStore();
@@ -61,10 +61,10 @@ export default function ElevationChart({
       {
         label: "Elevation (ft)",
         data: elevation,
-        borderColor: "rgb(59, 130, 246)",
+        borderColor: "black",
         backgroundColor: "transparent",
         yAxisID: "elevation",
-        borderWidth: 1,
+        borderWidth: 2,
         pointRadius: 0,
         pointHoverRadius: 4,
         pointBackgroundColor: "black",
@@ -82,8 +82,8 @@ export default function ElevationChart({
           backgroundColor: (ctx) => {
             const gradientValue = ctx.p0.parsed.y;
             return hoveredGradient && gradientValue >= hoveredGradient
-              ? "rgba(255, 0, 0, 0.4)"
-              : "rgba(128, 128, 128, 0.4)";
+              ? "rgba(255, 0, 0, 0.5)"
+              : "rgba(128, 128, 128, 0.5)";
           },
         },
       },
