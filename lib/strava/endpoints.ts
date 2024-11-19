@@ -17,8 +17,8 @@ import { validateAndLogExtras } from "./schema";
 
 export const fetchRoutes = async (
   userId: string,
-  perPage: number = 10,
-  page: number = 1
+  page: number = 1,
+  perPage: number = 200,
 ): Promise<Route[]> => {
   const params = new URLSearchParams({
     per_page: perPage.toString(),
@@ -56,8 +56,8 @@ export const fetchRouteGeoJson = async (
 
 export const fetchActivities = async (
   userId: string,
-  perPage: number = 10,
-  page: number = 1
+  page: number = 1,
+  perPage: number = 200,
 ): Promise<SummaryActivity[]> => {
   const params = new URLSearchParams({
     per_page: perPage.toString(),

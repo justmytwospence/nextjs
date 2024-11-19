@@ -13,12 +13,12 @@ type ConvertKeysToCamelCase<T> = T extends Array<infer U>
   ? Array<ConvertKeysToCamelCase<U>>
   : T extends object
   ? {
-      [K in keyof T as SnakeToCamelCase<string & K>]: T[K] extends
-        | object
-        | Array<any>
-        ? ConvertKeysToCamelCase<T[K]>
-        : T[K];
-    }
+    [K in keyof T as SnakeToCamelCase<string & K>]: T[K] extends
+    | object
+    | Array<any>
+    ? ConvertKeysToCamelCase<T[K]>
+    : T[K];
+  }
   : T;
 
 function toCamelCase(str: string): string {
