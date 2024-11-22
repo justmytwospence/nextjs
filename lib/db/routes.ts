@@ -1,153 +1,141 @@
 import { baseLogger } from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
+import type { Route } from "@/lib/strava/schemas"
 import { convertKeysToCamelCase } from "@/lib/utils";
-import type { Route } from "@/lib/strava/schemas/strava";
-import type { UserRoute, Mappable } from "@prisma/client";
-import { Prisma } from "@prisma/client";
+import type { Route as DbRoute, EnrichedRoute } from "@prisma/client";
+import type { Prisma } from "@prisma/client";
+import type { LineString } from "geojson";
 
-export async function queryUserRoutes(userId: string): Promise<UserRoute[]> {
-  try {
-    baseLogger.info(`Querying user routes for user ${userId}`);
-    const routes = await prisma.userRoute.findMany({
-      where: {
-        userId,
-        summaryPolyline: {
-          not: Prisma.JsonNullValueFilter.JsonNull,
-        },
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
-    baseLogger.info(`Found ${routes.length} routes`);
-    return routes;
-  } catch (error) {
-    throw error;
-  }
+export async function queryRoutes(
+	userId: string,
+	page = 1,
+	pageSize = 24,
+	type?: string,
+): Promise<DbRoute[]> {
+		baseLogger.info(
+			`Querying user routes for user ${userId}, page ${page}, pageSize ${pageSize}, type ${type}`,
+		);
+		const routes = await prisma.route.findMany({
+			where: {
+				userId,
+				...(type && { type: Number.parseInt(type) }),
+			},
+			orderBy: {
+				createdAt: "desc",
+			},
+			skip: (page - 1) * pageSize,
+			take: pageSize,
+		});
+		baseLogger.info(`Found ${routes.length} routes`);
+		return routes;
 }
 
-export async function queryMappables(userId: string): Promise<Mappable[]> {
-  try {
-    baseLogger.info(`Querying mappables for user ${userId}`);
-    const [routes, activities] = await Promise.all([
-      prisma.userRoute.findMany({
-        where: {
-          userId,
-          OR: [
-            { summaryPolyline: { not: Prisma.JsonNullValueFilter.JsonNull } },
-            { polyline: { not: Prisma.JsonNullValueFilter.JsonNull } },
-          ],
-        },
-      }),
-      prisma.activity.findMany({
-        where: {
-          userId,
-          movingTime: {
-            gt: 0,
-          },
-          OR: [
-            { summaryPolyline: { not: Prisma.JsonNullValueFilter.JsonNull } },
-            { polyline: { not: Prisma.JsonNullValueFilter.JsonNull } },
-          ],
-        },
-      }),
-    ]);
-    const mappables = [
-      ...routes.map((route) => ({ ...route, mappableType: "route" })),
-      ...activities.map((activity) => ({ ...activity, mappableType: "activity" })),
-    ];
-    baseLogger.info(`Found ${mappables.length} mappables`);
-    return mappables;
-  } catch (error) {
-    throw error;
-  }
+export async function queryRoute(
+	userId: string,
+	routeId: string,
+): Promise<DbRoute | null> {
+		baseLogger.info(
+			`Querying user route for user ${userId} and route ${routeId}`,
+		);
+		const route = await prisma.route.findUnique({
+			where: {
+				id_userId: {
+					id: routeId,
+					userId,
+				},
+			},
+		});
+		baseLogger.info(`Found route ${routeId} to be ${route?.name}`);
+		return route;
 }
 
-export async function queryUserRoute(
-  userId: string,
-  routeId: string
-): Promise<UserRoute | null> {
-  try {
-    baseLogger.info(
-      `Querying user route for user ${userId} and route ${routeId}`
-    );
-    const route = await prisma.userRoute.findUnique({
-      where: {
-        id_userId: {
-          id: routeId,
-          userId,
-        },
-      },
-    });
-    baseLogger.info(`Found route ${routeId} to be ${route?.name}`);
-    return route;
-  } catch (error) {
-    throw error;
-  }
+export async function upsertRoute(
+	userId: string,
+	route: Route,
+): Promise<DbRoute> {
+	baseLogger.info(`Upserting route ${route.name}`);
+
+	const routeData = convertKeysToCamelCase<Route>(route);
+
+	const { id, idStr, map, segments, ...inputData } = routeData;
+
+	if (!map.summaryPolyline) {
+		throw new Error("Route must have a summary polyline");
+	}
+
+	try {
+		const route = await prisma.route.upsert({
+			where: {
+				id: idStr,
+			},
+			create: {
+				...inputData,
+				id: idStr,
+				polyline: map.polyline ?? undefined,
+				summaryPolyline: map.summaryPolyline,
+				userId: userId,
+			},
+			update: {
+				...inputData,
+				id: idStr,
+				polyline: map.polyline ?? undefined,
+				summaryPolyline: map.summaryPolyline ?? undefined,
+				userId: userId,
+			},
+		});
+
+		baseLogger.info(`Route ${route.name} upserted successfully`);
+		return route;
+	} finally {
+		await prisma.$disconnect();
+	}
 }
 
-export async function upsertUserRoute(
-  userId: string,
-  route: Route
-): Promise<UserRoute> {
-  baseLogger.info(`Upserting route ${route.name}`);
+export async function enrichRoute(
+	userId: string,
+	routeId: string,
+	routeJson: LineString,
+): Promise<EnrichedRoute> {
+	baseLogger.info(`Enriching route ${routeId}`);
 
-  const routeData = convertKeysToCamelCase<Route>(route);
+	try {
+		if (!routeJson) {
+			throw new Error("Route JSON must not be null");
+		}
 
-  const { id, idStr, map, segments, ...inputData } = routeData;
-
-  try {
-    const route = await prisma.userRoute.upsert({
-      where: {
-        id: idStr,
-      },
-      create: {
-        ...inputData,
-        id: idStr,
-        polyline: map.polyline ? (map.polyline as unknown as Prisma.InputJsonValue) : undefined,
-        summaryPolyline:
-          map.summaryPolyline as unknown as Prisma.InputJsonValue,
-        userId: userId,
-      },
-      update: {
-        ...inputData,
-        id: idStr,
-        polyline: map.polyline ? (map.polyline as unknown as Prisma.InputJsonValue) : undefined,
-        summaryPolyline:
-          map.summaryPolyline as unknown as Prisma.InputJsonValue,
-        userId: userId,
-      },
-    });
-
-    baseLogger.info(`Route ${route.name} upserted successfully`);
-    return route;
-  } catch (error) {
-    throw error;
-  } finally {
-    await prisma.$disconnect();
-  }
+		const enrichedRoute = await prisma.route.update({
+			where: {
+				id_userId: {
+					id: routeId,
+					userId,
+				},
+			},
+			data: {
+				polyline: routeJson ?? undefined,
+			},
+		});
+		return enrichedRoute as EnrichedRoute;
+	} finally {
+		await prisma.$disconnect();
+	}
 }
 
-export async function enrichUserRoute(
-  userId: string,
-  routeId: string,
-  route: JSON
-): Promise<UserRoute> {
-  baseLogger.info(`Enriching route ${routeId}`);
+export async function queryRouteCountsByType(
+	userId: string,
+): Promise<Record<string, number>> {
+	const routeCountsByType = await prisma.route.groupBy({
+		by: ["type"],
+		where: { userId },
+		_count: true,
+	});
 
-  try {
-    return await prisma.userRoute.update({
-      where: {
-        id: routeId,
-        userId,
-      },
-      data: {
-        polyline: route as unknown as Prisma.InputJsonValue,
-      },
-    });
-  } catch (error) {
-    throw error;
-  } finally {
-    await prisma.$disconnect();
-  }
+	return routeCountsByType.reduce(
+		(acc, curr) => {
+			if (curr.type !== null) {
+				acc[curr.type] = curr._count;
+			}
+			return acc;
+		},
+		{} as Record<string, number>,
+	);
 }

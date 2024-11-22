@@ -1,36 +1,33 @@
-import { Activity, UserRoute } from "@prisma/client";
+import type { Activity, Route } from "@prisma/client";
+import { Prisma } from "@prisma/client";
+import type { LineString } from "geojson";
 
 declare module "@prisma/client" {
-  type PolylineRequirement =
-    | {
-        polyline: Json;
-        summaryPolyline?: Json;
-      }
-    | {
-        polyline?: Json;
-        summaryPolyline: Json;
-      };
+	interface MappableActivity extends Activity {
+		summaryPolyline: LineString;
+		polyline: LineString;
+		distance: number;
+		totalElevationGain: number;
+	}
 
-  export type MappableActivity = Pick<
-    Activity,
-    "id",
-    "name",
-    "description",
-    "distance",
-    "movingTime",
-    "totalElevationGain"
-  > & { type: "activity" };
+	interface EnrichedRoute extends Route {
+		polyline: LineString;
+	}
 
-  export type Mappable = {
-    id: string;
-    name: string;
-    distance: number;
-    description: string;
-  } & PolylineRequirement &
-    (
-      | (Pick<UserRoute, "estimatedMovingTime" | "elevationGain"> & {
-          type: "route";
-        })
-      | MappableActivity
-    );
+	export interface MappableItem {
+		id: string;
+		name: string;
+	}
+
+	export interface Mappable {
+		id: string;
+		name: string;
+		polyline: LineString;
+	}
+}
+
+declare global {
+	namespace PrismaJson {
+		type LineStringType = LineString;
+	}
 }

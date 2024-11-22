@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/popover";
 import { Progress } from "@/components/ui/progress";
 import { Spinner } from "@/components/ui/spinner";
+import { baseLogger } from "@/lib/logger";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -50,12 +51,10 @@ export default function SyncStravaButton({ type }: { type: string }) {
       failedItems: [],
     });
 
-    const PER_PAGE = 200;
-    const events = new EventSource(
-      `/api/stream-sync?type=${type}&per_page=${PER_PAGE}`
-    );
+    const events = new EventSource(`/api/sync-${type}`);
 
     events.onmessage = (event) => {
+      baseLogger.info(`Received event: ${event.data}`);
       const data = JSON.parse(event.data);
 
       switch (data.type) {

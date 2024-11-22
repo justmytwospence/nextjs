@@ -12,13 +12,14 @@ import {
 } from "@/lib/strava/schemas/strava";
 import tj from "@mapbox/togeojson";
 import { DOMParser } from "@xmldom/xmldom";
+import type { LineString } from "geojson";
 import { makeStravaRequest } from "./api";
 import { validateAndLogExtras } from "./schema";
 
 export const fetchRoutes = async (
   userId: string,
-  page: number = 1,
-  perPage: number = 200,
+  page = 1,
+  perPage = 200,
 ): Promise<Route[]> => {
   const params = new URLSearchParams({
     per_page: perPage.toString(),
@@ -42,7 +43,7 @@ export const fetchDetailedSegment = async (
 export const fetchRouteGeoJson = async (
   userId: string,
   routeId: string
-): Promise<JSON> => {
+): Promise<LineString> => {
   const response = await makeStravaRequest(
     userId,
     `/routes/${routeId}/export_gpx`
@@ -51,13 +52,17 @@ export const fetchRouteGeoJson = async (
   const gpxParser = new DOMParser();
   const gpxDoc = gpxParser.parseFromString(gpxData, "text/xml");
   const geoJson = tj.gpx(gpxDoc, { styles: false });
-  return geoJson.features[0].geometry;
+  const geometry = geoJson.features[0]?.geometry;
+  if (!geometry) {
+    throw new Error("Failed to parse GeoJSON geometry.");
+  }
+  return geometry as LineString;
 };
 
 export const fetchActivities = async (
   userId: string,
-  page: number = 1,
-  perPage: number = 200,
+  page = 1,
+  perPage = 200,
 ): Promise<SummaryActivity[]> => {
   const params = new URLSearchParams({
     per_page: perPage.toString(),

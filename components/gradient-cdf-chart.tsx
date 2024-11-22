@@ -1,19 +1,21 @@
 "use client";
 
 import { computeCdf, computeGradient } from "@/lib/geo";
+import { baseLogger } from "@/lib/logger";
 import { gradientStore } from "@/store";
-import { Mappable } from "@prisma/client";
-import type { ChartEvent, ChartOptions } from "chart.js";
+import type { Mappable } from "@prisma/client";
+import type { ActiveElement, ChartEvent, ChartOptions } from "chart.js";
 import {
   CategoryScale,
   Chart as ChartJS,
   Legend,
-  LinearScale,
   LineElement,
+  LinearScale,
   PointElement,
   Title,
   Tooltip,
 } from "chart.js";
+import { LineString } from "geojson";
 import { useRef, useState } from "react";
 import { Line } from "react-chartjs-2";
 
@@ -29,26 +31,25 @@ ChartJS.register(
 
 const CHART_COLORS = ["#3b82f6", "#64748b", "#f43f5e"];
 
-export default function GradientCdfChart({
-  mappables,
-}: {
-  mappables: Mappable[];
-}) {
+export default function GradientCdfChart({ mappables }: { mappables: Mappable[] }) {
   const chartRef = useRef<ChartJS<"line">>(null);
   const { setHoveredGradient } = gradientStore();
   const [isGradientLocked, setIsGradientLocked] = useState(false);
 
+  baseLogger.info(`Map 0: ${JSON.stringify(mappables[0])}`);
+  baseLogger.info(`${mappables[1]}`);
+
   // Compute gradients and get range
-  const gradients = mappables.map((m) =>
-    computeGradient(m.polyline.coordinates)
-  );
+  const gradients = mappables.map((mappable) => {
+    return computeGradient(mappable.polyline.coordinates);
+  });
 
   const allGradients = gradients.flat();
   const gradientMin = Math.min(...allGradients);
   const gradientMax = Math.max(...allGradients);
   const xAxisRange = Array.from(
     { length: Math.round((gradientMax - gradientMin) / 0.001) + 1 },
-    (_, i) => parseFloat((gradientMin + i * 0.001).toFixed(3))
+    (_, i) => Number.parseFloat((gradientMin + i * 0.001).toFixed(3))
   );
 
   // Compute CDFs
@@ -56,8 +57,8 @@ export default function GradientCdfChart({
 
   const initialData = {
     labels: xAxisRange,
-    datasets: mappables.map((route, i) => ({
-      label: route.name || `Route ${i + 1}`,
+    datasets: mappables.map((map, i) => ({
+      label: map.name || `Route ${i + 1}`,
       data: xAxisRange.map((x, j) => ({ x, y: cdfs[i][j] })),
       borderColor: CHART_COLORS[i % CHART_COLORS.length],
       backgroundColor: "transparent",
@@ -119,7 +120,7 @@ export default function GradientCdfChart({
       mode: "index" as const,
       intersect: false,
     },
-    onHover: (event: ChartEvent, elements: any[], chart: ChartJS) => {
+    onHover: (event: ChartEvent, elements: ActiveElement[], chart: ChartJS) => {
       if (!event?.native || !chart?.chartArea) {
         if (!isGradientLocked) setHoveredGradient(null);
         return;
@@ -140,7 +141,7 @@ export default function GradientCdfChart({
         setHoveredGradient(null);
       }
     },
-    onClick: (event: ChartEvent, elements: any[], chart: ChartJS) => {
+    onClick: (event: ChartEvent, elements: ActiveElement[], chart: ChartJS) => {
       if (!event?.native || !chart?.chartArea) return;
 
       const rect = (

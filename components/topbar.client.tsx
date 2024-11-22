@@ -23,8 +23,8 @@ export default function TopbarClient({ session }: { session: any }) {
 
   const links = [
     { href: "/routes", label: "Routes" },
-    { href: "/activities", label: "Activities" },
     { href: "/route-comparison", label: "Compare Routes" },
+    { href: "/activities", label: "Activities" },
     { href: "/segment-sniper", label: "Segment Sniper" },
   ];
 
@@ -63,12 +63,6 @@ export default function TopbarClient({ session }: { session: any }) {
 
       {session && (
         <div className="flex items-center gap-4">
-          {(pathname === "/routes" || pathname === "/activities") && (
-            <SyncStravaButton
-              type={pathname === "/activities" ? "activities" : "routes"}
-            />
-          )}
-
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="secondary" size="icon" className="rounded-full">

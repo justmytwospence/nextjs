@@ -1,4 +1,5 @@
 import polyline from "@mapbox/polyline";
+import type { LineString } from "geojson";
 import { z } from "zod";
 
 // Enum for sport types, includes new sport types
@@ -55,6 +56,19 @@ export const SportTypeSchema = z.enum([
   "Yoga",
 ]);
 
+function decodeLineString(data: string | null | undefined): LineString | null {
+  if (!data) return null;
+  return polyline.toGeoJSON(data) as LineString;
+}
+
+function validateLineString(data) {
+  const parsed = polyline.toGeoJSON(data);
+  if (parsed.type !== "LineString" || !parsed.coordinates || !Array.isArray(parsed.coordinates)) {
+    throw new Error("Invalid LineString");
+  }
+  return parsed;
+}
+
 // Map details including polylines
 export const PolylineMapSchema = z.object({
   id: z.coerce.string(), // Identifier for the map
@@ -62,18 +76,14 @@ export const PolylineMapSchema = z.object({
     .string()
     .nullable()
     .optional()
-    .transform((str) => (str ? polyline.toGeoJSON(str) : null))
-    .refine((data) => data === null || typeof data === "object", {
-      message: "Polyline must be a valid GeoJSON object",
-    }), // Full polyline of the map
+    .transform(decodeLineString)
+    .refine(validateLineString), 
   summary_polyline: z
     .string()
     .nullable()
     .optional()
-    .transform((str) => (str ? polyline.toGeoJSON(str) : null))
-    .refine((data) => data === null || typeof data === "object", {
-      message: "Polyline must be a valid GeoJSON object",
-    }), // Summary polyline of the map
+    .transform(decodeLineString)
+    .refine(validateLineString), 
 });
 
 // SummarySegmentEffort - Summary of an effort on a segment

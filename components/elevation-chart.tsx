@@ -1,12 +1,12 @@
 "use client";
 
 import { computeDistanceMiles, computeGradient } from "@/lib/geo";
+import type { LineString } from "geojson";
 import type { HoverIndexStore } from "@/store";
 import {
   hoverIndexStore as defaultHoverIndexStore,
   gradientStore,
 } from "@/store";
-import { Mappable } from "@prisma/client";
 import type { ChartData, ChartOptions } from "chart.js";
 import {
   CategoryScale,
@@ -32,10 +32,10 @@ ChartJS.register(
 );
 
 export default function ElevationChart({
-  mappable,
+  polyline,
   hoverIndexStore = defaultHoverIndexStore,
 }: {
-  mappable: Mappable;
+  polyline: LineString;
   hoverIndexStore?: HoverIndexStore;
 }) {
   const chartRef = useRef<ChartJS<"line">>(null);
@@ -43,11 +43,9 @@ export default function ElevationChart({
   const { hoveredGradient } = gradientStore();
 
   // Compute values immediately
-  const computedDistances = computeDistanceMiles(mappable.polyline.coordinates);
-  const computedGradients = computeGradient(mappable.polyline.coordinates);
-  const elevation = mappable.polyline.coordinates.map(
-    (point) => point[2] * 3.28084
-  );
+  const computedDistances = computeDistanceMiles(polyline.coordinates);
+  const computedGradients = computeGradient(polyline.coordinates);
+  const elevation = polyline.coordinates.map((point) => point[2] * 3.28084);
   const elevationMin = Math.min(...elevation);
   const elevationMax = Math.max(...elevation);
   const elevationPadding = (elevationMax - elevationMin) * 0.1;
@@ -103,9 +101,7 @@ export default function ElevationChart({
         max: Math.max(...computedDistances),
         ticks: {
           stepSize: 1,
-          callback: function (value) {
-            return Number(value).toFixed(1);
-          },
+          callback: (value) => Number(value).toFixed(1),
         },
         title: {
           display: true,
@@ -124,9 +120,7 @@ export default function ElevationChart({
         },
         ticks: {
           stepSize: 100,
-          callback: function (value) {
-            return Math.round(Number(value)).toLocaleString();
-          },
+          callback: (value) => Math.round(Number(value)).toLocaleString(),
         },
         grid: {
           drawOnChartArea: false,
@@ -144,9 +138,7 @@ export default function ElevationChart({
         },
         ticks: {
           stepSize: 0.01,
-          callback: function (value) {
-            return (Number(value) * 100).toFixed(0) + "%";
-          },
+          callback: (value) => `${(Number(value) * 100).toFixed(0)}%`,
         },
         grid: {
           drawOnChartArea: true,
@@ -164,17 +156,17 @@ export default function ElevationChart({
       },
       tooltip: {
         callbacks: {
-          title: function (context) {
+          title: (context) => {
             const label = context[0]?.label;
-            return `Distance: ${parseFloat(label).toFixed(1)} miles`;
+            return `Distance: ${Number.parseFloat(label).toFixed(1)} miles`;
           },
-          label: function (context) {
+          label: (context) => {
             const label = context.dataset.label || "";
             if (label === "Elevation (ft)") {
               return `Elevation: ${Math.round(
                 context.parsed.y
               ).toLocaleString()} ft`;
-            } else if (label === "Gradient (%)") {
+            }if (label === "Gradient (%)") {
               return `Gradient: ${(context.parsed.y * 100).toFixed(1)}%`;
             }
             return label;

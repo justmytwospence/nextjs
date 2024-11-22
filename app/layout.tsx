@@ -1,7 +1,9 @@
+import Topbar from "@/components/topbar";
 import type { Metadata } from "next";
 import localFont from "next/font/local";
+import ReactProviders from "./providers";
 import "./globals.css";
-import Topbar from "@/components/topbar"; // Adjust the import path as needed
+import { auth } from "@/auth";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -24,19 +26,22 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const session = auth();
   return (
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased relative`}
       >
-        <div className="border-b">
-          <div className="max-w-7xl mx-auto px-6">
-            <Topbar />
+        <ReactProviders session={session}>
+          <div className="border-b">
+            <div className="max-w-7xl mx-auto px-6">
+              <Topbar />
+            </div>
           </div>
-        </div>
-        <div className="max-w-7xl mx-auto px-6">
-          <main className="relative">{children}</main>
-        </div>
+          <main className="relative">
+            <div className="max-w-7xl mx-auto px-6">{children}</div>
+          </main>
+        </ReactProviders>
       </body>
     </html>
   );

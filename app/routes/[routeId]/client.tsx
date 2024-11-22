@@ -11,9 +11,9 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Card, CardContent } from "@/components/ui/card";
-import { UserRoute } from "@prisma/client";
+import type { EnrichedRoute, Route } from "@prisma/client";
 
-export default function RouteDetail({ mappable }: { mappable: UserRoute }) {
+export default function RouteDetail({ route }: { route: EnrichedRoute }) {
   return (
     <div className="container mx-auto p-4 space-y-6">
       <Breadcrumb className="text-sm text-muted-foreground" separator="/">
@@ -32,20 +32,20 @@ export default function RouteDetail({ mappable }: { mappable: UserRoute }) {
           <BreadcrumbSeparator />
           <BreadcrumbItem>
             <BreadcrumbLink href="#" className="text-primary font-semibold">
-              {mappable.name}
+              {route.name}
             </BreadcrumbLink>
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
 
-      <h1 className="text-3xl font-bold">{mappable.name}</h1>
+      <h1 className="text-3xl font-bold">{route.name}</h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card className="w-full aspect-[2/1] lg:aspect-square">
           <CardContent className="h-full p-0">
-            {mappable.polyline && (
+            {route.polyline && (
               <div className="h-full w-full rounded-lg overflow-hidden">
-                <LazyMap mappable={mappable} />
+                <LazyMap polyline={route.polyline} />
               </div>
             )}
           </CardContent>
@@ -55,7 +55,7 @@ export default function RouteDetail({ mappable }: { mappable: UserRoute }) {
           <Card className="h-[350px] lg:h-full">
             <CardContent className="h-full">
               <div className="h-full">
-                <ElevationChart mappable={mappable} />
+                <ElevationChart polyline={route.polyline} />
               </div>
             </CardContent>
           </Card>
@@ -63,7 +63,7 @@ export default function RouteDetail({ mappable }: { mappable: UserRoute }) {
           <Card className="h-[350px] lg:h-full">
             <CardContent className="h-full p-0">
               <div className="h-full">
-                <GradientCdfChart mappables={[mappable]} />
+                <GradientCdfChart mappables={[route]} />
               </div>
             </CardContent>
           </Card>

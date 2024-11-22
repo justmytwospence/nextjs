@@ -7,12 +7,12 @@ import type {
 import { convertKeysToCamelCase } from "@/lib/utils";
 import type { Activity, MappableActivity } from "@prisma/client";
 import { Prisma } from "@prisma/client";
+import type { LineString } from "geojson";
 
 export async function deleteActivity(
   userId: string,
   activityId: string
 ): Promise<void> {
-  try {
     baseLogger.info(`Deleting activity ${activityId}`);
     await prisma.activity.delete({
       where: {
@@ -23,15 +23,11 @@ export async function deleteActivity(
       },
     });
     baseLogger.info(`Deleted activity ${activityId}`);
-  } catch (error) {
-    throw error;
-  }
 }
 
 export async function queryMappableActivities(
   userId: string
 ): Promise<MappableActivity[]> {
-  try {
     baseLogger.info(`Querying user activities for user ${userId}`);
     const activities = await prisma.activity.findMany({
       where: {
@@ -49,16 +45,12 @@ export async function queryMappableActivities(
     });
     baseLogger.info(`Found ${activities.length} activities`);
     return activities as MappableActivity[];
-  } catch (error) {
-    throw error;
-  }
 }
 
 export async function queryActivity(
   userId: string,
   activityId: string
 ): Promise<Activity | null> {
-  try {
     baseLogger.info(
       `Querying user route for user ${userId} and route ${activityId}`
     );
@@ -72,9 +64,6 @@ export async function queryActivity(
     });
     baseLogger.info(`Found route ${activityId} to be ${activity?.name}`);
     return activity;
-  } catch (error) {
-    throw error;
-  }
 }
 
 export async function upsertSummaryActivity(
@@ -97,16 +86,12 @@ export async function upsertSummaryActivity(
       },
       create: {
         ...inputData,
-        summaryPolyline:
-          (map.summaryPolyline as unknown as Prisma.InputJsonValue) ||
-          undefined,
+        summaryPolyline: map.summaryPolyline ?? undefined,
         userId: userId,
       },
       update: {
         ...inputData,
-        summaryPolyline:
-          (map.summaryPolyline as unknown as Prisma.InputJsonValue) ||
-          undefined,
+        summaryPolyline: map.summaryPolyline ?? undefined,
         userId: userId,
       },
     });
@@ -141,19 +126,16 @@ export async function upsertDetailedActivity(
       },
       create: {
         ...inputData,
-        polyline: map.polyline as unknown as Prisma.InputJsonValue,
-        summaryPolyline:
-          map.summary_polyline as unknown as Prisma.InputJsonValue,
+        polyline: map.polyline ?? undefined,
+        summaryPolyline: map.summaryPolyline ?? undefined,
         userId: userId,
       },
-      update: {
+      update:  {
         ...inputData,
-        polyline: map.polyline as unknown as Prisma.InputJsonValue,
-        summaryPolyline:
-          map.summary_polyline as unknown as Prisma.InputJsonValue,
+        polyline: map.polyline ?? undefined,
+        summaryPolyline: map.summaryPolyline ?? undefined,
         userId: userId,
-      },
-    });
+    }});
     baseLogger.info(`Activity ${activity.name} upserted successfully`);
     return activity;
   } catch (error) {

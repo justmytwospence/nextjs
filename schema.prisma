@@ -3,6 +3,10 @@ generator client {
   previewFeatures = ["driverAdapters"]
 }
 
+generator json {
+  provider = "prisma-json-types-generator"
+}
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
@@ -20,7 +24,7 @@ model User {
 
   accounts       Account[]
   activities     Activity[]
-  routes         UserRoute[]
+  routes         Route[]
   segments       Segment[]
   sessions       Session[]
   segmentEfforts SegmentEffort[]
@@ -67,7 +71,7 @@ model VerificationToken {
   @@id([identifier, token])
 }
 
-model UserRoute {
+model Route {
   createdAt           DateTime  @map("created_at")
   description         String?
   distance            Float
@@ -75,10 +79,12 @@ model UserRoute {
   estimatedMovingTime Float     @map("estimated_moving_time")
   id                  String    @id
   name                String
+  /// [LineStringType]
   polyline            Json?
   private             Boolean
   starred             Boolean
   subType             Int       @map("sub_type")
+  /// [LineStringType]
   summaryPolyline     Json      @map("summary_polyline")
   timestamp           BigInt
   type                Int?
@@ -135,6 +141,7 @@ model Segment {
   id                 String    @id
   maximumGrade       Float?    @map("maximum_grade")
   name               String?
+  /// [LineStringType]
   polyline           Json?
   private            Boolean?
   starCount          Int?      @map("star_count")
@@ -180,6 +187,7 @@ model Activity {
   sportType            String?   @map("sport_type")
   startDate            DateTime? @map("start_date")
   startDateLocal       DateTime? @map("start_date_local")
+  /// [LineStringType]
   summaryPolyline      Json?     @map("summary_polyline")
   timezone             String?
   totalElevationGain   Float?    @map("total_elevation_gain")
@@ -198,6 +206,7 @@ model Activity {
   embedToken     String? @map("embed_token")
   laps           Json?
   photos         Json?
+  /// [LineStringType]
   polyline       Json?
   splitsMetric   Json?   @map("splits_metric")
   splitsStandard Json?   @map("splits_standard")

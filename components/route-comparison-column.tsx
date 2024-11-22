@@ -1,5 +1,7 @@
 "use client";
 
+import ElevationChart from "@/components/elevation-chart";
+import LazyMap from "@/components/lazy-map";
 import {
   Select,
   SelectContent,
@@ -7,38 +9,30 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import LazyMap from "@/components/lazy-map";
-import { queryUserRouteAction } from "@/app/actions/queryUserRoute";
-import { queryActivityAction } from "@/app/actions/queryActivity";
-import ElevationChart from "@/components/elevation-chart";
-import { Mappable } from "@prisma/client";
+import { createHoverIndexStore } from "@/store";
+import type { Mappable, MappableItem } from "@prisma/client";
 import { useMemo } from "react";
-import { createHoverIndexStore, createGradientStore } from "@/store";
 
 export default function RouteComparisonColumn({
-  mappables,
-  selectedMappable,
-  setSelectedMappable,
+  routes,
+  activities,
+  selectedMap,
+  handleMapSelection,
 }: {
-  mappables: { id: string; name: string; type: string }[];
-  selectedMappable: Mappable | null;
-  setSelectedMappable: (mappable: Mappable | null) => void;
+  routes: MappableItem[];
+  activities: MappableItem[];
+  selectedMap: Mappable | null;
+  handleMapSelection: (value: string) => void;
 }) {
-  const routes = mappables.filter((m) => m.type === "route");
-  const activities = mappables.filter((m) => m.type === "activity");
-
   const hoverIndexStore = useMemo(() => createHoverIndexStore(), []);
 
   return (
     <div className="space-y-6 p-6 bg-background border rounded-lg">
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="text-sm font-medium mb-2 block">Select Route</label>
+          <label htmlFor="route-select" className="text-sm font-medium mb-2 block">Select Route</label>
           <Select
-            onValueChange={async (value) => {
-              const fullMappable = await queryUserRouteAction(value);
-              setSelectedMappable(fullMappable);
-            }}
+            onValueChange={handleMapSelection}
           >
             <SelectTrigger className="w-full">
               <SelectValue placeholder="Choose a route" />
@@ -54,14 +48,11 @@ export default function RouteComparisonColumn({
         </div>
 
         <div>
-          <label className="text-sm font-medium mb-2 block">
+          <label htmlFor="activity-select" className="text-sm font-medium mb-2 block">
             Select Activity
           </label>
           <Select
-            onValueChange={async (value) => {
-              const fullMappable = await queryActivityAction(value);
-              setSelectedMappable(fullMappable);
-            }}
+            onValueChange={handleMapSelection}
           >
             <SelectTrigger className="w-full">
               <SelectValue placeholder="Choose an activity" />
@@ -77,19 +68,19 @@ export default function RouteComparisonColumn({
         </div>
       </div>
 
-      {selectedMappable && (
+      {selectedMap && (
         <div className="h-[300px] w-full mt-4">
           <LazyMap
-            mappable={selectedMappable}
+            polyline={selectedMap.polyline}
             hoverIndexStore={hoverIndexStore}
           />
         </div>
       )}
 
-      {selectedMappable && (
+      {selectedMap && (
         <div className="h-[400px] w-full">
           <ElevationChart
-            mappable={selectedMappable}
+            polyline={selectedMap.polyline}
             hoverIndexStore={hoverIndexStore}
           />
         </div>

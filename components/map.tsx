@@ -7,19 +7,50 @@ import {
   hoverIndexStore as defaultHoverIndexStore,
   gradientStore,
 } from "@/store";
-import { Mappable } from "@prisma/client";
 import type { Feature, FeatureCollection, LineString } from "geojson";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { MapContainer, TileLayer, useMap } from "react-leaflet";
 
+export default function Map({
+  polyline,
+  interactive = true,
+  hoverIndexStore = defaultHoverIndexStore,
+}: {
+  polyline: LineString;
+  interactive?: boolean;
+  hoverIndexStore?: HoverIndexStore;
+}) {
+  baseLogger.debug(`Rendering map with ${polyline}`);
+  return (
+    <MapContainer
+      className="map-container"
+      style={{ height: "100%", width: "100%" }}
+      center={[51.505, -0.09]}
+      zoom={13}
+      zoomControl={interactive}
+      scrollWheelZoom={interactive}
+      dragging={interactive}
+      attributionControl={interactive}
+      doubleClickZoom={interactive}
+    >
+      <TileLayer url="https://tile.jawg.io/jawg-terrain/{z}/{x}/{y}{r}.png?access-token=bDE5WHMnFV1P973D59QWuGaq6hebBcjPSyud6vVGYqqi2r4kZyaShdbC3SF2Bc7y" />
+      <GeoJSONLayer
+        polyline={polyline}
+        hoverIndexStore={hoverIndexStore}
+        interactive={interactive}
+      />
+    </MapContainer>
+  );
+}
+
 const GeoJSONLayer = ({
   polyline,
   hoverIndexStore,
   interactive = true,
 }: {
-  polyline: { coordinates: [number, number][] };
+  polyline: LineString;
   hoverIndexStore: HoverIndexStore;
   interactive?: boolean;
 }) => {
@@ -81,7 +112,7 @@ const GeoJSONLayer = ({
     // handlers
     const handleMouseMove = (e: L.LeafletMouseEvent) => {
       const mousePoint = L.latLng(e.latlng.lat, e.latlng.lng);
-      let minDist = Infinity;
+      let minDist = Number.POSITIVE_INFINITY;
       let closestIndex = -1;
 
       for (let i = 0; i < polyline.coordinates.length; i++) {
@@ -175,36 +206,3 @@ const GeoJSONLayer = ({
   }, [updateGradients, gradientStore]);
   return null;
 };
-
-export default function Map({
-  mappable,
-  interactive = true,
-  hoverIndexStore = defaultHoverIndexStore,
-}: {
-  mappable: Mappable;
-  interactive?: boolean;
-  hoverIndexStore?: HoverIndexStore;
-}) {
-  return (
-    <MapContainer
-      className="map-container"
-      style={{ height: "100%", width: "100%" }}
-      center={[51.505, -0.09]}
-      zoom={13}
-      zoomControl={interactive}
-      scrollWheelZoom={interactive}
-      dragging={interactive}
-      attributionControl={interactive}
-      doubleClickZoom={interactive}
-    >
-      <TileLayer url="https://tile.jawg.io/jawg-terrain/{z}/{x}/{y}{r}.png?access-token=bDE5WHMnFV1P973D59QWuGaq6hebBcjPSyud6vVGYqqi2r4kZyaShdbC3SF2Bc7y" />
-      {mappable.polyline && (
-        <GeoJSONLayer
-          polyline={mappable.polyline}
-          hoverIndexStore={hoverIndexStore}
-          interactive={interactive}
-        />
-      )}
-    </MapContainer>
-  );
-}

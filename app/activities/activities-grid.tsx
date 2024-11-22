@@ -1,8 +1,14 @@
 "use client";
 
 import LazyMap from "@/components/lazy-map";
-import PleaseSync from "@/components/please-sync";
+import { Button } from "@/components/ui/button";
 import { Card, CardHeader } from "@/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Pagination,
   PaginationContent,
@@ -12,50 +18,36 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
-import { ChevronDown } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
 import type { MappableActivity } from "@prisma/client";
+import { ChevronDown } from "lucide-react";
 import { Clock, Navigation, TrendingUp } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState, type ReactNode } from "react";
+import { type ReactNode, useState } from "react";
 
-export default function ActivitiesGrid({
-  activities,
-}: {
-  activities: MappableActivity[];
-}) {
+type SportType = string;
+type PageNumber = number;
+
+export default function ActivitiesGrid({ activities }: {activities: MappableActivity[]}): JSX.Element {
   const router = useRouter();
-  const [selectedType, setSelectedType] = useState("all");
-  const [currentPage, setCurrentPage] = useState(1);
+  const [selectedType, setSelectedType] = useState<SportType>("all");
+  const [currentPage, setCurrentPage] = useState<PageNumber>(1);
   const itemsPerPage = 30;
 
-  if (activities.length === 0) {
-    return <PleaseSync />;
-  }
-
   // Get unique sport types from activities
-  const uniqueSportTypes = Array.from(
-    new Set(activities.map((activity) => activity.sportType))
+  const uniqueSportTypes: SportType[] = Array.from(
+    new Set(activities.map((activity) => activity.sportType ?? "Unknown"))
   );
-  console.log(activities);
-  console.log(uniqueSportTypes);
 
-  const filteredActivities =
-    selectedType === "all"
-      ? activities
-      : activities.filter((activity) => activity.sportType === selectedType);
+  // Filter activities by type
+  const filteredActivities = selectedType === "all" 
+    ? activities
+    : activities.filter(activity => activity.sportType === selectedType);
 
+  // Calculate pagination
   const totalPages = Math.ceil(filteredActivities.length / itemsPerPage);
-  const paginatedActivities = filteredActivities.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentActivities = filteredActivities.slice(startIndex, endIndex);
 
   const generatePaginationItems = (): ReactNode[] => {
     const mappables: ReactNode[] = [];
@@ -174,7 +166,7 @@ export default function ActivitiesGrid({
 
         <div className="mt-6">
           <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-            {paginatedActivities.map((activity) => (
+            {currentActivities.map((activity) => (
               <Card
                 key={activity.id}
                 onClick={() => router.push(`/activities/${activity.id}`)}
@@ -182,7 +174,7 @@ export default function ActivitiesGrid({
               >
                 <div className="relative">
                   <div className="absolute inset-0 z-10">
-                    <LazyMap mappable={activity} interactive={false} />
+                    <LazyMap polyline={activity.summaryPolyline} interactive={false} />
                   </div>
                   <div className="aspect-[16/9]" />
                 </div>
