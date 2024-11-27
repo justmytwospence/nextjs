@@ -1,9 +1,8 @@
 import { fetchRoute } from "@/app/actions/fetchRoute";
 import { auth } from "@/auth";
-import { enrichRoute, queryRoute } from "@/lib/db";
-import { fetchRouteGeoJson } from "@/lib/strava";
+import { routeToCourse } from "@/types/transformers";
 import { notFound } from "next/navigation";
-import RouteDetail from "./client";
+import CourseDetail from "../../course-detail";
 
 export default async function RoutePage({ params }) {
   const session = await auth();
@@ -13,11 +12,13 @@ export default async function RoutePage({ params }) {
 
   const { routeId } = await params;
 
-  const route = await fetchRoute(routeId);
+  const enrichedRoute = await fetchRoute(routeId);
 
-  if (!route) {
+  if (!enrichedRoute) {
     notFound();
   }
 
-  return <RouteDetail route={route} />;
+  const enrichedCourse = routeToCourse(enrichedRoute);
+
+  return <CourseDetail course={enrichedCourse} />;
 }

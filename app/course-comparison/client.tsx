@@ -1,11 +1,12 @@
 "use client";
 
+import CourseComparisonColumn from "@/components/course-comparison-column";
 import GradientCdfChart from "@/components/gradient-cdf-chart";
-import RouteComparisonColumn from "@/components/route-comparison-column";
 import { Card, CardContent } from "@/components/ui/card";
 import { baseLogger } from "@/lib/logger";
 import type { Mappable, MappableItem } from "@prisma/client";
 import { useMemo, useState } from "react";
+import { fetchActivity } from "../actions/fetchActivity";
 import { fetchRoute } from "../actions/fetchRoute";
 
 export default function RouteComparison({
@@ -22,25 +23,34 @@ export default function RouteComparison({
     return [selectedMap1, selectedMap2].filter((map) => map !== null);
   }, [selectedMap1, selectedMap2]);
 
-  function createHandleMapSelection(setSelectedMapFn) {
-		return async function handleMapSelection(routeId) {
+  function createHandleRouteSelection(setSelectedMapFn) {
+		return async function handleRouteSelection(routeId) {
 			fetchRoute(routeId).then(setSelectedMapFn);
+		};
+  }
+  
+  function createHandleActivitySelection(setSelectedMapFn) {
+		return async function handleActivitySelection(routeId) {
+			fetchActivity(routeId).then(setSelectedMapFn);
 		};
   }
   
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-2 gap-8">
-      <RouteComparisonColumn
+      <CourseComparisonColumn
         routes={routes}
         activities={activities}
         selectedMap={selectedMap1}
-        handleMapSelection={createHandleMapSelection(setSelectedMap1)}
+        handleRouteSelection={createHandleRouteSelection(setSelectedMap1)}
+        handleActivitySelection={createHandleActivitySelection(setSelectedMap1)}
+        handle
       />
-      <RouteComparisonColumn
+      <CourseComparisonColumn
         routes={routes}
         activities={activities}
         selectedMap={selectedMap2}
-        handleMapSelection={createHandleMapSelection(setSelectedMap2)}
+        handleRouteSelection={createHandleRouteSelection(setSelectedMap2)}
+        handleActivitySelection={createHandleActivitySelection(setSelectedMap2)}
       />
       {selectedMaps.length > 0 ? (
         <Card className="max-w-7xl mx-auto px-4 h-[500px] w-full lg:col-span-2">

@@ -1,13 +1,15 @@
 "use server";
 
 import { auth } from "@/auth";
-import { queryActivity, upsertDetailedActivity } from "@/lib/db";
-import { fetchDetailedActivity } from "@/lib/strava";
-import type { Activity } from "@prisma/client";
+import { enrichActivity, queryActivity, upsertDetailedActivity } from "@/lib/db";
+import { baseLogger } from "@/lib/logger";
+import { fetchActivityStreams } from "@/lib/strava";
+import { activityToCourse, isEnrichedActivity, isMappableActivity } from "@/types/transformers";
+import type { EnrichedActivity, EnrichedCourse } from "@prisma/client";
 
 export async function fetchActivity(
   activityId: string
-): Promise<Activity> {
+): Promise<EnrichedActivity> {
   const session = await auth();
   if (!session?.user?.id) {
     throw new Error("Unauthorized");
@@ -19,10 +21,20 @@ export async function fetchActivity(
     throw new Error("Activity not found");
   }
 
-  if (!activity.polyline && activity.summaryPolyline) {
-    const detailedActivity = await fetchDetailedActivity(session.user.id,activityId);
-    return upsertDetailedActivity(session.user.id, detailedActivity);
+  if (!isMappableActivity(activity)) {
+    throw new Error("Activity is not mappable");
   }
 
-  return activity;
+  if (!isEnrichedActivity(activity)) {
+    baseLogger.info(`Activity ${activityId} is missing polyline, fetching detailed activity`);
+
+    // const detailedActivity = await fetchDetailedActivity(session.user.id,activityId);
+    // return await upsertDetailedActivity(session.user.id, detailedActivity) as MappableActivity
+
+    const activityStreams = await fetchActivityStreams(session.user.id, activityId);
+    const enrichedActivity = await enrichActivity(activityId, activityStreams);
+    return enrichedActivity
+  }
+
+  return activity
 }

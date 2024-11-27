@@ -74,6 +74,7 @@ export async function upsertRoute(
 				polyline: map.polyline ?? undefined,
 				summaryPolyline: map.summaryPolyline,
 				userId: userId,
+				syncedAt: new Date(),
 			},
 			update: {
 				...inputData,
@@ -81,6 +82,7 @@ export async function upsertRoute(
 				polyline: map.polyline ?? undefined,
 				summaryPolyline: map.summaryPolyline ?? undefined,
 				userId: userId,
+				syncedAt: new Date(),
 			},
 		});
 
@@ -112,6 +114,7 @@ export async function enrichRoute(
 			},
 			data: {
 				polyline: routeJson ?? undefined,
+				enrichedAt: new Date(),
 			},
 		});
 		return enrichedRoute as EnrichedRoute;

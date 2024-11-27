@@ -4,7 +4,8 @@ import { auth } from "@/auth";
 import { queryRoute } from "@/lib/db";
 import { enrichRoute } from "@/lib/db/routes";
 import { fetchRouteGeoJson } from "@/lib/strava";
-import type { EnrichedRoute, Route } from "@prisma/client";
+import { isEnrichedRoute, routeToCourse } from "@/types/transformers";
+import type { EnrichedRoute } from "@prisma/client";
 
 export async function fetchRoute(routeId: string): Promise<EnrichedRoute>  {
   const session = await auth();
@@ -19,10 +20,11 @@ export async function fetchRoute(routeId: string): Promise<EnrichedRoute>  {
     throw new Error("Route not found");
   }
 
-  if (!route.polyline) {
+  if (!isEnrichedRoute(route) || route.enrichedAt < route.updatedAt) {
     const routeGeoJson = await fetchRouteGeoJson(session.user.id, routeId);
-    return await enrichRoute(session.user.id, route.id, routeGeoJson) as EnrichedRoute;
+    const enrichedRoute =  await enrichRoute(session.user.id, route.id, routeGeoJson);
+    return enrichedRoute
   }
 
-  return route as EnrichedRoute;
+  return route
 }

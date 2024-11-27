@@ -61,14 +61,6 @@ function decodeLineString(data: string | null | undefined): LineString | null {
   return polyline.toGeoJSON(data) as LineString;
 }
 
-function validateLineString(data) {
-  const parsed = polyline.toGeoJSON(data);
-  if (parsed.type !== "LineString" || !parsed.coordinates || !Array.isArray(parsed.coordinates)) {
-    throw new Error("Invalid LineString");
-  }
-  return parsed;
-}
-
 // Map details including polylines
 export const PolylineMapSchema = z.object({
   id: z.coerce.string(), // Identifier for the map
@@ -76,14 +68,12 @@ export const PolylineMapSchema = z.object({
     .string()
     .nullable()
     .optional()
-    .transform(decodeLineString)
-    .refine(validateLineString), 
+    .transform(decodeLineString),
   summary_polyline: z
     .string()
     .nullable()
     .optional()
-    .transform(decodeLineString)
-    .refine(validateLineString), 
+    .transform(decodeLineString),
 });
 
 // SummarySegmentEffort - Summary of an effort on a segment
@@ -202,7 +192,7 @@ export const SummaryActivitySchema = z
     has_kudoed: z.boolean(), // Whether the logged-in athlete has kudoed this activity
     hide_from_home: z.boolean().optional(), // If the activity is muted
     id: z.coerce.string(), // Unique identifier for the activity
-    kilojoules: z.number().optional(), // Work done in kilojoules (rides only)
+    kilojoules: z.number().nullable().optional(), // Work done in kilojoules (rides only)
     kudos_count: z.number().int(), // Number of kudos received
     manual: z.boolean(), // Whether it was created manually
     map: PolylineMapSchema, // Map details
@@ -252,7 +242,7 @@ export const DetailedActivitySchema = z
     has_kudoed: z.boolean(), // Whether the logged-in athlete has kudoed this activity
     hide_from_home: z.boolean().optional(), // If the activity is muted
     id: z.coerce.string(), // Unique identifier of the activity
-    kilojoules: z.number().optional(), // Work done in kilojoules (rides only)
+    kilojoules: z.number().nullable().optional(), // Work done in kilojoules (rides only)
     kudos_count: z.number().int(), // Number of kudos received
     manual: z.boolean(), // Whether it was created manually
     map: PolylineMapSchema, // Map details
@@ -295,8 +285,36 @@ export const RouteSchema = z
     sub_type: z.number().int().min(1), // Sub-type of the route
     timestamp: z.number().int(), // Epoch timestamp when the route was created
     type: z.number().int().min(1), // Route type (1 for ride, 2 for run)
-    updated_at: z.string().datetime().optional(), // Last updated date
+    updated_at: z.string().datetime(), // Last updated date
   })
   .strict();
 export const RoutesSchema = z.array(RouteSchema);
 export type Route = z.infer<typeof RouteSchema>;
+
+export const DistanceStreamSchema = z.object({
+  data: z.array(z.number()), // Stream data
+  original_size: z.number().int(), // Original size of the stream
+  resolution: z.string(), // Resolution of the stream
+  series_type: z.string()
+})
+
+export const AltitudeStreamSchema = z.object({
+  data: z.array(z.number()), // Stream data
+  original_size: z.number().int(), // Original size of the stream
+  resolution: z.string(), // Resolution of the stream
+  series_type: z.string()
+})
+
+export const LatLngStreamSchema = z.object({
+  data: z.array(z.array(z.number())), // Stream data
+  original_size: z.number().int(), // Original size of the stream
+  resolution: z.string(), // Resolution of the stream
+  series_type: z.string()
+})
+
+export const StreamSetSchema = z.object({
+  distance: DistanceStreamSchema.optional(),
+  latlng: LatLngStreamSchema.optional(),
+  altitude: AltitudeStreamSchema.optional(),
+})
+export type StreamSet = z.infer<typeof StreamSetSchema>;

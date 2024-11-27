@@ -23,5 +23,9 @@ export default async function RouteComparisonPage() {
     `Initial routes for comparison page: ${JSON.stringify(routes, null, 2)}`
   );
 
+  baseLogger.info(
+    `Initial activities for comparison page: ${JSON.stringify(mappableActivities, null, 2)}`
+  );
+
   return <RouteComparison routes={routes} activities={mappableActivities} />;
 }

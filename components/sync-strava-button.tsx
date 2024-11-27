@@ -189,7 +189,7 @@ export default function SyncStravaButton({ type }: { type: string }) {
                 </p>
                 <div className="max-h-[40vh] overflow-y-auto overflow-x-hidden rounded-md border border-border p-4 space-y-2">
                   {progress.failedItems.map((item, i) => (
-                    <div key={i} className="space-y-1 w-full">
+                    <div key={`failed-${i}`} className="space-y-1 w-full">
                       <p className="text-sm font-bold break-words">
                         {item.name}
                       </p>

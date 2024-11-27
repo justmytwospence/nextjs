@@ -2,17 +2,20 @@ import type {
   DetailedActivity,
   DetailedSegment,
   Route,
+  StreamSet,
   SummaryActivity,
 } from "@/lib/strava/schemas/strava";
 import {
   DetailedActivitySchema,
   DetailedSegmentSchema,
   RoutesSchema,
+  StreamSetSchema,
   SummaryActivitiesSchema,
 } from "@/lib/strava/schemas/strava";
 import tj from "@mapbox/togeojson";
 import { DOMParser } from "@xmldom/xmldom";
 import type { LineString } from "geojson";
+import { baseLogger } from "../logger";
 import { makeStravaRequest } from "./api";
 import { validateAndLogExtras } from "./schema";
 
@@ -88,3 +91,24 @@ export const fetchDetailedActivity = async (
   const responseData = await response.json();
   return validateAndLogExtras(responseData, DetailedActivitySchema);
 };
+
+export const fetchActivityStreams = async (
+  userId: string,
+  activityId: string
+): Promise<StreamSet> => {
+  const types = [
+    "distance", "latlng", "altitude"
+  ];
+  const params = new URLSearchParams({
+    keys: types.join(","),
+    key_by_type: "true",
+  });
+  const response = await makeStravaRequest(
+    userId,
+    `/activities/${activityId}/streams`,
+    params
+  );
+  const responseData = await response.json();
+  baseLogger.debug("Activity streams response", responseData);
+  return validateAndLogExtras(responseData, StreamSetSchema);
+}

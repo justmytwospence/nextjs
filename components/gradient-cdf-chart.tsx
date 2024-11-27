@@ -36,8 +36,7 @@ export default function GradientCdfChart({ mappables }: { mappables: Mappable[] 
   const { setHoveredGradient } = gradientStore();
   const [isGradientLocked, setIsGradientLocked] = useState(false);
 
-  baseLogger.info(`Map 0: ${JSON.stringify(mappables[0])}`);
-  baseLogger.info(`${mappables[1]}`);
+  baseLogger.info(JSON.stringify(mappables[0].polyline, null, 2));
 
   // Compute gradients and get range
   const gradients = mappables.map((mappable) => {
@@ -54,11 +53,12 @@ export default function GradientCdfChart({ mappables }: { mappables: Mappable[] 
 
   // Compute CDFs
   const cdfs = gradients.map((g) => computeCdf(g, xAxisRange));
+  baseLogger.debug(JSON.stringify(cdfs, null, 2));
 
   const initialData = {
     labels: xAxisRange,
-    datasets: mappables.map((map, i) => ({
-      label: map.name || `Route ${i + 1}`,
+    datasets: mappables.map((mappable, i) => ({
+      label: mappable.name || `Route ${i + 1}`,
       data: xAxisRange.map((x, j) => ({ x, y: cdfs[i][j] })),
       borderColor: CHART_COLORS[i % CHART_COLORS.length],
       backgroundColor: "transparent",

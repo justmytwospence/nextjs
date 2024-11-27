@@ -12,20 +12,19 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Menu } from "lucide-react";
+import type { Session } from "next-auth";
 import { signOut } from "next-auth/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 
-export default function TopbarClient({ session }: { session: any }) {
+export default function TopbarClient({ session }: { session: Session }) {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const links = [
-    { href: "/routes", label: "Routes" },
-    { href: "/route-comparison", label: "Compare Routes" },
-    { href: "/activities", label: "Activities" },
-    { href: "/segment-sniper", label: "Segment Sniper" },
+    { href: "/courses", label: "Courses" },
+    { href: "/course-comparison", label: "Compare Courses" },
   ];
 
   return (

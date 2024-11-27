@@ -72,24 +72,27 @@ model VerificationToken {
 }
 
 model Route {
-  createdAt           DateTime  @map("created_at")
+  createdAt           DateTime @map("created_at")
   description         String?
   distance            Float
-  elevationGain       Float     @map("elevation_gain")
-  estimatedMovingTime Float     @map("estimated_moving_time")
-  id                  String    @id
+  elevationGain       Float    @map("elevation_gain")
+  estimatedMovingTime Float    @map("estimated_moving_time")
+  id                  String   @id
   name                String
   /// [LineStringType]
   polyline            Json?
   private             Boolean
   starred             Boolean
-  subType             Int       @map("sub_type")
+  subType             Int      @map("sub_type")
   /// [LineStringType]
-  summaryPolyline     Json      @map("summary_polyline")
+  summaryPolyline     Json     @map("summary_polyline")
   timestamp           BigInt
   type                Int?
-  updatedAt           DateTime? @map("updated_at")
-  userId              String    @map("user_id")
+  updatedAt           DateTime @map("updated_at")
+
+  userId     String    @map("user_id")
+  enrichedAt DateTime? @map("enriched_at")
+  syncedAt   DateTime? @map("synced_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -114,7 +117,7 @@ model SegmentEffort {
   name             String
   prRank           Int?      @map("pr_rank")
   segmentId        String    @map("segment_id")
-  startDate        DateTime? @map("start_date")
+  startDate        DateTime  @map("start_date")
   startDateLocal   DateTime? @map("start_date_local")
   startIndex       Int?      @map("start_index")
 
@@ -184,8 +187,8 @@ model Activity {
   name                 String
   photoCount           Int?      @map("photo_count")
   private              Boolean?
-  sportType            String?   @map("sport_type")
-  startDate            DateTime? @map("start_date")
+  sportType            String    @map("sport_type")
+  startDate            DateTime  @map("start_date")
   startDateLocal       DateTime? @map("start_date_local")
   /// [LineStringType]
   summaryPolyline      Json?     @map("summary_polyline")
@@ -211,7 +214,10 @@ model Activity {
   splitsMetric   Json?   @map("splits_metric")
   splitsStandard Json?   @map("splits_standard")
 
-  userId String @map("user_id")
+  // other fields
+  userId     String    @map("user_id")
+  syncedAt   DateTime  @map("synced_at")
+  enrichedAt DateTime? @map("enriched_at")
 
   // Relations
   user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)

@@ -12,7 +12,18 @@ export function computeDistanceMiles(coordinates: number[][]): number[] {
   });
 }
 
-function smoothArray(arr: number[], windowSize: number = 10): number[] {
+export function removeStaticPoints(coords: number[][], toleranceMeters = 10): number[][] {
+  const filteredCoords = coords.filter((coord, index) => {
+    if (index === 0) return true;
+    const from = turf.point(coords[index - 1]);
+    const to = turf.point(coord);
+    const distance = turf.distance(from, to, { units: "meters" });
+    return distance > toleranceMeters;
+  });
+  return filteredCoords;
+}
+
+function smoothArray(arr: number[], windowSize = 10): number[] {
   const result: number[] = [];
   for (let i = 0; i < arr.length; i++) {
     let sum = 0;
@@ -25,7 +36,7 @@ function smoothArray(arr: number[], windowSize: number = 10): number[] {
       sum += arr[j];
       count++;
     }
-    result.push(sum / count);
+    result.push(count === 0 ? 0 : sum / count);
   }
   return result;
 }
@@ -51,13 +62,13 @@ export function computeCdf(data: number[], range: number[]): number[] {
   let cumulativeCount = 0;
   let dataIndex = 0;
 
-  range.forEach((x) => {
+  for (const x of range) {
     while (dataIndex < sorted.length && sorted[dataIndex] <= x) {
       cumulativeCount++;
       dataIndex++;
     }
     cdf.push(cumulativeCount / sorted.length);
-  });
+  }
 
   return cdf;
 }

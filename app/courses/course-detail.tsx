@@ -11,9 +11,9 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Card, CardContent } from "@/components/ui/card";
-import type { EnrichedRoute, Route } from "@prisma/client";
+import type { EnrichedCourse } from "@prisma/client";
 
-export default function RouteDetail({ route }: { route: EnrichedRoute }) {
+export default function CourseDetail({ course }: { course: EnrichedCourse }) {
   return (
     <div className="container mx-auto p-4 space-y-6">
       <Breadcrumb className="text-sm text-muted-foreground" separator="/">
@@ -25,27 +25,27 @@ export default function RouteDetail({ route }: { route: EnrichedRoute }) {
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
-            <BreadcrumbLink href="/routes" className="hover:text-primary">
-              Routes
+            <BreadcrumbLink href="/courses" className="hover:text-primary">
+              Courses
             </BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
             <BreadcrumbLink href="#" className="text-primary font-semibold">
-              {route.name}
+              {course.name}
             </BreadcrumbLink>
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
 
-      <h1 className="text-3xl font-bold">{route.name}</h1>
+      <h1 className="text-3xl font-bold">{course.name}</h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card className="w-full aspect-[2/1] lg:aspect-square">
           <CardContent className="h-full p-0">
-            {route.polyline && (
+            {course.polyline && (
               <div className="h-full w-full rounded-lg overflow-hidden">
-                <LazyMap polyline={route.polyline} />
+                <LazyMap polyline={course.polyline} />
               </div>
             )}
           </CardContent>
@@ -55,7 +55,7 @@ export default function RouteDetail({ route }: { route: EnrichedRoute }) {
           <Card className="h-[350px] lg:h-full">
             <CardContent className="h-full">
               <div className="h-full">
-                <ElevationChart polyline={route.polyline} />
+                <ElevationChart polyline={course.polyline} />
               </div>
             </CardContent>
           </Card>
@@ -63,7 +63,7 @@ export default function RouteDetail({ route }: { route: EnrichedRoute }) {
           <Card className="h-[350px] lg:h-full">
             <CardContent className="h-full p-0">
               <div className="h-full">
-                <GradientCdfChart mappables={[route]} />
+                <GradientCdfChart mappables={[course]} />
               </div>
             </CardContent>
           </Card>

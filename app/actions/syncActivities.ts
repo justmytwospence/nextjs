@@ -5,17 +5,13 @@ import { upsertSummaryActivity } from "@/lib/db";
 import { fetchActivities } from "@/lib/strava";
 import pLimit from "p-limit";
 
-async function syncRoutes() {
+export default async function syncActivities(page: number) {
   const session = await auth();
-  let currentPage = 1;
-  let activities = await fetchActivities(session?.user.id, currentPage);
-  while (activities.length > 0) {
-    const limit = pLimit(5);
-    await Promise.all(
-      activities.map((activity) =>
-        limit(async () => upsertSummaryActivity(session?.user.id, activity)))
-    )
-    currentPage++
-    activities = await fetchActivities(session?.user.id, currentPage);
-  }
+  const activities = await fetchActivities(session?.user.id, page);
+  const limit = pLimit(5);
+  await Promise.all(
+    activities.map((activity) =>
+      limit(async () => upsertSummaryActivity(session?.user.id, activity)))
+  );
+  return activities.length > 0;
 }

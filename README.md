@@ -46,11 +46,21 @@ STRAVA_WEBHOOK_VERIFY_TOKEN=""
 - [x] Implement webhook for new activites
 - [x] Split sync into route and activity
 - [x] Sync SegmentEffort and Segment models
-- [ ] User settings page
-- [ ] Map brushed linking
+- [X] Map brushed linking
+- [X] add isEnriched flag to data models
+- [X] Show mappable activities in the Routes page
+- [ ] Exclude current filter from dropdown
+- [ ] Exclude current sort from dropdown
+- [ ] Implement sort order toggle
+- [ ] Fix pagination
+- [ ] Add activities to course comparison
+- [ ] Add Streams model
 - [ ] Sync Activity streams
-- [ ] Create segment sniper tool
+- [ ] use React Portal for syncing toasts
+- [ ] Implement pace by gradient chart
+- [ ] Show streams in Activity page
+- [ ] Show sortable Segments
+- [ ] Segment search by activity
+- [ ] Segment search by location
 - [ ] Increase athlete headcount
-- [ ] Reattach to existing syncs
-- [ ] Write unit and integration tests
 - [ ] Integrate weather
