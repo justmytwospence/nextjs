@@ -2,9 +2,9 @@ import { auth } from "@/auth";
 import { queryMappableActivities, queryRoutes } from "@/lib/db";
 import { baseLogger } from "@/lib/logger";
 import { redirect } from "next/navigation";
-import RouteComparison from "./client";
+import CourseComparison from "./client";
 
-export default async function RouteComparisonPage() {
+export default async function CourseComparisonPage() {
   const session = await auth();
   if (!session) {
     redirect("/login");
@@ -27,5 +27,5 @@ export default async function RouteComparisonPage() {
     `Initial activities for comparison page: ${JSON.stringify(mappableActivities, null, 2)}`
   );
 
-  return <RouteComparison routes={routes} activities={mappableActivities} />;
+  return <CourseComparison routes={routes} activities={mappableActivities} />;
 }

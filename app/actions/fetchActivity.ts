@@ -31,7 +31,7 @@ export async function fetchActivity(
     // const detailedActivity = await fetchDetailedActivity(session.user.id,activityId);
     // return await upsertDetailedActivity(session.user.id, detailedActivity) as MappableActivity
 
-    const activityStreams = await fetchActivityStreams(session.user.id, activityId);
+    const { validatedData: activityStreams }  = await fetchActivityStreams(session.user.id, activityId);
     const enrichedActivity = await enrichActivity(activityId, activityStreams);
     return enrichedActivity
   }

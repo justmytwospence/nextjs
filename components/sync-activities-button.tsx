@@ -9,26 +9,41 @@ import { toast } from "sonner";
 export default function SyncActivitiesButton() {
   const queryClient = useQueryClient();
   const [isSyncing, setIsSyncing] = useState(false);
-  const [currentPage, setCurrentPage] = useState<number | null>(null);
 
   const handleSyncActivities = async () => {
     try {
       setIsSyncing(true);
-      let page = 1;
-      let hasMore = true;
-      while (hasMore) {
-        setCurrentPage(page);
-        hasMore = await syncActivities(page);
-        page++;
+      toast.dismiss();
+      const syncToastId = toast.message("Syncing activities...");
+      const generator = await syncActivities();
+      for await (const result of generator) {
+        switch (result.type) {
+          case "error":
+            toast.error(result.message);
+            break;
+          case "info":
+            toast.message(result.message);
+            break;
+          case "success":
+            toast.success(result.message);
+            break;
+          case "warning":
+            toast.warning(result.message);
+            break;
+        }
       }
-      toast.success("Activities synced successfully");
+      toast.dismiss(syncToastId);
+      await queryClient.invalidateQueries({
+        predicate: (query) =>
+          query.queryKey.some(
+            (key) => typeof key === "string" && key.includes("activities")
+          ),
+      });
     } catch (error) {
       baseLogger.error("Failed to sync activities:", error);
-      toast.error("Failed to sync activities");
+      toast.error(`Failed to sync activities: ${error}`);
     } finally {
-      queryClient.invalidateQueries({ queryKey: ["activities"] });
       setIsSyncing(false);
-      setCurrentPage(null);
     }
   };
 
@@ -36,7 +51,7 @@ export default function SyncActivitiesButton() {
     <Button onClick={handleSyncActivities} disabled={isSyncing}>
       {isSyncing ? (
         <>
-          Syncing page {currentPage}
+          Syncing
           <Loader className="animate-spin h-4 w-4 ml-2" />
         </>
       ) : (

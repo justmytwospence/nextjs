@@ -49,15 +49,15 @@ STRAVA_WEBHOOK_VERIFY_TOKEN=""
 - [X] Map brushed linking
 - [X] add isEnriched flag to data models
 - [X] Show mappable activities in the Routes page
-- [ ] Exclude current filter from dropdown
-- [ ] Exclude current sort from dropdown
-- [ ] Implement sort order toggle
-- [ ] Fix pagination
+- [X] Exclude current filter from dropdown
+- [X] Exclude current sort from dropdown
+- [X] use React Portal for syncing toasts
+- [X] Implement sort order toggle
+- [X] Fix pagination
 - [ ] Add activities to course comparison
 - [ ] Add Streams model
 - [ ] Sync Activity streams
-- [ ] use React Portal for syncing toasts
-- [ ] Implement pace by gradient chart
+- [k ] Implement pace by gradient chart
 - [ ] Show streams in Activity page
 - [ ] Show sortable Segments
 - [ ] Segment search by activity

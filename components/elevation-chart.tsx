@@ -158,7 +158,7 @@ export default function ElevationChart({
         callbacks: {
           title: (context) => {
             const label = context[0]?.label;
-            return `Distance: ${Number.parseFloat(label).toFixed(1)} miles`;
+            return `Distance: ${Number.parseFloat(label).toFixed(0)} miles`;
           },
           label: (context) => {
             const label = context.dataset.label || "";

@@ -22,25 +22,33 @@ import { validateAndLogExtras } from "./schema";
 export const fetchRoutes = async (
   userId: string,
   page = 1,
-  perPage = 200,
-): Promise<Route[]> => {
+  perPage = 200
+): Promise<{ routes: Route[]; unrecognizedKeys: Set<string> }> => {
   const params = new URLSearchParams({
     per_page: perPage.toString(),
     page: page.toString(),
   });
   const response = await makeStravaRequest(userId, "/athlete/routes", params);
   const responseData = await response.json();
-  return validateAndLogExtras(responseData, RoutesSchema);
+  const { validatedData: routes, unrecognizedKeys } = validateAndLogExtras(
+    responseData,
+    RoutesSchema
+  );
+  return { routes, unrecognizedKeys };
 };
 
 export const fetchDetailedSegment = async (
   userId: string,
   segmentId: string
-): Promise<DetailedSegment> => {
+): Promise<{
+  detailedSegment: DetailedSegment;
+  unrecognizedKeys: Set<string>;
+}> => {
   const response = await makeStravaRequest(userId, `/segments/${segmentId}`);
   const responseData = await response.json();
-  const segment = validateAndLogExtras(responseData, DetailedSegmentSchema);
-  return segment;
+  const { validatedData: detailedSegment, unrecognizedKeys } =
+    validateAndLogExtras(responseData, DetailedSegmentSchema);
+  return { detailedSegment, unrecognizedKeys };
 };
 
 export const fetchRouteGeoJson = async (
@@ -65,8 +73,11 @@ export const fetchRouteGeoJson = async (
 export const fetchActivities = async (
   userId: string,
   page = 1,
-  perPage = 200,
-): Promise<SummaryActivity[]> => {
+  perPage = 200
+): Promise<{
+  summaryActivities: SummaryActivity[];
+  unrecognizedKeys: Set<string>;
+}> => {
   const params = new URLSearchParams({
     per_page: perPage.toString(),
     page: page.toString(),
@@ -77,30 +88,47 @@ export const fetchActivities = async (
     params
   );
   const responseData = await response.json();
-  return validateAndLogExtras(responseData, SummaryActivitiesSchema);
+  const { validatedData: summaryActivities, unrecognizedKeys } =
+    validateAndLogExtras(responseData, SummaryActivitiesSchema);
+  return { summaryActivities, unrecognizedKeys };
 };
 
 export const fetchDetailedActivity = async (
   userId: string,
   activityId: string
-): Promise<DetailedActivity> => {
-  const response = await makeStravaRequest(
-    userId,
-    `/activities/${activityId}`
-  );
+): Promise<{
+  detailedActivity: DetailedActivity;
+  unrecognizedKeys: Set<string>;
+}> => {
+  const response = await makeStravaRequest(userId, `/activities/${activityId}`);
   const responseData = await response.json();
-  return validateAndLogExtras(responseData, DetailedActivitySchema);
+  const { validatedData: detailedActivity, unrecognizedKeys } =
+    validateAndLogExtras(responseData, DetailedActivitySchema);
+  return { detailedActivity, unrecognizedKeys };
 };
 
 export const fetchActivityStreams = async (
   userId: string,
   activityId: string
-): Promise<StreamSet> => {
-  const types = [
-    "distance", "latlng", "altitude"
+): Promise<{
+  validatedData: StreamSet;
+  unrecognizedKeys: Set<string>;
+}> => {
+  const streamTypes = [
+    "altitude",
+    "cadence",
+    "distance",
+    "grade_smooth",
+    "heartrate",
+    "latlng",
+    "moving",
+    "temp",
+    "time",
+    "velocity_smooth",
+    "watts",
   ];
   const params = new URLSearchParams({
-    keys: types.join(","),
+    keys: streamTypes.join(","),
     key_by_type: "true",
   });
   const response = await makeStravaRequest(
@@ -111,4 +139,22 @@ export const fetchActivityStreams = async (
   const responseData = await response.json();
   baseLogger.debug("Activity streams response", responseData);
   return validateAndLogExtras(responseData, StreamSetSchema);
-}
+};
+
+export const fetchRouteStreams = async (
+  userId: string,
+  routeId: string
+): Promise<{
+  routeStreams: StreamSet;
+  unrecognizedKeys: Set<string>;
+}> => {
+  const response = await makeStravaRequest(
+    userId,
+    `/routes/${routeId}/streams`
+  );
+  const responseData = await response.json();
+  baseLogger.debug("Activity streams response", responseData);
+  const { validatedData: routeStreams, unrecognizedKeys } =
+    validateAndLogExtras(responseData, StreamSetSchema);
+  return { routeStreams, unrecognizedKeys };
+};

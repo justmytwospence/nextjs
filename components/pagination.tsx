@@ -20,7 +20,10 @@ export default function Pagination({
 }: PaginationProps) {
   const renderPageNumbers = () => {
     const pages: JSX.Element[] = [];
-    if (totalPages <= 5) {
+    const maxPagesToShow = 5;
+    const halfMaxPagesToShow = Math.floor(maxPagesToShow / 2);
+
+    if (totalPages <= maxPagesToShow) {
       for (let i = 1; i <= totalPages; i++) {
         pages.push(
           <PaginationItem
@@ -55,28 +58,33 @@ export default function Pagination({
         </PaginationItem>
       );
 
-      if (currentPage > 3) {
-        pages.push(<PaginationEllipsis key="start-ellipsis" />);
+      if (currentPage > halfMaxPagesToShow + 1) {
+        pages.push(<PaginationEllipsis key="start-ellipsis">...</PaginationEllipsis>);
       }
 
-      if (currentPage > 2 && currentPage < totalPages - 1) {
+      const startPage = Math.max(2, currentPage - halfMaxPagesToShow);
+      const endPage = Math.min(totalPages - 1, currentPage + halfMaxPagesToShow);
+
+      for (let i = startPage; i <= endPage; i++) {
         pages.push(
           <PaginationItem
-            key={currentPage}
-            className="active-class"
+            key={i}
+            className={i === currentPage ? "active-class" : ""}
           >
             <PaginationLink
-              onClick={() => handlePageChange(currentPage)}
-              className="bg-blue-500 text-white cursor-pointer"
+              onClick={() => handlePageChange(i)}
+              className={`${
+                i === currentPage ? "bg-blue-500 text-white" : ""
+              } cursor-pointer`}
             >
-              {currentPage}
+              {i}
             </PaginationLink>
           </PaginationItem>
         );
       }
 
-      if (currentPage < totalPages - 2) {
-        pages.push(<PaginationEllipsis key="end-ellipsis" />);
+      if (currentPage < totalPages - halfMaxPagesToShow) {
+        pages.push(<PaginationEllipsis key="end-ellipsis">...</PaginationEllipsis>);
       }
 
       pages.push(
@@ -95,23 +103,23 @@ export default function Pagination({
         </PaginationItem>
       );
     }
+
     return pages;
   };
 
   return (
-    <div className="flex items-center space-x-2">
+    <PaginationContent>
       <PaginationPrevious
-        className={`cursor-pointer ${currentPage === 1 ? "disabled-class" : ""}`}
+        onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
       >
         Previous
       </PaginationPrevious>
-      <PaginationContent>{renderPageNumbers()}</PaginationContent>
+      {renderPageNumbers()}
       <PaginationNext
-        onClick={() => handlePageChange(Math.min(currentPage + 1, totalPages))}
-        className={`cursor-pointer ${currentPage === totalPages ? "disabled-class" : ""}`}
+        onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
       >
         Next
       </PaginationNext>
-    </div>
+    </PaginationContent>
   );
 }

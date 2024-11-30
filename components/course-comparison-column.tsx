@@ -3,95 +3,113 @@
 import ElevationChart from "@/components/elevation-chart";
 import LazyMap from "@/components/lazy-map";
 import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { createHoverIndexStore } from "@/store";
 import type { Mappable, MappableItem } from "@prisma/client";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+
+type SelectedTab = "routes" | "activities";
 
 export default function CourseComparisonColumn({
-	routes,
-	activities,
-	selectedMap,
-	handleRouteSelection,
-	handleActivitySelection,
+  routes,
+  activities,
+  selectedMap,
+  handleRouteSelection,
+  handleActivitySelection,
 }: {
-	routes: MappableItem[];
-	activities: MappableItem[];
-	selectedMap: Mappable | null;
-	handleRouteSelection: (value: string) => void;
-	handleActivitySelection: (value: string) => void;
+  routes: MappableItem[];
+  activities: MappableItem[];
+  selectedMap: Mappable | null;
+  handleRouteSelection: (value: string) => void;
+  handleActivitySelection: (value: string) => void;
 }) {
-	const hoverIndexStore = useMemo(() => createHoverIndexStore(), []);
+  const hoverIndexStore = useMemo(() => createHoverIndexStore(), []);
+  const [selectedTab, setSelectedTab] = useState<SelectedTab>("routes");
+  const [selectedRoute, setSelectedRoute] = useState<string | undefined>(undefined);
+  const [selectedActivity, setSelectedActivity] = useState<string | undefined>(undefined);
 
-	return (
-		<div className="space-y-6 p-6 bg-background border rounded-lg">
-			<div className="grid grid-cols-2 gap-4">
-				<div>
-					<label
-						htmlFor="route-select"
-						className="text-sm font-medium mb-2
-          block"
-					>
-						Select Route
-					</label>
-					<Select onValueChange={handleRouteSelection}>
-						<SelectTrigger className="w-full">
-							<SelectValue placeholder="Choose a route" />
-						</SelectTrigger>
-						<SelectContent>
-							{routes.map((route) => (
-								<SelectItem key={route.id} value={route.id}>
-									{route.name}
-								</SelectItem>
-							))}
-						</SelectContent>
-					</Select>
-				</div>
+  const handleRouteChange = (value: string) => {
+    setSelectedRoute(value);
+    handleRouteSelection(value);
+  };
 
-				<div>
-					<label
-						htmlFor="activity-select"
-						className="text-sm font-medium mb-2 block"
-					>
-						Select Activity
-					</label>
-					<Select onValueChange={handleActivitySelection}>
-						<SelectTrigger className="w-full">
-							<SelectValue placeholder="Choose an activity" />
-						</SelectTrigger>
-						<SelectContent>
-							{activities.map((activity) => (
-								<SelectItem key={activity.id} value={activity.id}>
-									{activity.name}
-								</SelectItem>
-							))}
-						</SelectContent>
-					</Select>
-				</div>
-			</div>
+  const handleActivityChange = (value: string) => {
+    setSelectedActivity(value);
+    handleActivitySelection(value);
+  };
 
-			{selectedMap && (
-				<div className="h-[300px] w-full mt-4">
-					<LazyMap
-						polyline={selectedMap.polyline}
-						hoverIndexStore={hoverIndexStore}
-					/>
-				</div>
-			)}
+  const sortedRoutes = routes.sort((a, b) => a.name.localeCompare(b.name));
+  const sortedActivities = activities.sort((a, b) => a.name.localeCompare(b.name));
 
-			{selectedMap && (
-				<div className="h-[400px] w-full">
-					<ElevationChart
-						polyline={selectedMap.polyline}
-						hoverIndexStore={hoverIndexStore}
-					/>
-				</div>
-			)}
-		</div>
-	);
+  return (
+    <div className="space-y-6 p-6 bg-background border rounded-lg">
+      <div className="flex items-center space-x-4">
+        <Tabs
+          value={selectedTab}
+          onValueChange={(value) => setSelectedTab(value as SelectedTab)}
+        >
+          <TabsList className="flex space-x-2">
+            <TabsTrigger value="routes">Routes</TabsTrigger>
+            <TabsTrigger value="activities">Activities</TabsTrigger>
+          </TabsList>
+        </Tabs>
+        <div className="flex-1">
+          {selectedTab === "routes" ? (
+            <Select onValueChange={handleRouteChange} value={selectedRoute}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Choose a route">
+                  {selectedRoute ? sortedRoutes.find(route => route.id === selectedRoute)?.name : "Choose a route"}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                {sortedRoutes.map((route) => (
+                  <SelectItem key={route.id} value={route.id}>
+                    {route.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          ) : (
+            <Select onValueChange={handleActivityChange} value={selectedActivity}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Choose an activity">
+                  {selectedActivity ? sortedActivities.find(activity => activity.id === selectedActivity)?.name : "Choose an activity"}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                {sortedActivities.map((activity) => (
+                  <SelectItem key={activity.id} value={activity.id}>
+                    {activity.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+        </div>
+      </div>
+      {selectedMap && (
+        <div className="h-[300px] w-full mt-4">
+          <LazyMap
+            polyline={selectedMap.polyline}
+            hoverIndexStore={hoverIndexStore}
+          />
+        </div>
+      )}
+
+      {selectedMap && (
+        <div className="h-[400px] w-full">
+          <ElevationChart
+            polyline={selectedMap.polyline}
+            hoverIndexStore={hoverIndexStore}
+          />
+        </div>
+      )}
+    </div>
+  );
 }

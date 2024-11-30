@@ -15,7 +15,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { baseLogger } from "@/lib/logger";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 type SelectedTab = "routes" | "activities";
@@ -23,6 +23,12 @@ type SelectedTab = "routes" | "activities";
 export default function CoursesPage() {
 	const { data: session, status } = useSession();
 	const router = useRouter();
+	const searchParams = useSearchParams();
+	const initialTab = (searchParams.get("tab") as SelectedTab) || "routes";
+	const initialType = searchParams.get("type") || undefined;
+	const initialPage = parseInt(searchParams.get("page") || "1", 10);
+	const initialSortBy = (searchParams.get("sortBy") as SortOption) || "createdAt";
+	const initialSortDir = (searchParams.get("sortDir") as SortDirection) || "desc";
 
 	useEffect(() => {
 		if (status === "unauthenticated") {
@@ -30,14 +36,12 @@ export default function CoursesPage() {
 		}
 	}, [status, router]);
 
-	const [selectedTab, setSelectedTab] = useState<SelectedTab>("routes");
-	const [selectedType, setSelectedType] = useState<string | undefined>(
-		undefined,
-	);
-	const [currentPage, setCurrentPage] = useState(1);
-	const [sortBy, setSortBy] = useState<SortOption>("createdAt");
-	const [sortDir, setSortDir] = useState<SortDirection>("desc");
-	const itemsPerPage = 24;
+	const [selectedTab, setSelectedTab] = useState<SelectedTab>(initialTab);
+	const [selectedType, setSelectedType] = useState<string | undefined>(initialType);
+	const [currentPage, setCurrentPage] = useState(initialPage);
+	const [sortBy, setSortBy] = useState<SortOption>(initialSortBy);
+	const [sortDir, setSortDir] = useState<SortDirection>(initialSortDir);
+	const itemsPerPage = 16;
 
 	const queryClient = useQueryClient();
 
@@ -83,24 +87,40 @@ export default function CoursesPage() {
 		}
 	}, [courseTypes, currentPage]);
 
+	const updateUrlParameter = (key: string, value: string) => {
+		const params = new URLSearchParams(searchParams.toString());
+		params.set(key, value);
+		router.push(`/courses?${params.toString()}`);
+	};
+
 	const handleTypeChange = (type?: string) => {
 		baseLogger.debug(`Selected type: ${type}`);
 		setSelectedType(type);
 		setCurrentPage(1);
+		updateUrlParameter("type", type || "");
 	};
 
 	const handleTabChange = (value: SelectedTab) => {
 		setSelectedTab(value);
 		setSelectedType(undefined);
 		setCurrentPage(1);
+		updateUrlParameter("tab", value);
 	};
 
 	const handleSortChange = (value: SortOption) => {
 		setSortBy(value);
+		updateUrlParameter("sortBy", value);
 	};
 
 	const handleSortDirToggle = () => {
-		setSortDir(sortDir === "asc" ? "desc" : "asc");
+		const newSortDir = sortDir === "asc" ? "desc" : "asc";
+		setSortDir(newSortDir);
+		updateUrlParameter("sortDir", newSortDir);
+	};
+
+	const handlePageChange = (page: number) => {
+		setCurrentPage(page);
+		updateUrlParameter("page", page.toString());
 	};
 
 	return (
@@ -149,7 +169,7 @@ export default function CoursesPage() {
 							<Pagination
 								currentPage={currentPage}
 								totalPages={totalPages}
-								handlePageChange={setCurrentPage}
+								handlePageChange={handlePageChange}
 							/>
 						</div>
 					</div>

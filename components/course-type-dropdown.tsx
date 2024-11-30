@@ -44,6 +44,8 @@ export default function TypeDropdown({
 	courseTypes,
 	handleTypeChange,
 }: TypeDropdownProps) {
+	const sortedCourseTypes = courseTypes.sort((a, b) => getCourseTypeLabel(a).localeCompare(getCourseTypeLabel(b)));
+
 	return (
 		<DropdownMenu>
 			<DropdownMenuTrigger asChild>
@@ -56,11 +58,13 @@ export default function TypeDropdown({
 				<DropdownMenuItem onClick={() => handleTypeChange(undefined)}>
 					{"All"}
 				</DropdownMenuItem>
-				{courseTypes.map((type) => (
-					<DropdownMenuItem key={type} onClick={() => handleTypeChange(type)}>
-						{getCourseTypeLabel(type)}
-					</DropdownMenuItem>
-				))}
+					{sortedCourseTypes
+					.filter((type) => type !== selectedType)
+					.map((type) => (
+						<DropdownMenuItem key={type} onClick={() => handleTypeChange(type)}>
+							{getCourseTypeLabel(type)}
+						</DropdownMenuItem>
+					))}
 			</DropdownMenuContent>
 		</DropdownMenu>
 	);

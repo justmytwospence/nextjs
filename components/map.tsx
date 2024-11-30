@@ -23,6 +23,10 @@ export default function Map({
   hoverIndexStore?: HoverIndexStore;
 }) {
   baseLogger.debug(`Rendering map with ${polyline}`);
+  const bounds = L.latLngBounds(
+    polyline.coordinates.map(([lng, lat]) => [lat, lng])
+  );
+
   return (
     <MapContainer
       className="map-container"
@@ -34,12 +38,14 @@ export default function Map({
       dragging={interactive}
       attributionControl={interactive}
       doubleClickZoom={interactive}
+      maxBoundsViscosity={1.0} 
     >
       <TileLayer url="https://tile.jawg.io/jawg-terrain/{z}/{x}/{y}{r}.png?access-token=bDE5WHMnFV1P973D59QWuGaq6hebBcjPSyud6vVGYqqi2r4kZyaShdbC3SF2Bc7y" />
       <GeoJSONLayer
         polyline={polyline}
         hoverIndexStore={hoverIndexStore}
         interactive={interactive}
+        bounds={bounds} // Pass bounds to GeoJSONLayer
       />
     </MapContainer>
   );
@@ -49,10 +55,12 @@ const GeoJSONLayer = ({
   polyline,
   hoverIndexStore,
   interactive = true,
+  bounds,
 }: {
   polyline: LineString;
   hoverIndexStore: HoverIndexStore;
   interactive?: boolean;
+  bounds: L.LatLngBounds;
 }) => {
   const map = useMap();
   const geoJsonRef = useRef<L.GeoJSON | null>(null);
@@ -78,11 +86,8 @@ const GeoJSONLayer = ({
         (a, b) => (a.properties?.gradient || 0) - (b.properties?.gradient || 0)
       );
 
-    // Set map bounds with conditional padding
-    const bounds = L.latLngBounds(
-      polyline.coordinates.map(([lng, lat]) => [lat, lng])
-    );
     map.fitBounds(bounds, { padding: interactive ? [20, 20] : [5, 5] });
+    map.setMaxBounds(bounds.pad(interactive ? 0.2 : 0.05));
 
     // Create GeoJSON layer
     geoJsonRef.current = L.geoJSON(
@@ -138,7 +143,7 @@ const GeoJSONLayer = ({
       map.off("mousemove", handleMouseMove);
       map.off("mouseout");
     };
-  }, [polyline, interactive]);
+  }, [polyline, interactive, bounds]);
 
   // respond to hoverIndex
 

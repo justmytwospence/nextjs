@@ -13,10 +13,7 @@ export default async function processWebhookEvent(event: WebhookEvent) {
       switch (event.aspect_type) {
         case "create":
         case "update":
-          const detailedActivity = await fetchDetailedActivity(
-            event.owner_id,
-            event.object_id
-          );
+          const { detailedActivity } = await fetchDetailedActivity(event.owner_id, event.object_id);
           return await upsertDetailedActivity(event.owner_id, detailedActivity);
         case "delete":
           return await deleteActivity(event.owner_id, "strava");
