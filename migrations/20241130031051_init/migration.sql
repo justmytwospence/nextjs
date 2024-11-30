@@ -49,7 +49,7 @@ CREATE TABLE "VerificationToken" (
 );
 
 -- CreateTable
-CREATE TABLE "UserRoute" (
+CREATE TABLE "Route" (
     "created_at" TIMESTAMP(3) NOT NULL,
     "description" TEXT,
     "distance" DOUBLE PRECISION NOT NULL,
@@ -64,10 +64,12 @@ CREATE TABLE "UserRoute" (
     "summary_polyline" JSONB NOT NULL,
     "timestamp" BIGINT NOT NULL,
     "type" INTEGER,
-    "updated_at" TIMESTAMP(3),
+    "updated_at" TIMESTAMP(3) NOT NULL,
     "user_id" TEXT NOT NULL,
+    "enriched_at" TIMESTAMP(3),
+    "synced_at" TIMESTAMP(3),
 
-    CONSTRAINT "UserRoute_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "Route_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -89,7 +91,7 @@ CREATE TABLE "SegmentEffort" (
     "name" TEXT NOT NULL,
     "pr_rank" INTEGER,
     "segment_id" TEXT NOT NULL,
-    "start_date" TIMESTAMP(3),
+    "start_date" TIMESTAMP(3) NOT NULL,
     "start_date_local" TIMESTAMP(3),
     "start_index" INTEGER,
     "user_id" TEXT NOT NULL,
@@ -152,8 +154,8 @@ CREATE TABLE "Activity" (
     "name" TEXT NOT NULL,
     "photo_count" INTEGER,
     "private" BOOLEAN,
-    "sport_type" TEXT,
-    "start_date" TIMESTAMP(3),
+    "sport_type" TEXT NOT NULL,
+    "start_date" TIMESTAMP(3) NOT NULL,
     "start_date_local" TIMESTAMP(3),
     "summary_polyline" JSONB,
     "timezone" TEXT,
@@ -174,6 +176,8 @@ CREATE TABLE "Activity" (
     "splits_metric" JSONB,
     "splits_standard" JSONB,
     "user_id" TEXT NOT NULL,
+    "synced_at" TIMESTAMP(3) NOT NULL,
+    "enriched_at" TIMESTAMP(3),
 
     CONSTRAINT "Activity_pkey" PRIMARY KEY ("id")
 );
@@ -185,7 +189,7 @@ CREATE UNIQUE INDEX "Account_userId_provider_key" ON "Account"("userId", "provid
 CREATE UNIQUE INDEX "Session_sessionToken_key" ON "Session"("sessionToken");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "UserRoute_id_user_id_key" ON "UserRoute"("id", "user_id");
+CREATE UNIQUE INDEX "Route_id_user_id_key" ON "Route"("id", "user_id");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Segment_id_user_id_key" ON "Segment"("id", "user_id");
@@ -200,7 +204,7 @@ ALTER TABLE "Account" ADD CONSTRAINT "Account_userId_fkey" FOREIGN KEY ("userId"
 ALTER TABLE "Session" ADD CONSTRAINT "Session_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "UserRoute" ADD CONSTRAINT "UserRoute_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "Route" ADD CONSTRAINT "Route_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "SegmentEffort" ADD CONSTRAINT "SegmentEffort_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;

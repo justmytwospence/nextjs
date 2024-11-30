@@ -57,7 +57,7 @@ STRAVA_WEBHOOK_VERIFY_TOKEN=""
 - [ ] Add activities to course comparison
 - [ ] Add Streams model
 - [ ] Sync Activity streams
-- [k ] Implement pace by gradient chart
+- [ ] Implement pace by gradient chart
 - [ ] Show streams in Activity page
 - [ ] Show sortable Segments
 - [ ] Segment search by activity
