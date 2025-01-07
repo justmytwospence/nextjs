@@ -28,10 +28,11 @@
   "include": [
     "**/*.ts",
     "**/*.tsx",
+    "**/*.d.ts",
     "next-env.d.ts",
-    "lib/strava/schemas/**/*.d.ts",
     "types/**/*.d.ts",
-    ".next/types/**/*.ts"
+    ".next/types/**/*.ts",
+    "pathfinder/index.d.ts"
   ],
   "exclude": ["node_modules"]
 }

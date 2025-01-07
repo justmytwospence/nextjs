@@ -58,10 +58,12 @@
     "next": "15.0.1",
     "next-auth": "^5.0.0-beta.25",
     "next-themes": "^0.4.3",
+    "pathfinder": "file:pathfinder",
     "react": "^18.3.1",
     "react-chartjs-2": "^5.2.0",
     "react-day-picker": "^8.10.1",
     "react-dom": "18.3.1",
+    "react-geolocated": "^4.3.0",
     "react-leaflet": "v5.0.0-rc.1",
     "react-remove-scroll": "2.5.5",
     "recharts": "^2.13.0",
@@ -99,6 +101,7 @@
     "npm": ">=10.0.0"
   },
   "name": "my-next-app",
+  "packageManager": "yarn@4.5.3",
   "prisma": {
     "seed": "tsx prisma/seed.ts"
   },
@@ -109,6 +112,5 @@
     "dev": "next dev",
     "postinstall": "prisma generate"
   },
-  "version": "0.1.0",
-  "packageManager": "yarn@4.5.3"
+  "version": "0.1.0"
 }

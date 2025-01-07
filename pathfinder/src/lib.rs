@@ -1,109 +1,167 @@
 #![deny(clippy::all)]
 
-use napi::bindgen_prelude::*;
-use napi_derive::napi;
-use gdal::Dataset;
+use gdal::{
+  errors::GdalError,
+  raster,
+  vsi::{create_mem_file_from_ref, MemFileRef},
+  Dataset,
+};
 use geo_types::Point;
-use geojson::{GeoJson, Value};
-use serde::Serialize;
+use geojson::{GeoJson, Geometry, Value};
+use napi::JsUndefined;
+use napi::{bindgen_prelude::*, JsGlobal, JsObject, JsString};
+use napi_derive::napi;
+use pathfinding::prelude::fringe;
 
-#[derive(Serialize)]
-struct PathResult {
-    start: [f64; 2],
-    end: [f64; 2],
-    wkt: String,
-    format: String,
+const MAX_GRADIENT: f32 = 0.3;
+
+fn console_log(env: &Env, message: &str) -> Result<JsUndefined> {
+  let global: JsGlobal = env.get_global()?;
+  let console: JsObject = global.get_named_property("console")?;
+  let log_fn: JsFunction = console.get_named_property("log")?;
+  let js_string: JsString = env.create_string(message)?;
+  log_fn.call(None, &[js_string])?;
+  env.get_undefined()
 }
 
 #[napi]
 pub fn process_map(
-    array_buffer: Uint8Array,
-    start: String,
-    end: String,
+  env: Env,
+  mut array_buffer: Buffer,
+  start: String,
+  end: String,
 ) -> napi::Result<String> {
-    // Parse GeoJSON points
-    let start_geojson: GeoJson = start.parse().map_err(|e| {
-        napi::Error::from_reason(format!("Invalid start point GeoJSON: {}", e))
-    })?;
-    let end_geojson: GeoJson = end.parse().map_err(|e| {
-        napi::Error::from_reason(format!("Invalid end point GeoJSON: {}", e))
-    })?;
+  let start_geojson: GeoJson = start.parse::<GeoJson>().unwrap();
+  let end_geojson: GeoJson = end.parse::<GeoJson>().unwrap();
 
-    // Extract coordinates from GeoJSON Points
-    let start_point = match start_geojson {
-        GeoJson::Feature(feature) => match feature.geometry {
-            Some(geometry) => match geometry.value {
-                Value::Point(coords) => coords,
-                _ => return Err(napi::Error::from_reason("Start point must be a GeoJSON Point".to_string())),
-            },
-            None => return Err(napi::Error::from_reason("Start point must have a geometry".to_string())),
-        },
-        _ => return Err(napi::Error::from_reason("Start point must be a GeoJSON Feature".to_string())),
-    };
+  let start_point: Vec<f64> = match start_geojson {
+    GeoJson::Geometry(Geometry {
+      value: Value::Point(coords),
+      ..
+    }) => coords,
+    _ => return Err(napi::Error::from_reason("Invalid point GeoJSON")),
+  };
 
-    let end_point = match end_geojson {
-        GeoJson::Feature(feature) => match feature.geometry {
-            Some(geometry) => match geometry.value {
-                Value::Point(coords) => coords,
-                _ => return Err(napi::Error::from_reason("End point must be a GeoJSON Point".to_string())),
-            },
-            None => return Err(napi::Error::from_reason("End point must have a geometry".to_string())),
-        },
-        _ => return Err(napi::Error::from_reason("End point must be a GeoJSON Feature".to_string())),
-    };
+  let end_point: Vec<f64> = match end_geojson {
+    GeoJson::Geometry(Geometry {
+      value: Value::Point(coords),
+      ..
+    }) => coords,
+    _ => return Err(napi::Error::from_reason("Invalid end point GeoJSON")),
+  };
 
-    let start_coords = Point::new(start_point[0], start_point[1]);
-    let end_coords = Point::new(end_point[0], end_point[1]);
+  let start_coords: Point<f64> = Point::new(start_point[0], start_point[1]);
+  let end_coords: Point<f64> = Point::new(end_point[0], end_point[1]);
 
-    gdal::DriverManager::register_all();
-    
-    let vsi_path = "/vsimem/temp.tif";
-    gdal::vsi::create_mem_file(vsi_path, array_buffer.as_ref().to_vec()).map_err(|e| {
-        napi::Error::from_reason(format!("Failed to create memory file: {}", e))
+  gdal::DriverManager::register_all();
+  let vsi_path: &str = "/vsimem/temp.tif";
+  let array_data: &mut [u8] = array_buffer.as_mut();
+  let _handle: MemFileRef<'_> =
+    create_mem_file_from_ref(vsi_path, array_data).map_err(|e: GdalError| {
+      napi::Error::from_reason(format!("Failed to create memory file: {}", e))
     })?;
 
-    let dataset = Dataset::open(vsi_path).map_err(|e| {
-        napi::Error::from_reason(format!("Failed to open dataset: {}", e))
+  let dataset: Dataset = Dataset::open(vsi_path)
+    .map_err(|e: GdalError| napi::Error::from_reason(format!("Failed to open dataset: {}", e)))?;
+
+  let transform: [f64; 6] = dataset
+    .geo_transform()
+    .map_err(|e: GdalError| napi::Error::from_reason(format!("Failed to get transform: {}", e)))?;
+
+  let (width, height) = dataset.raster_size();
+  let elevations_band: raster::RasterBand<'_> = dataset.rasterband(1).map_err(|e: GdalError| {
+    napi::Error::from_reason(format!("Failed to get raster band: {}", e))
+  })?;
+  let elevations_buffer: raster::Buffer<f32> = elevations_band
+    .read_as::<f32>((0, 0), (width, height), (width, height), None)
+    .map_err(|e: GdalError| {
+      napi::Error::from_reason(format!("Failed to read raster data: {}", e))
     })?;
+  let elevations: Vec<f32> = elevations_buffer.data().to_vec();
 
-    let transform = dataset.geo_transform().map_err(|e| {
-        napi::Error::from_reason(format!("Failed to get transform: {}", e))
-    })?;
+  // Convert coordinates
+  let (start_px_x, start_px_y) = geo_to_pixel(start_coords.x(), start_coords.y(), &transform);
+  let (end_px_x, end_px_y) = geo_to_pixel(end_coords.x(), end_coords.y(), &transform);
 
-    // Convert coordinates
-    let (start_px_x, start_px_y) = geo_to_pixel(
-        start_coords.x(),
-        start_coords.y(),
-        &transform,
-    );
-    let (end_px_x, end_px_y) = geo_to_pixel(
-        end_coords.x(),
-        end_coords.y(),
-        &transform,
-    );
+  let start_node: (usize, usize) = (start_px_x as usize, start_px_y as usize);
+  let end_node: (usize, usize) = (end_px_x as usize, end_px_y as usize);
 
-    let spatial_ref = dataset.spatial_ref().map_err(|e| {
-        napi::Error::from_reason(format!("Failed to get spatial reference: {}", e))
-    })?;
+  let cost_fn = |&(x, y): &(usize, usize), &(nx, ny): &(usize, usize)| -> i32 {
+    const MAX_GRADIENT_MULTIPLIER: f32 = 100.0;
 
-    let wkt = spatial_ref.to_wkt().map_err(|e| {
-        napi::Error::from_reason(format!("Failed to convert to WKT: {}", e))
-    })?;
+    let dx: f32 = (nx as isize - x as isize).abs() as f32 * 10.0;
+    let dy: f32 = (ny as isize - y as isize).abs() as f32 * 10.0;
+    let dz: f32 = elevations[ny * width + nx] - elevations[y * width + x];
+    let distance: f32 = ((dx * dx) + (dy * dy)).sqrt();
+    let gradient: f32 = dz / distance;
+    let gradient_ratio: f32 = (gradient / MAX_GRADIENT).clamp(0.0, 1.0);
+    let gradient_multiplier: f32 = 1.0 + gradient_ratio * (MAX_GRADIENT_MULTIPLIER - 1.0);
+    // let _ = console_log(&env, format!("Cost: {:?}, {:?} -> {:?}, {:?}, Distance: {:?}, Gradient: {:?}, Gradient Multiplier: {:?}, Total: {:?}", x, y, nx, ny, distance, gradient, gradient_multiplier, (distance * gradient_multiplier) as i32).as_str());
+    (distance * gradient_multiplier) as i32
+  };
 
-    let result = PathResult {
-        start: [start_px_x, start_px_y],
-        end: [end_px_x, end_px_y],
-        wkt,
-        format: "WKT".to_string(),
-    };
+  let successors = |&(x, y): &(usize, usize)| -> Vec<((usize, usize), i32)> {
+    // let _ = console_log(&env, format!("Exploring node ({:?}, {:?})", x, y).as_str());
 
-    Ok(serde_json::to_string_pretty(&result).map_err(|e| {
-        napi::Error::from_reason(format!("Failed to serialize result: {}", e))
-    })?)
+    let directions: [(isize, isize); 8] = [
+      (0, 1),
+      (1, 0),
+      (0, -1),
+      (-1, 0),
+      (1, 1),
+      (1, -1),
+      (-1, -1),
+      (-1, 1),
+    ];
+
+    let mut neighbors: Vec<((usize, usize), i32)> = Vec::with_capacity(8);
+    for &(dx, dy) in directions.iter() {
+      let nx: usize = ((x as isize) + dx) as usize;
+      let ny: usize = ((y as isize) + dy) as usize;
+
+      if nx < width && ny < height {
+        let current_elevation: f32 = elevations[y * width + x];
+        let new_elevation: f32 = elevations[ny * width + nx];
+        let gradient: f32 = (new_elevation - current_elevation).abs() / 10.0;
+        if gradient < MAX_GRADIENT {
+          neighbors.push(((nx as usize, ny as usize), cost_fn(&(x, y), &(nx, ny))));
+        }
+      }
+    }
+
+    let _ = console_log(&env, format!("Successors: {:?}", neighbors).as_str());
+    neighbors
+  };
+
+  let heuristic = |&(x, y): &(usize, usize)| -> i32 { cost_fn(&(x, y), &end_node) as i32 };
+
+  let is_end_node = |&node: &(usize, usize)| -> bool { node == end_node };
+
+  let result: Option<(Vec<(usize, usize)>, i32)> =
+    fringe(&start_node, successors, heuristic, is_end_node);
+
+  let path: Vec<(usize, usize)> = match result {
+    Some((path, _)) => path,
+    None => return Err(napi::Error::from_reason("No path found".to_string())),
+  };
+
+  // Convert path to coordinates
+  let path_coords: Vec<Vec<f64>> = path
+    .iter()
+    .map(|(x, y)| {
+      let geo_x: f64 = transform[0] + ((*x as f64) * transform[1]);
+      let geo_y: f64 = transform[3] + ((*y as f64) * transform[5]);
+      let elevation: f64 = elevations[*y * width + *x] as f64;
+      vec![geo_x, geo_y, elevation]
+    })
+    .collect();
+
+  let geojson: GeoJson = GeoJson::Geometry(Geometry::new(Value::LineString(path_coords)));
+  Ok(geojson.to_string())
 }
 
 fn geo_to_pixel(lng: f64, lat: f64, transform: &[f64; 6]) -> (f64, f64) {
-    let px_x = (lng - transform[0]) / transform[1];
-    let px_y = (lat - transform[3]) / transform[5];
-    (px_x, px_y)
+  let px_x: f64 = (lng - transform[0]) / transform[1];
+  let px_y: f64 = (lat - transform[3]) / transform[5];
+  (px_x, px_y)
 }

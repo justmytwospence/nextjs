@@ -6,7 +6,6 @@
   "napi": {
     "name": "pathfinder",
     "triples": {
-      "defaults": false,
       "additional": [
         "aarch64-apple-darwin"
       ]
@@ -31,5 +30,8 @@
     "test": "ava",
     "universal": "napi universal",
     "version": "napi version"
+  },
+  "dependencies": {
+    "react-geolocated": "^4.3.0"
   }
 }
