@@ -4,7 +4,7 @@ import { auth } from "@/auth";
 import { queryRoute } from "@/lib/db";
 import { enrichRoute } from "@/lib/db/routes";
 import { fetchRouteGeoJson } from "@/lib/strava";
-import { isEnrichedRoute, routeToCourse } from "@/types/transformers";
+import { isEnrichedRoute, toCourse } from "@/types/transformers";
 import type { EnrichedRoute } from "@prisma/client";
 
 export async function fetchRoute(routeId: string): Promise<EnrichedRoute>  {

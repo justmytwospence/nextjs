@@ -2,7 +2,7 @@
 
 import ElevationChart from "@/components/elevation-chart";
 import GradientCdfChart from "@/components/gradient-cdf-chart";
-import LazyMap from "@/components/lazy-map";
+import LazyPolylineMap from "@/components/polyline-map-lazy";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -45,7 +45,7 @@ export default function CourseDetail({ course }: { course: EnrichedCourse }) {
           <CardContent className="h-full p-0">
             {course.polyline && (
               <div className="h-full w-full rounded-lg overflow-hidden">
-                <LazyMap polyline={course.polyline} />
+                <LazyPolylineMap polyline={course.polyline} />
               </div>
             )}
           </CardContent>

@@ -21,26 +21,20 @@ export const metadata: Metadata = {
   description: "The things you wished Strava could do",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const session = auth();
+  const session = await auth();
   return (
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased relative`}
       >
         <ReactProviders session={session}>
-          <div className="border-b">
-            <div className="max-w-7xl mx-auto px-6">
-              <Topbar />
-            </div>
-          </div>
-          <main className="relative">
-            <div className="max-w-7xl mx-auto px-6">{children}</div>
-          </main>
+          <Topbar />
+          <main className="w-full max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8">{children}</main>
         </ReactProviders>
       </body>
     </html>

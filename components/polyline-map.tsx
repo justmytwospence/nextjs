@@ -1,31 +1,33 @@
 "use client";
 
-import { computeDistanceMiles, computeGradient } from "@/lib/geo";
+import { computeDistanceMiles, computeGradient } from "@/lib/geo/geo";
 import { baseLogger } from "@/lib/logger";
 import type { HoverIndexStore } from "@/store";
 import {
   hoverIndexStore as defaultHoverIndexStore,
   gradientStore,
 } from "@/store";
-import type { Feature, FeatureCollection, LineString } from "geojson";
+import type { Feature, FeatureCollection, LineString, Point } from "geojson";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { MapContainer, TileLayer, useMap } from "react-leaflet";
 
-export default function Map({
+export default function PolylineMap({
   polyline,
   interactive = true,
   hoverIndexStore = defaultHoverIndexStore,
 }: {
-  polyline: LineString;
+  polyline: LineString | null;
   interactive?: boolean;
   hoverIndexStore?: HoverIndexStore;
 }) {
   baseLogger.debug(`Rendering map with ${polyline}`);
-  const bounds = L.latLngBounds(
-    polyline.coordinates.map(([lng, lat]) => [lat, lng])
-  );
+  const bounds = polyline
+    ? L.latLngBounds(
+        polyline.coordinates.map(([lng, lat]) => [lat, lng])
+      )
+    : null;
 
   return (
     <MapContainer
@@ -38,15 +40,18 @@ export default function Map({
       dragging={interactive}
       attributionControl={interactive}
       doubleClickZoom={interactive}
-      maxBoundsViscosity={1.0} 
+      maxBoundsViscosity={1.0}
     >
       <TileLayer url="https://tile.jawg.io/jawg-terrain/{z}/{x}/{y}{r}.png?access-token=bDE5WHMnFV1P973D59QWuGaq6hebBcjPSyud6vVGYqqi2r4kZyaShdbC3SF2Bc7y" />
-      <GeoJSONLayer
-        polyline={polyline}
-        hoverIndexStore={hoverIndexStore}
-        interactive={interactive}
-        bounds={bounds} // Pass bounds to GeoJSONLayer
-      />
+      {interactive && onMapClick && <MapClickHandler onMapClick={onMapClick} />}
+      {polyline && (
+        <GeoJSONLayer
+          polyline={polyline}
+          hoverIndexStore={hoverIndexStore}
+          interactive={interactive}
+          bounds={bounds} // Pass bounds to GeoJSONLayer
+        />
+      )}
     </MapContainer>
   );
 }

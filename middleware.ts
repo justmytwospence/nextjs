@@ -1,19 +1,11 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { auth } from "@/auth";
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
+  const session = await auth();
 
-  // Only check if the session token is present in the request cookies 
-  // We still need to check if the session token is valid on the page itself
-
-  let sessionToken;
-  if (process.env.NODE_ENV === "production") {
-    sessionToken = request.cookies.get("__Secure-authjs.session-token");
-  } else {
-    sessionToken = request.cookies.get("authjs.session-token");
-  }
-
-  if (!sessionToken) {
+  if (!session) {
     const loginUrl = new URL("/login", request.url);
     loginUrl.searchParams.set("redirectUrl", request.url);
     return NextResponse.redirect(loginUrl);

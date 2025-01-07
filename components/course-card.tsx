@@ -1,11 +1,15 @@
-import LazyMap from "@/components/lazy-map";
+import LazyPolylineMap from "@/components/polyline-map-lazy";
 import { Card } from "@/components/ui/card";
 import type { Course } from "@prisma/client";
+import cn from "clsx";
 import { Clock, Navigation, TrendingUp } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 type CourseCardProps = {
   course: Course;
+  selected?: boolean;
+  selectionMode?: boolean;
+  onToggleSelection?: (id: string) => void;
 };
 
 function formatDuration(duration: number) {
@@ -14,21 +18,46 @@ function formatDuration(duration: number) {
   return hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
 }
 
-export default function CourseCard({ course }: CourseCardProps) {
+export default function CourseCard({
+  course,
+  selected,
+  selectionMode,
+  onToggleSelection,
+}: CourseCardProps) {
   const router = useRouter();
 
-  function handleCardClick() {
-    router.push(`/courses/${course.courseType}/${course.id}`);
+  function handleClick(e: React.MouseEvent) {
+    if (selectionMode && onToggleSelection) {
+      e.preventDefault();
+      onToggleSelection(course.id);
+    } else {
+      router.push(`/courses/${course.courseType}/${course.id}`);
+    }
   }
 
   return (
     <Card
-      className="group transition-all duration-200 rounded-md overflow-hidden hover:cursor-pointer h-full w-full aspect-auto flex flex-col bg-white"
-      onClick={handleCardClick}
+      className={cn(
+        "group transition-all duration-200 rounded-lg overflow-hidden hover:cursor-pointer h-full flex flex-col bg-white",
+        selected && "ring-2 ring-primary"
+      )}
+      onClick={handleClick}
     >
+      {selectionMode && (
+        <div className="absolute top-2 right-2 z-10">
+          <div
+            className={cn(
+              "w-5 h-5 rounded-full border-2 border-white bg-background",
+              selected && "bg-primary"
+            )}
+          />
+        </div>
+      )}
+
       <div className="relative h-48 w-full">
-        <LazyMap polyline={course.summaryPolyline} interactive={false} />
+        <LazyPolylineMap polyline={course.summaryPolyline} interactive={false} />
       </div>
+
       <div className="flex-grow p-4 space-y-3">
         <h3 className="text-lg font-semibold line-clamp-1 group-hover:text-primary transition-colors">
           {course.name}
@@ -48,7 +77,9 @@ export default function CourseCard({ course }: CourseCardProps) {
           </div>
           <div className="flex items-center gap-2">
             <Clock className="h-4 w-4 text-muted-foreground font-bold" />
-            <span className="text-sm font-bold">{formatDuration(course.duration)}</span>
+            <span className="text-sm font-bold">
+              {formatDuration(course.duration)}
+            </span>
           </div>
         </div>
       </div>

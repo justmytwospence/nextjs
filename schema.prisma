@@ -125,7 +125,7 @@ model SegmentEffort {
 
   user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   activity Activity @relation(fields: [activityId], references: [id])
-  segment  Segment? @relation(fields: [segmentId], references: [id])
+  segment  Segment  @relation(fields: [segmentId], references: [id])
 }
 
 model Segment {

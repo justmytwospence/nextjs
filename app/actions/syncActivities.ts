@@ -1,7 +1,7 @@
 "use server";
 
 import { auth } from "@/auth";
-import { upsertSummaryActivity } from "@/lib/db";
+import { upsertSegmentEffort, upsertSummaryActivity } from "@/lib/db";
 import { baseLogger } from "@/lib/logger";
 import { fetchActivities } from "@/lib/strava";
 import pLimit from "p-limit";
@@ -54,15 +54,8 @@ export default async function syncActivities(): Promise<
         await Promise.all(
           summaryActivities.map((activity) =>
             limit(async () => {
-              try {
                 await upsertSummaryActivity(session.user.id, activity);
                 syncedCount++;
-              } catch (error) {
-                baseLogger.error(
-                  `Failed to sync activity ${activity.id}:`,
-                  error
-                );
-              }
             })
           )
         );

@@ -111,7 +111,7 @@ export const fetchActivityStreams = async (
   userId: string,
   activityId: string
 ): Promise<{
-  validatedData: StreamSet;
+  activityStreams: StreamSet;
   unrecognizedKeys: Set<string>;
 }> => {
   const streamTypes = [
@@ -138,7 +138,8 @@ export const fetchActivityStreams = async (
   );
   const responseData = await response.json();
   baseLogger.debug("Activity streams response", responseData);
-  return validateAndLogExtras(responseData, StreamSetSchema);
+  const { validatedData: activityStreams, unrecognizedKeys } = validateAndLogExtras(responseData, StreamSetSchema);
+  return { activityStreams, unrecognizedKeys };
 };
 
 export const fetchRouteStreams = async (
@@ -157,4 +158,40 @@ export const fetchRouteStreams = async (
   const { validatedData: routeStreams, unrecognizedKeys } =
     validateAndLogExtras(responseData, StreamSetSchema);
   return { routeStreams, unrecognizedKeys };
+};
+
+export const fetchSegmentStreams = async (
+  userId: string,
+  segmentId: string
+): Promise<{
+  segmentStreams: StreamSet;
+  unrecognizedKeys: Set<string>;
+}> => {
+  const streamTypes = [
+    "altitude",
+    "cadence",
+    "distance",
+    "grade_smooth",
+    "heartrate",
+    "latlng",
+    "moving",
+    "temp",
+    "time",
+    "velocity_smooth",
+    "watts",
+  ];
+  const params = new URLSearchParams({
+    keys: streamTypes.join(","),
+    key_by_type: "true",
+  });
+  const response = await makeStravaRequest(
+    userId,
+    `/segments/${segmentId}/streams`,
+    params
+  );
+  const responseData = await response.json();
+  baseLogger.debug("Segment streams response", responseData);
+  const { validatedData: segmentStreams, unrecognizedKeys } =
+    validateAndLogExtras(responseData, StreamSetSchema);
+  return { segmentStreams, unrecognizedKeys };
 };

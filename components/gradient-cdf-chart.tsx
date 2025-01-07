@@ -1,6 +1,6 @@
 "use client";
 
-import { computeCdf, computeGradient } from "@/lib/geo";
+import { computeCdf, computeGradient } from "@/lib/geo/geo";
 import { baseLogger } from "@/lib/logger";
 import { gradientStore } from "@/store";
 import type { Mappable } from "@prisma/client";

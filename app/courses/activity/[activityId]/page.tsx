@@ -1,6 +1,6 @@
 import { fetchActivity } from "@/app/actions/fetchActivity";
 import { auth } from "@/auth";
-import { activityToCourse } from "@/types/transformers";
+import { toCourse } from "@/types/transformers";
 import { notFound } from "next/navigation";
 import CourseDetail from "../../course-detail";
 
@@ -18,7 +18,7 @@ export default async function RoutePage({ params }) {
 		notFound();
 	}
 
-	const enrichedCourse = activityToCourse(enrichedActivity);
+	const enrichedCourse = toCourse(enrichedActivity);
 
 	return <CourseDetail course={enrichedCourse} />;
 }

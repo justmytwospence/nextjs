@@ -1,7 +1,7 @@
 "use client";
 
 import ElevationChart from "@/components/elevation-chart";
-import LazyMap from "@/components/lazy-map";
+import LazyPolylineMap from "@/components/polyline-map-lazy";
 import {
   Select,
   SelectContent,
@@ -95,7 +95,7 @@ export default function CourseComparisonColumn({
       </div>
       {selectedMap && (
         <div className="h-[300px] w-full mt-4">
-          <LazyMap
+          <LazyPolylineMap
             polyline={selectedMap.polyline}
             hoverIndexStore={hoverIndexStore}
           />

@@ -54,7 +54,7 @@ STRAVA_WEBHOOK_VERIFY_TOKEN=""
 - [X] use React Portal for syncing toasts
 - [X] Implement sort order toggle
 - [X] Fix pagination
-- [ ] Add activities to course comparison
+- [X] Add activities to course comparison
 - [ ] Add Streams model
 - [ ] Sync Activity streams
 - [ ] Implement pace by gradient chart

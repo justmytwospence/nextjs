@@ -1,4 +1,4 @@
-import { clsx, type ClassValue } from "clsx";
+import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs: ClassValue[]) {
@@ -30,7 +30,9 @@ export function convertKeysToCamelCase<T>(obj: T): ConvertKeysToCamelCase<T> {
     return obj.map((item) =>
       convertKeysToCamelCase(item)
     ) as ConvertKeysToCamelCase<T>;
-  } else if (obj !== null && typeof obj === "object") {
+  } 
+  
+  if (obj !== null && typeof obj === "object") {
     return Object.keys(obj).reduce((acc, key) => {
       const camelKey = toCamelCase(key);
       acc[camelKey] = convertKeysToCamelCase((obj as any)[key]);

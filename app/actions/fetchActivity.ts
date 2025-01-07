@@ -1,11 +1,11 @@
 "use server";
 
 import { auth } from "@/auth";
-import { enrichActivity, queryActivity, upsertDetailedActivity } from "@/lib/db";
+import { enrichActivity, queryActivity } from "@/lib/db";
 import { baseLogger } from "@/lib/logger";
 import { fetchActivityStreams } from "@/lib/strava";
-import { activityToCourse, isEnrichedActivity, isMappableActivity } from "@/types/transformers";
-import type { EnrichedActivity, EnrichedCourse } from "@prisma/client";
+import { isEnrichedActivity, isMappableActivity } from "@/types/transformers";
+import type { EnrichedActivity } from "@prisma/client";
 
 export async function fetchActivity(
   activityId: string
@@ -26,15 +26,18 @@ export async function fetchActivity(
   }
 
   if (!isEnrichedActivity(activity)) {
-    baseLogger.info(`Activity ${activityId} is missing polyline, fetching detailed activity`);
+    baseLogger.info(
+      `Activity ${activityId} is missing polyline, fetching detailed activity`
+    );
 
-    // const detailedActivity = await fetchDetailedActivity(session.user.id,activityId);
-    // return await upsertDetailedActivity(session.user.id, detailedActivity) as MappableActivity
-
-    const { validatedData: activityStreams }  = await fetchActivityStreams(session.user.id, activityId);
+    const { activityStreams } = await fetchActivityStreams(
+      session.user.id,
+      activityId
+    );
     const enrichedActivity = await enrichActivity(activityId, activityStreams);
-    return enrichedActivity
+    return enrichedActivity;
+
   }
 
-  return activity
+  return activity;
 }

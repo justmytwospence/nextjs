@@ -1,74 +1,77 @@
 import type {
-	Activity,
-	Course,
-	EnrichedActivity,
-	EnrichedCourse,
-	EnrichedRoute,
-	MappableActivity,
-	Route,
+  Activity,
+  Course,
+  EnrichedActivity,
+  EnrichedCourse,
+  EnrichedRoute,
+  EnrichedSegment,
+  MappableActivity,
+  Route,
+  Segment,
 } from "@prisma/client";
 
+export function isEnrichedSegment(segment: Segment): segment is EnrichedSegment {
+  return "enrichedAt" in segment && segment.enrichedAt !== null;
+}
+
+export function isRoute(maybeRoute: Activity | Route): maybeRoute is Route {
+  return "estimatedMovingTime" in maybeRoute;
+}
+
 export function isMappableActivity(
-	activity: Activity,
+  activity: Activity
 ): activity is MappableActivity {
-	return activity.summaryPolyline !== null;
+  return activity.summaryPolyline !== null;
 }
 
 export function isEnrichedActivity(
-	activity: MappableActivity,
+  activity: MappableActivity
 ): activity is EnrichedActivity {
-	return activity.enrichedAt !== null;
+  return activity.enrichedAt !== null;
 }
 
 export function isEnrichedRoute(route: Route): route is EnrichedRoute {
-	return route.enrichedAt !== null;
+  return route.enrichedAt !== null;
 }
 
 export function isEnrichedCourse(course: Course): course is EnrichedCourse {
-	return course.enrichedAt !== null;
+  return course.enrichedAt !== null;
 }
 
-function routeToCourse(route: EnrichedRoute): EnrichedCourse;
-function routeToCourse(route: Route): Course;
-function routeToCourse(route: Route | EnrichedRoute): Course | EnrichedCourse {
-
-	return {
-		courseType: "route" as const,
-		createdAt: route.createdAt,
-		description: route?.description ?? undefined,
-		distance: route.distance,
-		duration: route.estimatedMovingTime,
-		elevationGain: route.elevationGain,
-		enrichedAt: route.enrichedAt,
-		id: route.id.toString(),
-		name: route.name,
-		polyline: route.polyline ?? undefined,
-		summaryPolyline: route.summaryPolyline,
-		type: route.type?.toString() ?? "Unknown",
-	} 
-}
-export { routeToCourse };
-
-function activityToCourse(activity: EnrichedActivity): EnrichedCourse;
-function activityToCourse(activity: MappableActivity): Course;
-function activityToCourse(
-	activity: MappableActivity | EnrichedActivity,
+function toCourse(course: EnrichedRoute | EnrichedActivity): EnrichedCourse;
+function toCourse(course: Route | MappableActivity): Course;
+function toCourse(
+  course: Route | EnrichedRoute | MappableActivity | EnrichedActivity
 ): Course | EnrichedCourse {
-
-	return {
-		courseType: "activity" as const,
-		createdAt: activity.startDate,
-		description: activity?.description ?? undefined,
-		distance: activity.distance,
-		duration: activity.movingTime,
-		elevationGain: activity.totalElevationGain,
-		id: activity.id.toString(),
-		name: activity.name,
-		summaryPolyline: activity.summaryPolyline,
-		type: activity.sportType,
-		enrichedAt: activity.enrichedAt,
-		polyline: activity.polyline ?? undefined,
-	};
-
+  if (isRoute(course)) {
+    return {
+      courseType: "route" as const,
+      createdAt: course.createdAt,
+      description: course?.description ?? undefined,
+      distance: course.distance,
+      duration: course.estimatedMovingTime,
+      elevationGain: course.elevationGain,
+      id: course.id.toString(),
+      name: course.name,
+      polyline: course.polyline ?? undefined,
+      summaryPolyline: course.summaryPolyline,
+      type: course.type?.toString() ?? "Unknown",
+      enrichedAt: course.enrichedAt,
+    };
+  }
+  return {
+    courseType: "activity" as const,
+    createdAt: course.startDate,
+    description: course?.description ?? undefined,
+    distance: course.distance,
+    duration: course.movingTime,
+    elevationGain: course.totalElevationGain,
+    id: course.id.toString(),
+    name: course.name,
+    summaryPolyline: course.summaryPolyline,
+    type: course.sportType,
+    enrichedAt: course.enrichedAt,
+    polyline: course.polyline ?? undefined,
+  };
 }
-export { activityToCourse };
+export { toCourse };

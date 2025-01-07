@@ -82,12 +82,12 @@ export const PolylineMapSchema = z.object({
 // SummarySegment.athlete_segment_stats
 export const SummarySegmentEffortSchema = z.object({
   activity_id: z.coerce.string(), // Activity ID related to this effort
-  distance: z.number(), // Effort distance in meters
-  elapsed_time: z.number().int(), // Elapsed time of the effort
+  distance: z.number().optional(), // Effort distance in meters
+  elapsed_time: z.number().int().optional(), // Elapsed time of the effort
   id: z.coerce.string(), // Unique identifier of the effort
   is_kom: z.boolean().optional(), // Whether this effort is a KOM
-  start_date: z.string().datetime(), // Start date of the effort
-  start_date_local: z.string().datetime(), // Local start date of the effort
+  start_date: z.string().datetime().optional(), // Start date of the effort
+  start_date_local: z.string().datetime().optional(), // Local start date of the effort
 });
 
 // Summary of a segment

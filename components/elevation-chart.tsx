@@ -1,7 +1,6 @@
 "use client";
 
-import { computeDistanceMiles, computeGradient } from "@/lib/geo";
-import type { LineString } from "geojson";
+import { computeDistanceMiles, computeGradient } from "@/lib/geo/geo";
 import type { HoverIndexStore } from "@/store";
 import {
   hoverIndexStore as defaultHoverIndexStore,
@@ -12,12 +11,13 @@ import {
   CategoryScale,
   Chart as ChartJS,
   Filler,
-  LinearScale,
   LineElement,
+  LinearScale,
   PointElement,
   Title,
   Tooltip,
 } from "chart.js";
+import type { LineString } from "geojson";
 import { useEffect, useRef } from "react";
 import { Line } from "react-chartjs-2";
 
