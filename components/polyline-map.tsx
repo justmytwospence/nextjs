@@ -40,7 +40,7 @@ export default function PolylineMap(props: PolylineMapProps) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           setCenter(
-            L.latLng(position.coords.latitude, position.coords.longitude)
+            L.latlng(position.coords.latitude, position.coords.longitude)
           );
         },
         (error) => {
@@ -95,6 +95,16 @@ function MapContent({
     }
   }, [map, onMapMove]);
 
+  // Add effect to center map on markers when they change
+  useEffect(() => {
+    if (markers.length > 1) {
+      const markerBounds = L.latLngBounds(
+        markers.map((marker) => [marker.coordinates[1], marker.coordinates[0]])
+      );
+      map.fitBounds(markerBounds, { padding: [150, 150] });
+    }
+  }, [markers, map]);
+
   if (onMapClick) {
     useMapEvents({
       click(e) {
@@ -126,6 +136,12 @@ function MapContent({
   return (
     <>
       <TileLayer url="https://tile.jawg.io/jawg-terrain/{z}/{x}/{y}{r}.png?access-token=bDE5WHMnFV1P973D59QWuGaq6hebBcjPSyud6vVGYqqi2r4kZyaShdbC3SF2Bc7y" />
+      {markers.length >= 2 && (
+        <Polyline
+          positions={markers.map((point) => [point.coordinates[1], point.coordinates[0]])}
+          pathOptions={{ color: "blue", weight: 2, opacity: 0.5 }}
+        />
+      )}
       {markers.map((position) => (
         <CircleMarker
           key={`${position.coordinates[0]}-${position.coordinates[1]}`}
@@ -218,7 +234,7 @@ const GeoJSONLayer = ({
 
       for (let i = 0; i < polyline.coordinates.length; i++) {
         const coord = polyline.coordinates[i];
-        const point = L.latLng(coord[1], coord[0]);
+        const point = L.latlng(coord[1], coord[0]);
         const dist = mousePoint.distanceTo(point);
         if (dist < minDist) {
           minDist = dist;

@@ -1,17 +1,16 @@
 "use client";
 
-import findPath from "@/app/actions/findPath";
 import type { Bounds } from "@/app/actions/findPath";
 import ElevationProfile from "@/components/elevation-chart";
 import FindPathButton from "@/components/find-path-button";
 import GradientCDF from "@/components/gradient-cdf-chart";
 import LazyPolylineMap from "@/components/polyline-map-lazy";
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { SelectAspectsDialog } from "@/components/ui/select-aspects-dialog";
 import type { Aspect } from "@/pathfinder/index.d.ts";
 import type { LineString, Point } from "geojson";
 import { useState } from "react";
-import { toast } from "sonner";
 
 export default function PathFinderPage() {
   const [markers, setMarkers] = useState<Point[]>([]);
@@ -21,11 +20,7 @@ export default function PathFinderPage() {
   const [excludedAspects, setExcludedAspects] = useState<Aspect[]>([]);
 
   function handleMapClick(point: Point) {
-    if (markers.length > 1) {
-      setMarkers([point]);
-    } else {
-      setMarkers([...markers, point]);
-    }
+    setMarkers([...markers, point]);
     return point;
   }
 
@@ -43,6 +38,17 @@ export default function PathFinderPage() {
     return newBounds;
   }
 
+  function handleReset() {
+    setMarkers([]);
+    setPath(null);
+  }
+
+  function handleCenter() {
+    if (markers.length > 0) {
+      setMarkers([...markers]);
+    }
+  }
+
   return (
     <div className="container mx-auto p-4">
       <div className="flex gap-4 mb-4">
@@ -50,11 +56,13 @@ export default function PathFinderPage() {
           markers={markers}
           bounds={bounds}
           excludedAspects={excludedAspects}
-          disabled={markers.length !== 2 || isLoading}
+          disabled={markers.length < 2 || isLoading}
           isLoading={isLoading}
           setIsLoading={setIsLoading}
           setPath={setPath}
         />
+        <Button onClick={handleReset}>Reset</Button>
+        <Button onClick={handleCenter}>Center Points</Button>
         <SelectAspectsDialog
           onSelectDirections={setExcludedAspects}
           selectedDirections={excludedAspects}
@@ -90,8 +98,7 @@ export default function PathFinderPage() {
                 <GradientCDF
                   mappables={[{ polyline: path, name: "Path", id: "path" }]}
                 />
-              </div>
-            )}
+              </div>            )}
           </Card>
         </div>
       </div>
