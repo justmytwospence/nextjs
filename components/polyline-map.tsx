@@ -40,7 +40,7 @@ export default function PolylineMap(props: PolylineMapProps) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           setCenter(
-            L.latlng(position.coords.latitude, position.coords.longitude)
+            L.latLng(position.coords.latitude, position.coords.longitude)
           );
         },
         (error) => {
@@ -234,7 +234,7 @@ const GeoJSONLayer = ({
 
       for (let i = 0; i < polyline.coordinates.length; i++) {
         const coord = polyline.coordinates[i];
-        const point = L.latlng(coord[1], coord[0]);
+        const point = L.latLng(coord[1], coord[0]);
         const dist = mousePoint.distanceTo(point);
         if (dist < minDist) {
           minDist = dist;

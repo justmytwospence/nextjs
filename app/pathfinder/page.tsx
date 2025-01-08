@@ -10,7 +10,7 @@ import { Card } from "@/components/ui/card";
 import { SelectAspectsDialog } from "@/components/ui/select-aspects-dialog";
 import type { Aspect } from "@/pathfinder/index.d.ts";
 import type { LineString, Point } from "geojson";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 
 export default function PathFinderPage() {
   const [waypoints, setWaypoints] = useState<Point[]>([]);
@@ -49,6 +49,28 @@ export default function PathFinderPage() {
     }
   }
 
+  const handleSetPath = useCallback((newPath: LineString | null) => {
+    setPath((currentPath) => {
+      if (newPath === null) {
+        return null;
+      }
+
+      const combinedPath: LineString = {
+        type: "LineString",
+        coordinates:
+          currentPath === null
+            ? newPath.coordinates
+            : [...currentPath.coordinates, ...newPath.coordinates.slice(1)],
+      };
+
+      console.log("Current path", currentPath);
+      console.log("New path", newPath);
+      console.log("Combined path", combinedPath);
+
+      return combinedPath;
+    });
+  }, []);
+
   return (
     <div className="container mx-auto p-4">
       <div className="flex gap-4 mb-4">
@@ -58,7 +80,7 @@ export default function PathFinderPage() {
           excludedAspects={excludedAspects}
           isLoading={isLoading}
           setIsLoading={setIsLoading}
-          setPath={setPath}
+          setPath={handleSetPath}
         />
         <Button onClick={handleReset}>Reset</Button>
         <Button onClick={handleCenter}>Center Points</Button>
@@ -91,13 +113,16 @@ export default function PathFinderPage() {
           </Card>
 
           <Card className="p-4">
-            <h2 className="text-lg font-semibold mb-2">Gradient Distribution</h2>
+            <h2 className="text-lg font-semibold mb-2">
+              Gradient Distribution
+            </h2>
             {path && (
               <div className="h-[300px]">
                 <GradientCDF
                   mappables={[{ polyline: path, name: "Path", id: "path" }]}
                 />
-              </div>            )}
+              </div>
+            )}
           </Card>
         </div>
       </div>
