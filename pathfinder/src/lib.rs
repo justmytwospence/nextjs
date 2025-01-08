@@ -1,5 +1,6 @@
 #![deny(clippy::all)]
 
+use gdal::raster::processing::dem::{aspect, AspectOptions};
 use gdal::{
   errors::GdalError,
   raster,
@@ -13,15 +14,67 @@ use napi::{bindgen_prelude::*, JsGlobal, JsObject, JsString};
 use napi_derive::napi;
 use pathfinding::prelude::fringe;
 
-const MAX_GRADIENT: f32 = 0.3;
+#[derive(PartialEq, Debug)]
+#[napi(string_enum)]
+pub enum Aspect {
+  North,
+  Northeast,
+  East,
+  Southeast,
+  South,
+  Southwest,
+  West,
+  Northwest,
+  Flat
+}
 
-fn console_log(env: &Env, message: &str) -> Result<JsUndefined> {
-  let global: JsGlobal = env.get_global()?;
-  let console: JsObject = global.get_named_property("console")?;
-  let log_fn: JsFunction = console.get_named_property("log")?;
-  let js_string: JsString = env.create_string(message)?;
-  log_fn.call(None, &[js_string])?;
-  env.get_undefined()
+fn azimuth_to_aspect(azimuth: f32) -> Aspect {
+  match azimuth {
+    337.5..=360.0 | 0.0..=22.5 => Aspect::North,
+    22.5..=67.5 => Aspect::Northeast,
+    67.5..=112.5 => Aspect::East,
+    112.5..=157.5 => Aspect::Southeast,
+    157.5..=202.5 => Aspect::South,
+    202.5..=247.5 => Aspect::Southwest,
+    247.5..=292.5 => Aspect::West,
+    292.5..=337.5 => Aspect::Northwest,
+    _ => Aspect::Flat
+  }
+}
+
+fn azimuth_in_aspects(azimuth: f32, aspects: &Vec<Aspect>) -> bool {
+  for aspect in aspects {
+    match aspect {
+      Aspect::North => {
+        return azimuth >= 327.5 || azimuth < 32.5;
+      },
+      Aspect::Northeast => {
+        return azimuth >= 12.5 && azimuth < 77.5;
+      },
+      Aspect::East => {
+        return azimuth >= 57.5 && azimuth < 122.5;
+      },
+      Aspect::Southeast => {
+        return azimuth >= 102.5 && azimuth < 167.5;
+      },
+      Aspect ::South => {
+        return azimuth >= 147.5 && azimuth < 212.5;
+      },
+      Aspect::Southwest => {
+        return azimuth >= 192.5 && azimuth < 257.5;
+      },
+      Aspect::West => {
+        return azimuth >= 237.5 && azimuth < 302.5;
+      },
+      Aspect::Northwest => {
+        return azimuth >= 282.5 && azimuth < 347.5;
+      },
+      Aspect::Flat => {
+        return azimuth == -9999.0;
+      }
+    }
+  }
+  false
 }
 
 #[napi]
@@ -30,7 +83,11 @@ pub fn process_map(
   mut array_buffer: Buffer,
   start: String,
   end: String,
+  excluded_aspects: Option<Vec<Aspect>>,
 ) -> napi::Result<String> {
+  const MAX_GRADIENT: f32 = 0.3;
+  let excluded_aspects: Vec<Aspect> = excluded_aspects.unwrap_or_else(|| vec![]);
+
   let start_geojson: GeoJson = start.parse::<GeoJson>().unwrap();
   let end_geojson: GeoJson = end.parse::<GeoJson>().unwrap();
 
@@ -61,23 +118,44 @@ pub fn process_map(
       napi::Error::from_reason(format!("Failed to create memory file: {}", e))
     })?;
 
-  let dataset: Dataset = Dataset::open(vsi_path)
-    .map_err(|e: GdalError| napi::Error::from_reason(format!("Failed to open dataset: {}", e)))?;
+  let elevation_dataset: Dataset = Dataset::open(vsi_path).map_err(|e: GdalError| {
+    napi::Error::from_reason(format!("Failed to open elevation dataset: {}", e))
+  })?;
 
-  let transform: [f64; 6] = dataset
+  let transform: [f64; 6] = elevation_dataset
     .geo_transform()
     .map_err(|e: GdalError| napi::Error::from_reason(format!("Failed to get transform: {}", e)))?;
 
-  let (width, height) = dataset.raster_size();
-  let elevations_band: raster::RasterBand<'_> = dataset.rasterband(1).map_err(|e: GdalError| {
-    napi::Error::from_reason(format!("Failed to get raster band: {}", e))
-  })?;
-  let elevations_buffer: raster::Buffer<f32> = elevations_band
+  let (width, height) = elevation_dataset.raster_size();
+  let elevation_band: raster::RasterBand<'_> =
+    elevation_dataset.rasterband(1).map_err(|e: GdalError| {
+      napi::Error::from_reason(format!("Failed to get elevation raster band: {}", e))
+    })?;
+  let elevation_buffer: raster::Buffer<f32> = elevation_band
     .read_as::<f32>((0, 0), (width, height), (width, height), None)
     .map_err(|e: GdalError| {
-      napi::Error::from_reason(format!("Failed to read raster data: {}", e))
+      napi::Error::from_reason(format!("Failed to read elevation raster data: {}", e))
     })?;
-  let elevations: Vec<f32> = elevations_buffer.data().to_vec();
+  let elevations: Vec<f32> = elevation_buffer.data().to_vec();
+
+  let aspect_dataset: Dataset = aspect(
+    &elevation_dataset,
+    std::path::Path::new("temp.tif"),
+    &AspectOptions::new(),
+  )
+  .map_err(|e: GdalError| napi::Error::from_reason(format!("Failed to calculate aspect: {}", e)))?;
+
+  let (aspect_width, aspect_height) = aspect_dataset.raster_size();
+  let aspect_band: raster::RasterBand<'_> =
+    aspect_dataset.rasterband(1).map_err(|e: GdalError| {
+      napi::Error::from_reason(format!("Failed to get aspects raster band: {}", e))
+    })?;
+  let aspect_buffer: raster::Buffer<f32> = aspect_band
+    .read_as::<f32>((0, 0), (aspect_width, aspect_height), (aspect_width, aspect_height), None)
+    .map_err(|e: GdalError| {
+      napi::Error::from_reason(format!("Failed to read aspects raster data: {}", e))
+    })?;
+  let aspects: Vec<f32> = aspect_buffer.data().to_vec();
 
   // Convert coordinates
   let (start_px_x, start_px_y) = geo_to_pixel(start_coords.x(), start_coords.y(), &transform);
@@ -87,7 +165,7 @@ pub fn process_map(
   let end_node: (usize, usize) = (end_px_x as usize, end_px_y as usize);
 
   let cost_fn = |&(x, y): &(usize, usize), &(nx, ny): &(usize, usize)| -> i32 {
-    const MAX_GRADIENT_MULTIPLIER: f32 = 100.0;
+    const MAX_GRADIENT_MULTIPLIER: f32 = 5.0;
 
     let dx: f32 = (nx as isize - x as isize).abs() as f32 * 10.0;
     let dy: f32 = (ny as isize - y as isize).abs() as f32 * 10.0;
@@ -95,7 +173,7 @@ pub fn process_map(
     let distance: f32 = ((dx * dx) + (dy * dy)).sqrt();
     let gradient: f32 = dz / distance;
     let gradient_ratio: f32 = (gradient / MAX_GRADIENT).clamp(0.0, 1.0);
-    let gradient_multiplier: f32 = 1.0 + gradient_ratio * (MAX_GRADIENT_MULTIPLIER - 1.0);
+    let gradient_multiplier: f32 = 1.0 + gradient_ratio.powf(3.0) * (MAX_GRADIENT_MULTIPLIER - 1.0);
     // let _ = console_log(&env, format!("Cost: {:?}, {:?} -> {:?}, {:?}, Distance: {:?}, Gradient: {:?}, Gradient Multiplier: {:?}, Total: {:?}", x, y, nx, ny, distance, gradient, gradient_multiplier, (distance * gradient_multiplier) as i32).as_str());
     (distance * gradient_multiplier) as i32
   };
@@ -123,13 +201,18 @@ pub fn process_map(
         let current_elevation: f32 = elevations[y * width + x];
         let new_elevation: f32 = elevations[ny * width + nx];
         let gradient: f32 = (new_elevation - current_elevation).abs() / 10.0;
+        // let _ = console_log(&env, format!("gradient: {:?}", gradient).as_str());
         if gradient < MAX_GRADIENT {
-          neighbors.push(((nx as usize, ny as usize), cost_fn(&(x, y), &(nx, ny))));
+          let azimuth: f32 = aspects[ny * width + nx];
+          // let _ = console_log(&env, format!("Aspect: {:?}, excluded: {:?}", categorize_aspect(aspect), excluded_aspects).as_str());
+          if !azimuth_in_aspects(azimuth, &excluded_aspects) || gradient < 0.05 {
+            neighbors.push(((nx as usize, ny as usize), cost_fn(&(x, y), &(nx, ny))));
+          }
         }
       }
     }
 
-    let _ = console_log(&env, format!("Successors: {:?}", neighbors).as_str());
+    // let _ = console_log(&env, format!("Successors: {:?}", neighbors).as_str());
     neighbors
   };
 
@@ -164,4 +247,13 @@ fn geo_to_pixel(lng: f64, lat: f64, transform: &[f64; 6]) -> (f64, f64) {
   let px_x: f64 = (lng - transform[0]) / transform[1];
   let px_y: f64 = (lat - transform[3]) / transform[5];
   (px_x, px_y)
+}
+
+fn console_log(env: &Env, message: &str) -> Result<JsUndefined> {
+  let global: JsGlobal = env.get_global()?;
+  let console: JsObject = global.get_named_property("console")?;
+  let log_fn: JsFunction = console.get_named_property("log")?;
+  let js_string: JsString = env.create_string(message)?;
+  log_fn.call(None, &[js_string])?;
+  env.get_undefined()
 }

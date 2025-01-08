@@ -3,20 +3,22 @@
 import findPath from "@/app/actions/findPath";
 import type { Bounds } from "@/app/actions/findPath";
 import ElevationProfile from "@/components/elevation-chart";
+import FindPathButton from "@/components/find-path-button";
 import GradientCDF from "@/components/gradient-cdf-chart";
 import LazyPolylineMap from "@/components/polyline-map-lazy";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { baseLogger } from "@/lib/logger";
+import { SelectAspectsDialog } from "@/components/ui/select-aspects-dialog";
+import type { Aspect } from "@/pathfinder/index.d.ts";
 import type { LineString, Point } from "geojson";
-import { Loader } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 
 export default function PathFinderPage() {
   const [markers, setMarkers] = useState<Point[]>([]);
   const [path, setPath] = useState<LineString | null>(null);
   const [bounds, setBounds] = useState<Bounds | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [excludedAspects, setExcludedAspects] = useState<Aspect[]>([]);
 
   function handleMapClick(point: Point) {
     if (markers.length > 1) {
@@ -41,33 +43,25 @@ export default function PathFinderPage() {
     return newBounds;
   }
 
-  async function handleButtonClick() {
-    if (!bounds) return;
-    setIsLoading(true);
-    const path = await findPath(markers[0], markers[1], bounds);
-    setPath(path);
-    setIsLoading(false);
-  }
-
   return (
     <div className="container mx-auto p-4">
-      <Button
-        onClick={handleButtonClick}
-        disabled={markers.length !== 2 || isLoading}
-        className="mb-4"
-      >
-        {isLoading ? (
-          <>
-            Find Path
-            <Loader className="animate-spin h-4 w-4 ml-2" />
-          </>
-        ) : (
-          "Find Path"
-        )}
-      </Button>
+      <div className="flex gap-4 mb-4">
+        <FindPathButton
+          markers={markers}
+          bounds={bounds}
+          excludedAspects={excludedAspects}
+          disabled={markers.length !== 2 || isLoading}
+          isLoading={isLoading}
+          setIsLoading={setIsLoading}
+          setPath={setPath}
+        />
+        <SelectAspectsDialog
+          onSelectDirections={setExcludedAspects}
+          selectedDirections={excludedAspects}
+        />
+      </div>
 
       <div className="grid lg:grid-cols-2 gap-4">
-        {/* Map section - square aspect ratio */}
         <Card className="aspect-square">
           <LazyPolylineMap
             onMapClick={handleMapClick}

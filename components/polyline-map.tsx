@@ -8,12 +8,13 @@ import {
   hoverIndexStore as defaultHoverIndexStore,
   gradientStore,
 } from "@/store";
-import type { Feature, FeatureCollection, LineString, Point } from "geojson";
+import type { Feature, FeatureCollection, LineString, MultiPolygon, Point } from "geojson";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   CircleMarker,
+  GeoJSON,
   MapContainer,
   Polyline,
   TileLayer,
