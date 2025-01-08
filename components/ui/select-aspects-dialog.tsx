@@ -45,7 +45,7 @@ export function SelectAspectsDialog({
         <Button variant="outline" className="w-full">
           {selectedDirections.length
             ? `Avoiding ${selectedDirections.join(", ")}`
-            : "Choose directions to avoid"}
+            : "Choose aspects to avoid"}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">

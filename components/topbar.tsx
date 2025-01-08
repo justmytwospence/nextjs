@@ -26,7 +26,7 @@ export default function Topbar() {
     { href: "/courses", label: "Courses" },
     { href: "/course-comparison", label: "Compare Courses" },
     { href: "/segments", label: "Segments" },
-    { href: "/path-finder", label: "Path Finder" },
+    { href: "/pathfinder", label: "Path Finder" },
   ];
 
   return (

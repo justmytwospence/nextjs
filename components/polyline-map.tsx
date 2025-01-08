@@ -8,13 +8,12 @@ import {
   hoverIndexStore as defaultHoverIndexStore,
   gradientStore,
 } from "@/store";
-import type { Feature, FeatureCollection, LineString, MultiPolygon, Point } from "geojson";
+import type { Feature, FeatureCollection, LineString, Point } from "geojson";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   CircleMarker,
-  GeoJSON,
   MapContainer,
   Polyline,
   TileLayer,
@@ -29,10 +28,25 @@ interface PolylineMapProps {
   onMapClick?: (point: Point) => Point;
   onMapMove?: (bounds: Bounds) => Bounds;
   markers?: Point[];
+  clickable?: boolean;
+  onCenterChange?: (center: L.LatLng) => void;
+  center?: [number, number];
 }
 
 export default function PolylineMap(props: PolylineMapProps) {
-  const [center, setCenter] = useState<L.LatLng>(L.latLng(39.977, -105.263));
+  const [defaultCenter] = useState<L.LatLng>(L.latLng(39.977, -105.263));
+  const mapRef = useRef<L.Map | null>(null);
+
+  // Watch for center prop changes
+  useEffect(() => {
+    if (props.center && mapRef.current) {
+      const [lng, lat] = props.center;
+      mapRef.current.setView([lat, lng], 13, {
+        animate: true,
+        duration: 1
+      });
+    }
+  }, [props.center]);
 
   // initial useEffect
   useEffect(() => {
@@ -40,7 +54,7 @@ export default function PolylineMap(props: PolylineMapProps) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           setCenter(
-            L.latLng(position.coords.latitude, position.coords.longitude)
+            L.latlng(position.coords.latitude, position.coords.longitude)
           );
         },
         (error) => {
@@ -54,13 +68,14 @@ export default function PolylineMap(props: PolylineMapProps) {
     <MapContainer
       className="map-container"
       style={{ height: "100%", width: "100%" }}
-      center={center}
+      center={defaultCenter}
       zoom={13}
       zoomControl={props.interactive}
       scrollWheelZoom={props.interactive}
       dragging={props.interactive}
       attributionControl={props.interactive}
       doubleClickZoom={props.interactive}
+      ref={mapRef}
     >
       <MapContent {...props} />
     </MapContainer>
@@ -74,11 +89,57 @@ function MapContent({
   onMapClick,
   onMapMove,
   markers = [],
+  clickable = true,
+  onCenterChange,
 }: PolylineMapProps) {
   const map = useMap();
   const bounds = polyline
     ? L.latLngBounds(polyline.coordinates.map(([lng, lat]) => [lat, lng]))
     : null;
+
+  // Move event handlers outside conditions
+  const mapEvents = useMapEvents({
+    click(e) {
+      if (onMapClick && clickable) {
+        const point: Point = {
+          type: "Point",
+          coordinates: [e.latlng.lng, e.latlng.lat],
+        };
+        onMapClick(point);
+      }
+    },
+    moveend() {
+      if (onMapMove) {
+        const bounds = map.getBounds();
+        const nw = bounds.getNorthWest();
+        const sw = bounds.getSouthWest();
+        onMapMove({
+          north: nw.lat,
+          south: sw.lat,
+          east: nw.lng,
+          west: sw.lng,
+        } as Bounds);
+      }
+    },
+  });
+
+  // Add method to center map
+  const centerMap = useCallback((lat: number, lng: number, zoom?: number) => {
+    const newZoom = zoom || map.getZoom();
+    map.setView([lat, lng], newZoom, {
+      animate: true,
+      duration: 1
+    });
+    onCenterChange?.(L.latLng(lat, lng));
+  }, [map, onCenterChange]);
+
+  // Add to component's ref
+  useEffect(() => {
+    if (map) {
+      // @ts-ignore - adding custom property
+      map.centerMap = centerMap;
+    }
+  }, [map, centerMap]);
 
   // Add initialization effect for onMapMove
   useEffect(() => {
@@ -101,44 +162,19 @@ function MapContent({
       const markerBounds = L.latLngBounds(
         markers.map((marker) => [marker.coordinates[1], marker.coordinates[0]])
       );
-      map.fitBounds(markerBounds, { padding: [150, 150] });
+      map.fitBounds(markerBounds, { padding: [100, 100] });
     }
   }, [markers, map]);
-
-  if (onMapClick) {
-    useMapEvents({
-      click(e) {
-        const point: Point = {
-          type: "Point",
-          coordinates: [e.latlng.lng, e.latlng.lat],
-        };
-        onMapClick(point);
-      },
-    });
-  }
-
-  if (onMapMove) {
-    useMapEvents({
-      moveend() {
-        const bounds = map.getBounds();
-        const nw = bounds.getNorthWest();
-        const sw = bounds.getSouthWest();
-        onMapMove({
-          north: nw.lat,
-          south: sw.lat,
-          east: nw.lng,
-          west: sw.lng,
-        } as Bounds);
-      },
-    });
-  }
 
   return (
     <>
       <TileLayer url="https://tile.jawg.io/jawg-terrain/{z}/{x}/{y}{r}.png?access-token=bDE5WHMnFV1P973D59QWuGaq6hebBcjPSyud6vVGYqqi2r4kZyaShdbC3SF2Bc7y" />
-      {markers.length >= 2 && (
+      {polyline === null && (
         <Polyline
-          positions={markers.map((point) => [point.coordinates[1], point.coordinates[0]])}
+          positions={markers.map((point) => [
+            point.coordinates[1],
+            point.coordinates[0],
+          ])}
           pathOptions={{ color: "blue", weight: 2, opacity: 0.5 }}
         />
       )}
@@ -196,10 +232,6 @@ const GeoJSONLayer = ({
       .sort(
         (a, b) => (a.properties?.gradient || 0) - (b.properties?.gradient || 0)
       );
-
-    if (bounds) {
-      map.setMaxBounds(bounds.pad(interactive ? 0.2 : 0.05));
-    }
 
     // Create GeoJSON layer
     geoJsonRef.current = L.geoJSON(

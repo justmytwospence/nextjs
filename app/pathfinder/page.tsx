@@ -4,6 +4,7 @@ import type { Bounds } from "@/app/actions/findPath";
 import ElevationProfile from "@/components/elevation-chart";
 import FindPathButton from "@/components/find-path-button";
 import GradientCDF from "@/components/gradient-cdf-chart";
+import LocationSearch from "@/components/location-search";
 import LazyPolylineMap from "@/components/polyline-map-lazy";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -18,6 +19,7 @@ export default function PathFinderPage() {
   const [bounds, setBounds] = useState<Bounds | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [excludedAspects, setExcludedAspects] = useState<Aspect[]>([]);
+  const [mapCenter, setMapCenter] = useState<[number, number] | undefined>();
 
   function handleMapClick(point: Point) {
     setWaypoints([...waypoints, point]);
@@ -41,6 +43,18 @@ export default function PathFinderPage() {
   function handleReset() {
     setWaypoints([]);
     setPath(null);
+    setBounds(null);
+    setIsLoading(false);
+
+    // Reset map bounds using the custom property we added
+    const mapElement = document.querySelector('.leaflet-container');
+    if (mapElement) {
+      // @ts-ignore - accessing custom property
+      const map = mapElement._leaflet_map;
+      if (map?.resetBounds) {
+        map.resetBounds();
+      }
+    }
   }
 
   function handleCenter() {
@@ -71,9 +85,14 @@ export default function PathFinderPage() {
     });
   }, []);
 
+  const handleLocationSelect = useCallback((center: [number, number]) => {
+    setMapCenter(center);
+  }, []);
+
   return (
     <div className="container mx-auto p-4">
       <div className="flex gap-4 mb-4">
+        <LocationSearch onLocationSelect={handleLocationSelect} />
         <FindPathButton
           waypoints={waypoints}
           bounds={bounds}
@@ -96,8 +115,10 @@ export default function PathFinderPage() {
             onMapClick={handleMapClick}
             onMapMove={handleBoundsChange}
             interactive={true}
+            clickable={path === null}
             markers={waypoints}
             polyline={path}
+            center={mapCenter}
           />
         </Card>
 

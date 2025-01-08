@@ -85,7 +85,7 @@ pub fn process_map(
   end: String,
   excluded_aspects: Option<Vec<Aspect>>,
 ) -> napi::Result<String> {
-  const MAX_GRADIENT: f32 = 0.3;
+  const MAX_GRADIENT: f32 = 0.5;
   let excluded_aspects: Vec<Aspect> = excluded_aspects.unwrap_or_else(|| vec![]);
 
   let start_geojson: GeoJson = start.parse::<GeoJson>().unwrap();
