@@ -7,20 +7,18 @@ import { Loader } from "lucide-react";
 import { toast } from "sonner";
 
 interface FindPathButtonProps {
-  markers: Point[];
+  waypoints: Point[];
   bounds: Bounds | null;
   excludedAspects: Aspect[];
-  disabled: boolean;
   isLoading: boolean;
   setIsLoading: (loading: boolean) => void;
   setPath: (path: LineString | null) => void;
 }
 
 export default function FindPathButton({
-  markers,
+  waypoints,
   bounds,
   excludedAspects,
-  disabled,
   isLoading,
   setIsLoading,
   setPath,
@@ -32,8 +30,7 @@ export default function FindPathButton({
 
     try {
       const pathGenerator = await findPath(
-        markers[0],
-        markers[1],
+        waypoints,
         bounds,
         excludedAspects
       );
@@ -57,7 +54,6 @@ export default function FindPathButton({
             break;
         }
       }
-
     } catch (error) {
       // Error handling is already managed by the generator
     } finally {
@@ -66,7 +62,7 @@ export default function FindPathButton({
   }
 
   return (
-    <Button onClick={handleClick} disabled={disabled}>
+    <Button onClick={handleClick} disabled={waypoints.length < 2}>
       {isLoading ? (
         <>
           Find Path

@@ -13,14 +13,14 @@ import type { LineString, Point } from "geojson";
 import { useState } from "react";
 
 export default function PathFinderPage() {
-  const [markers, setMarkers] = useState<Point[]>([]);
+  const [waypoints, setWaypoints] = useState<Point[]>([]);
   const [path, setPath] = useState<LineString | null>(null);
   const [bounds, setBounds] = useState<Bounds | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [excludedAspects, setExcludedAspects] = useState<Aspect[]>([]);
 
   function handleMapClick(point: Point) {
-    setMarkers([...markers, point]);
+    setWaypoints([...waypoints, point]);
     return point;
   }
 
@@ -39,13 +39,13 @@ export default function PathFinderPage() {
   }
 
   function handleReset() {
-    setMarkers([]);
+    setWaypoints([]);
     setPath(null);
   }
 
   function handleCenter() {
-    if (markers.length > 0) {
-      setMarkers([...markers]);
+    if (waypoints.length > 0) {
+      setWaypoints([...waypoints]);
     }
   }
 
@@ -53,10 +53,9 @@ export default function PathFinderPage() {
     <div className="container mx-auto p-4">
       <div className="flex gap-4 mb-4">
         <FindPathButton
-          markers={markers}
+          waypoints={waypoints}
           bounds={bounds}
           excludedAspects={excludedAspects}
-          disabled={markers.length < 2 || isLoading}
           isLoading={isLoading}
           setIsLoading={setIsLoading}
           setPath={setPath}
@@ -75,7 +74,7 @@ export default function PathFinderPage() {
             onMapClick={handleMapClick}
             onMapMove={handleBoundsChange}
             interactive={true}
-            markers={markers}
+            markers={waypoints}
             polyline={path}
           />
         </Card>

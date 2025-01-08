@@ -18,29 +18,31 @@ export type Bounds = {
 };
 
 export default async function* findPath(
-  start: Point,
-  end: Point,
+  waypoints: Point[],
   bounds: Bounds,
   excludedAspects: Aspect[] = []
-): AsyncGenerator<findPathMessage, LineString, unknown> {
-  try {
-    const [x1, y1] = start.coordinates;
-    const [x2, y2] = end.coordinates;
-
+): AsyncGenerator<findPathMessage, void, unknown> {
     yield { type: "info", message: "Downloading DEM..." };
     const geoTiffArrayBuffer = await getTopo(bounds);
     yield { type: "success", message: "DEM downloaded." };
 
     yield { type: "info", message: "Finding path..." };
-    const path = await processMap(
-      Buffer.from(geoTiffArrayBuffer),
-      JSON.stringify(start),
-      JSON.stringify(end),
-      excludedAspects
-    );
-    yield { type: "success", message: "Path successfully found." };
-    yield { type: "result", message: path };
-    return JSON.parse(path);
+    try {
+      for (let i = 0; i < waypoints.length - 1; i++) {
+          const start = waypoints[i];
+          const [x1, y1] = start.coordinates;
+          const end = waypoints[i + 1];
+          const [x2, y2] = end.coordinates;
+
+          const path = await processMap(
+            Buffer.from(geoTiffArrayBuffer),
+            JSON.stringify(start),
+            JSON.stringify(end),
+            excludedAspects
+          );
+        yield { type: "success", message: "Path successfully found." };
+        yield { type: "result", message: path };
+      }
   } catch (error) {
     yield { type: "error", message: "Failed to find path." };
     throw error;
