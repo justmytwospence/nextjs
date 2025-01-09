@@ -91,7 +91,7 @@ fn azimuth_in_aspects(azimuth: f32, aspects: &Vec<Aspect>) -> bool {
 }
 
 #[napi]
-pub fn process_map(
+pub fn pathfind(
   env: Env,
   mut array_buffer: Buffer,
   start: String,
@@ -191,7 +191,7 @@ pub fn process_map(
     let distance: f32 = ((dx * dx) + (dy * dy)).sqrt();
     let gradient: f32 = dz / distance;
     let gradient_ratio: f32 = (gradient / MAX_GRADIENT).clamp(0.0, 1.0);
-    let gradient_multiplier: f32 = 1.0 + gradient_ratio.powf(3.0) * (MAX_GRADIENT_MULTIPLIER - 1.0);
+    let gradient_multiplier: f32 = 1.0 + gradient_ratio.powf(2.0) * (MAX_GRADIENT_MULTIPLIER - 1.0);
     // let _ = console_log(&env, format!("Cost: {:?}, {:?} -> {:?}, {:?}, Distance: {:?}, Gradient: {:?}, Gradient Multiplier: {:?}, Total: {:?}", x, y, nx, ny, distance, gradient, gradient_multiplier, (distance * gradient_multiplier) as i32).as_str());
     (distance * gradient_multiplier) as i32
   };
@@ -283,8 +283,8 @@ pub fn process_map(
 
   // Create feature collection with both linestring and points
   let results: Results = Results {
-    path_line: Geometry::new(Value::LineString(path_coords)),
-    path_points: FeatureCollection { features: points, bbox: None, foreign_members: None },
+    path_line: Geometry::new(Value::LineString(path_coords)).to_string(),
+    path_points: FeatureCollection { features: points, bbox: None, foreign_members: None }.to_string(),
   };
 
   Ok(results)

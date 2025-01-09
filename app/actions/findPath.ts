@@ -8,7 +8,7 @@ import {
 } from "@/lib/geo/tiling";
 import type { Point } from "geojson";
 import pathfinder, { type Results, type Aspect } from "pathfinder";
-const { processMap } = pathfinder;
+const { pathfind } = pathfinder;
 
 type findPathMessage =
   | {
@@ -66,7 +66,7 @@ export default async function* findPath(
       const start = waypoints[i];
       const end = waypoints[i + 1];
 
-      const { pathLine, pathPoints } = await processMap(
+      const { pathLine, pathPoints } = await pathfind(
         geoTiffArrayBuffer,
         JSON.stringify(start),
         JSON.stringify(end),

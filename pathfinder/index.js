@@ -310,8 +310,8 @@ if (!nativeBinding) {
   throw new Error(`Failed to load native binding`)
 }
 
-const { Results, Aspect, processMap } = nativeBinding
+const { Results, Aspect, pathfind } = nativeBinding
 
 module.exports.Results = Results
 module.exports.Aspect = Aspect
-module.exports.processMap = processMap
+module.exports.pathfind = pathfind

@@ -64,36 +64,38 @@ export default function Topbar() {
         </nav>
 
         {session && (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="secondary" size="icon" className="rounded-full">
-                <Avatar className="h-8 w-8">
-                  <AvatarImage src={session?.user?.image} alt="Profile" />
-                  <AvatarFallback>
-                    {session?.user?.name
-                      ?.split(" ")
-                      .map((n) => n[0])
-                      .join("") || "?"}
-                  </AvatarFallback>
-                </Avatar>
-                <span className="sr-only">Toggle user menu</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>My Account</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
-                <Link href="/settings">Settings</Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onSelect={async () => {
-                  await signOut({ redirectTo: "/login" });
-                }}
-              >
-                Logout
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <div className="ml-auto">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="secondary" size="icon" className="rounded-full">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src={session?.user?.image} alt="Profile" />
+                    <AvatarFallback>
+                      {session?.user?.name
+                        ?.split(" ")
+                        .map((n) => n[0])
+                        .join("") || "?"}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="sr-only">Toggle user menu</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link href="/settings">Settings</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onSelect={async () => {
+                    await signOut({ redirectTo: "/login" });
+                  }}
+                >
+                  Logout
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         )}
       </div>
     </header>
