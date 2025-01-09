@@ -136,33 +136,35 @@ export default function CoursesPage() {
   return (
     <div className="mt-8">
       <div className="flex justify-between items-center mb-4">
-        <Tabs
-          value={selectedTab}
-          onValueChange={(value) =>
-            handleTabChange(value as "routes" | "activities")
-          }
-        >
-          <TabsList>
-            <TabsTrigger value="routes">Routes</TabsTrigger>
-            <TabsTrigger value="activities">Activities</TabsTrigger>
-          </TabsList>
-        </Tabs>
+        <div className="flex items-center space-x-4">
+          <Tabs
+            value={selectedTab}
+            onValueChange={(value) =>
+              handleTabChange(value as "routes" | "activities")
+            }
+          >
+            <TabsList>
+              <TabsTrigger value="routes">Routes</TabsTrigger>
+              <TabsTrigger value="activities">Activities</TabsTrigger>
+            </TabsList>
+          </Tabs>
 
-        <Button
-          variant="outline"
-          onClick={() => {
-            setSelectionMode(!selectionMode);
-            setSelectedIds([]);
-          }}
-        >
-          {selectionMode ? "Exit Selection" : "Select Multiple"}
-        </Button>
+          <Button
+            variant="outline"
+            onClick={() => {
+              setSelectionMode(!selectionMode);
+              setSelectedIds([]);
+            }}
+          >
+            {selectionMode ? "Exit Selection" : "Select Multiple"}
+          </Button>
+        </div>
 
         {selectedTab === "routes" ? (
           <SyncRoutesButton />
         ) : selectionMode ? (
-					<SyncSegmentsButton segmentIds={selectedIds} />
-				) : (
+          <SyncSegmentsButton segmentIds={selectedIds} />
+        ) : (
           <SyncActivitiesButton />
         )}
       </div>
@@ -200,9 +202,9 @@ export default function CoursesPage() {
             courses={data.courses}
             sortBy={sortBy}
             sortDir={sortDir}
-						selectionMode={selectionMode}
-						selectedIds={selectedIds}
-						onToggleSelection={handleSelection}
+            selectionMode={selectionMode}
+            selectedIds={selectedIds}
+            onToggleSelection={handleSelection}
           />
         </>
       )}
