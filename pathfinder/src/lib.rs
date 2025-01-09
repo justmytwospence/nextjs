@@ -8,11 +8,18 @@ use gdal::{
   Dataset,
 };
 use geo_types::Point;
-use geojson::{GeoJson, Geometry, Value};
+use geojson::{Feature, FeatureCollection, GeoJson, Geometry, Value};
 use napi::JsUndefined;
 use napi::{bindgen_prelude::*, JsGlobal, JsObject, JsString};
 use napi_derive::napi;
 use pathfinding::prelude::fringe;
+use std::fmt;
+
+#[napi]
+pub struct Results {
+  pub path_line: String,
+  pub path_points: String,
+}
 
 #[derive(PartialEq, Debug)]
 #[napi(string_enum)]
@@ -25,7 +32,13 @@ pub enum Aspect {
   Southwest,
   West,
   Northwest,
-  Flat
+  Flat,
+}
+
+impl fmt::Display for Aspect {
+  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    write!(f, "{:?}", self)
+  }
 }
 
 fn azimuth_to_aspect(azimuth: f32) -> Aspect {
@@ -38,7 +51,7 @@ fn azimuth_to_aspect(azimuth: f32) -> Aspect {
     202.5..=247.5 => Aspect::Southwest,
     247.5..=292.5 => Aspect::West,
     292.5..=337.5 => Aspect::Northwest,
-    _ => Aspect::Flat
+    _ => Aspect::Flat,
   }
 }
 
@@ -47,28 +60,28 @@ fn azimuth_in_aspects(azimuth: f32, aspects: &Vec<Aspect>) -> bool {
     match aspect {
       Aspect::North => {
         return azimuth >= 327.5 || azimuth < 32.5;
-      },
+      }
       Aspect::Northeast => {
         return azimuth >= 12.5 && azimuth < 77.5;
-      },
+      }
       Aspect::East => {
         return azimuth >= 57.5 && azimuth < 122.5;
-      },
+      }
       Aspect::Southeast => {
         return azimuth >= 102.5 && azimuth < 167.5;
-      },
-      Aspect ::South => {
+      }
+      Aspect::South => {
         return azimuth >= 147.5 && azimuth < 212.5;
-      },
+      }
       Aspect::Southwest => {
         return azimuth >= 192.5 && azimuth < 257.5;
-      },
+      }
       Aspect::West => {
         return azimuth >= 237.5 && azimuth < 302.5;
-      },
+      }
       Aspect::Northwest => {
         return azimuth >= 282.5 && azimuth < 347.5;
-      },
+      }
       Aspect::Flat => {
         return azimuth == -9999.0;
       }
@@ -84,7 +97,7 @@ pub fn process_map(
   start: String,
   end: String,
   excluded_aspects: Option<Vec<Aspect>>,
-) -> napi::Result<String> {
+) -> napi::Result<Results> {
   const MAX_GRADIENT: f32 = 0.5;
   let excluded_aspects: Vec<Aspect> = excluded_aspects.unwrap_or_else(|| vec![]);
 
@@ -151,7 +164,12 @@ pub fn process_map(
       napi::Error::from_reason(format!("Failed to get aspects raster band: {}", e))
     })?;
   let aspect_buffer: raster::Buffer<f32> = aspect_band
-    .read_as::<f32>((0, 0), (aspect_width, aspect_height), (aspect_width, aspect_height), None)
+    .read_as::<f32>(
+      (0, 0),
+      (aspect_width, aspect_height),
+      (aspect_width, aspect_height),
+      None,
+    )
     .map_err(|e: GdalError| {
       napi::Error::from_reason(format!("Failed to read aspects raster data: {}", e))
     })?;
@@ -228,7 +246,7 @@ pub fn process_map(
     None => return Err(napi::Error::from_reason("No path found".to_string())),
   };
 
-  // Convert path to coordinates
+  // Convert path to coordinates (including elevation)
   let path_coords: Vec<Vec<f64>> = path
     .iter()
     .map(|(x, y)| {
@@ -239,8 +257,37 @@ pub fn process_map(
     })
     .collect();
 
-  let geojson: GeoJson = GeoJson::Geometry(Geometry::new(Value::LineString(path_coords)));
-  Ok(geojson.to_string())
+  // Create point features with aspect properties
+  let points: Vec<Feature> = path_coords
+    .iter()
+    .enumerate()
+    .map(|(i, coord)| {
+      let point_geometry = Geometry::new(Value::Point(vec![coord[0], coord[1]]));
+      let aspect = azimuth_to_aspect(aspects[(path[i].1 * width + path[i].0) as usize]);
+      
+      let mut properties = serde_json::Map::new();
+      properties.insert(
+        "aspect".to_string(),
+        serde_json::Value::String(aspect.to_string()),
+      );
+
+      Feature {
+        bbox: None,
+        geometry: Some(point_geometry),
+        id: None,
+        properties: Some(properties),
+        foreign_members: None,
+      }
+    })
+    .collect();
+
+  // Create feature collection with both linestring and points
+  let results: Results = Results {
+    path_line: Geometry::new(Value::LineString(path_coords)),
+    path_points: FeatureCollection { features: points, bbox: None, foreign_members: None },
+  };
+
+  Ok(results)
 }
 
 fn geo_to_pixel(lng: f64, lat: f64, transform: &[f64; 6]) -> (f64, f64) {

@@ -54,7 +54,7 @@ export default function PolylineMap(props: PolylineMapProps) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           setCenter(
-            L.latlng(position.coords.latitude, position.coords.longitude)
+            L.latLng(position.coords.latitude, position.coords.longitude)
           );
         },
         (error) => {

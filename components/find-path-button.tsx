@@ -2,7 +2,7 @@ import findPath from "@/app/actions/findPath";
 import type { Bounds } from "@/app/actions/findPath";
 import { Button } from "@/components/ui/button";
 import type { Aspect } from "@/pathfinder/index.d.ts";
-import type { LineString, Point } from "geojson";
+import type { FeatureCollection, LineString, Point } from "geojson";
 import { Loader } from "lucide-react";
 import { toast } from "sonner";
 
@@ -13,6 +13,7 @@ interface FindPathButtonProps {
   isLoading: boolean;
   setIsLoading: (loading: boolean) => void;
   setPath: (path: LineString | null) => void;
+  setAspectPoints: (aspectPoints: FeatureCollection | null) => void;
 }
 
 export default function FindPathButton({
@@ -22,6 +23,7 @@ export default function FindPathButton({
   isLoading,
   setIsLoading,
   setPath,
+  setAspectPoints,
 }: FindPathButtonProps) {
   async function handleClick() {
     if (!bounds) return;
@@ -29,11 +31,7 @@ export default function FindPathButton({
     toast.dismiss();
 
     try {
-      const pathGenerator = await findPath(
-        waypoints,
-        bounds,
-        excludedAspects
-      );
+      const pathGenerator = await findPath(waypoints, bounds, excludedAspects);
 
       for await (const result of pathGenerator) {
         switch (result.type) {
@@ -50,7 +48,8 @@ export default function FindPathButton({
             toast.error(result.message);
             break;
           case "result":
-            setPath(JSON.parse(result.message));
+            setPath(JSON.parse(result.result.pathLine));
+            setAspectPoints(JSON.parse(result.result.pathPoints));
             break;
         }
       }

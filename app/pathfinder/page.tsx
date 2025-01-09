@@ -1,6 +1,7 @@
 "use client";
 
 import type { Bounds } from "@/app/actions/findPath";
+import { AspectChart } from "@/components/aspect-chart";
 import ElevationProfile from "@/components/elevation-chart";
 import FindPathButton from "@/components/find-path-button";
 import GradientCDF from "@/components/gradient-cdf-chart";
@@ -10,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { SelectAspectsDialog } from "@/components/ui/select-aspects-dialog";
 import type { Aspect } from "@/pathfinder/index.d.ts";
-import type { LineString, Point } from "geojson";
+import type { Feature, FeatureCollection, LineString, Point } from "geojson";
 import { useCallback, useState } from "react";
 
 export default function PathFinderPage() {
@@ -20,6 +21,7 @@ export default function PathFinderPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [excludedAspects, setExcludedAspects] = useState<Aspect[]>([]);
   const [mapCenter, setMapCenter] = useState<[number, number] | undefined>();
+  const [aspectPoints, setAspectPoints] = useState<FeatureCollection | null>(null);
 
   function handleMapClick(point: Point) {
     setWaypoints([...waypoints, point]);
@@ -46,7 +48,6 @@ export default function PathFinderPage() {
     setBounds(null);
     setIsLoading(false);
 
-    // Reset map bounds using the custom property we added
     const mapElement = document.querySelector('.leaflet-container');
     if (mapElement) {
       // @ts-ignore - accessing custom property
@@ -77,12 +78,26 @@ export default function PathFinderPage() {
             : [...currentPath.coordinates, ...newPath.coordinates.slice(1)],
       };
 
-      console.log("Current path", currentPath);
-      console.log("New path", newPath);
-      console.log("Combined path", combinedPath);
-
       return combinedPath;
     });
+  }, []);
+
+  const handleSetAspectPoints = useCallback((newPoints: FeatureCollection | null) => {
+    setAspectPoints((currentAspectPoints) => {
+      if (newPoints === null) {
+        return null;
+      }
+
+      const combinedPoints: FeatureCollection = {
+        type: "FeatureCollection",
+        features: [
+          ...currentAspectPoints?.features || [],
+          ...newPoints.features,
+        ]
+      };
+
+      return combinedPoints;
+    })
   }, []);
 
   const handleLocationSelect = useCallback((center: [number, number]) => {
@@ -100,6 +115,7 @@ export default function PathFinderPage() {
           isLoading={isLoading}
           setIsLoading={setIsLoading}
           setPath={handleSetPath}
+          setAspectPoints={handleSetAspectPoints}
         />
         <Button onClick={handleReset}>Reset</Button>
         <Button onClick={handleCenter}>Center Points</Button>
@@ -142,6 +158,15 @@ export default function PathFinderPage() {
                 <GradientCDF
                   mappables={[{ polyline: path, name: "Path", id: "path" }]}
                 />
+              </div>
+            )}
+          </Card>
+
+          <Card className="p-4">
+            <h2 className="text-lg font-semibold mb-2">Aspect Distribution</h2>
+            {aspectPoints && (
+              <div className="h-[300px]">
+                <AspectChart aspectPoints={aspectPoints} />
               </div>
             )}
           </Card>

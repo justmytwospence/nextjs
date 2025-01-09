@@ -14,4 +14,8 @@ export const enum Aspect {
   Northwest = 'Northwest',
   Flat = 'Flat'
 }
-export declare function processMap(arrayBuffer: Buffer, start: string, end: string, excludedAspects?: Array<Aspect> | undefined | null): string
+export declare function processMap(arrayBuffer: Buffer, start: string, end: string, excludedAspects?: Array<Aspect> | undefined | null): Results
+export declare class Results {
+  pathLine: string
+  pathPoints: string
+}
