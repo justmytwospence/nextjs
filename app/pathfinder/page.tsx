@@ -47,6 +47,7 @@ export default function PathFinderPage() {
     setPath(null);
     setBounds(null);
     setIsLoading(false);
+    setAspectPoints(null);
 
     const mapElement = document.querySelector('.leaflet-container');
     if (mapElement) {
@@ -134,6 +135,7 @@ export default function PathFinderPage() {
             clickable={path === null}
             markers={waypoints}
             polyline={path}
+            polylineProperties={aspectPoints}
             center={mapCenter}
           />
         </Card>

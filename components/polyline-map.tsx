@@ -3,8 +3,10 @@
 import type { Bounds } from "@/app/actions/findPath";
 import { computeDistanceMiles, computeGradient } from "@/lib/geo/geo";
 import { baseLogger } from "@/lib/logger";
+import type { Aspect } from "@/pathfinder";
 import type { HoverIndexStore } from "@/store";
 import {
+  aspectStore,
   hoverIndexStore as defaultHoverIndexStore,
   gradientStore,
 } from "@/store";
@@ -23,6 +25,7 @@ import {
 
 interface PolylineMapProps {
   polyline: LineString | null;
+  polylineProperties?: FeatureCollection | null;
   interactive?: boolean;
   hoverIndexStore?: HoverIndexStore;
   onMapClick?: (point: Point) => Point;
@@ -43,7 +46,7 @@ export default function PolylineMap(props: PolylineMapProps) {
       const [lng, lat] = props.center;
       mapRef.current.setView([lat, lng], 13, {
         animate: true,
-        duration: 1
+        duration: 1,
       });
     }
   }, [props.center]);
@@ -84,6 +87,7 @@ export default function PolylineMap(props: PolylineMapProps) {
 
 function MapContent({
   polyline,
+  polylineProperties,
   interactive = true,
   hoverIndexStore = defaultHoverIndexStore,
   onMapClick,
@@ -124,14 +128,17 @@ function MapContent({
   });
 
   // Add method to center map
-  const centerMap = useCallback((lat: number, lng: number, zoom?: number) => {
-    const newZoom = zoom || map.getZoom();
-    map.setView([lat, lng], newZoom, {
-      animate: true,
-      duration: 1
-    });
-    onCenterChange?.(L.latLng(lat, lng));
-  }, [map, onCenterChange]);
+  const centerMap = useCallback(
+    (lat: number, lng: number, zoom?: number) => {
+      const newZoom = zoom || map.getZoom();
+      map.setView([lat, lng], newZoom, {
+        animate: true,
+        duration: 1,
+      });
+      onCenterChange?.(L.latLng(lat, lng));
+    },
+    [map, onCenterChange]
+  );
 
   // Add to component's ref
   useEffect(() => {
@@ -189,6 +196,7 @@ function MapContent({
       {polyline && (
         <GeoJSONLayer
           polyline={polyline}
+          polylineProperties={polylineProperties}
           hoverIndexStore={hoverIndexStore}
           interactive={interactive}
           bounds={bounds}
@@ -200,11 +208,13 @@ function MapContent({
 
 const GeoJSONLayer = ({
   polyline,
+  polylineProperties,
   hoverIndexStore,
   interactive = true,
   bounds,
 }: {
   polyline: LineString;
+  polylineProperties: FeatureCollection;
   hoverIndexStore: HoverIndexStore;
   interactive?: boolean;
   bounds: L.LatLngBounds | null;
@@ -214,6 +224,7 @@ const GeoJSONLayer = ({
   const hoverMarkerRef = useRef<L.Marker | null>(null);
   const { setHoverIndex } = hoverIndexStore();
   const { hoveredGradient } = gradientStore();
+  const { hoveredAspect } = aspectStore();
 
   // polyline useEffect
   useEffect(() => {
@@ -222,7 +233,10 @@ const GeoJSONLayer = ({
       .slice(0, -1)
       .map((coord, i) => ({
         type: "Feature" as const,
-        properties: { gradient: computedGradients[i] },
+        properties: {
+          gradient: computedGradients[i],
+          aspect: polylineProperties ? polylineProperties.features[i]?.properties?.aspect : null,
+        },
         geometry: {
           type: "LineString" as const,
           coordinates: [coord, polyline.coordinates[i + 1]],
@@ -248,11 +262,19 @@ const GeoJSONLayer = ({
           }
           const isHighGradient =
             feature?.properties?.gradient >= (hoveredGradient ?? 0);
+          const matchesAspect = hoveredAspect
+            ? feature?.properties?.aspect === hoveredAspect
+            : false;
+
           return {
-            color: isHighGradient ? "#ff6b6b" : "#4475ff",
-            weight: 3,
-            opacity: 0.8,
-            zIndex: isHighGradient ? 1000 : 1, // Higher z-index for red segments
+            color: matchesAspect
+              ? "#ff6b6b"
+              : isHighGradient
+              ? "#ff6b6b"
+              : "#4475ff",
+            weight: matchesAspect ? 4 : 3,
+            opacity: matchesAspect ? 1 : 0.8,
+            zIndex: matchesAspect ? 2000 : isHighGradient ? 1000 : 1,
           };
         },
       }
@@ -287,10 +309,9 @@ const GeoJSONLayer = ({
       map.off("mousemove", handleMouseMove);
       map.off("mouseout");
     };
-  }, [polyline, interactive, bounds]);
+  }, [polyline, interactive, bounds, hoveredAspect]);
 
   // respond to hoverIndex
-
   const updateHoverPoint = useCallback(
     (index: number) => {
       if (index < 0 || !polyline.coordinates[index]) {
@@ -325,9 +346,20 @@ const GeoJSONLayer = ({
     return unsub;
   }, [updateHoverPoint, hoverIndexStore]);
 
-  // respond to hoveredGradient
+  // hoveredGradient useEffect
+  useEffect(() => {
+    if (!interactive) return;
+    const unsub = gradientStore.subscribe(
+      (state) => state.hoveredGradient,
+      (hoveredGradient) => {
+        highlightGradients(hoveredGradient);
+      }
+    );
+    return unsub;
+  }, [highlightGradients, gradientStore]);
 
-  const updateGradients = useCallback(
+  // respond to hoveredGradient
+  const highlightGradients = useCallback(
     (hoveredGradient: number | null) => {
       if (!geoJsonRef.current || !interactive) return;
       geoJsonRef.current.setStyle((feature) => ({
@@ -342,16 +374,33 @@ const GeoJSONLayer = ({
     [interactive]
   );
 
-  // hoveredGradient useEffect
+  // respond to hoveredAspect
+  const highlightAspect = useCallback(
+    (hoveredAspect: Aspect | null) => {
+      if (!geoJsonRef.current || !interactive) return;
+      geoJsonRef.current.setStyle((feature) => ({
+        color:
+          feature?.properties?.aspect >= (hoveredAspect ?? 0)
+            ? "#ff6b6b"
+            : "#4475ff",
+        weight: 3,
+        opacity: 0.8,
+      }));
+    },
+    [interactive]
+  );
+
+  // hoveredAspect useEffect
   useEffect(() => {
     if (!interactive) return;
-    const unsub = gradientStore.subscribe(
-      (state) => state.hoveredGradient,
-      (hoveredGradient) => {
-        updateGradients(hoveredGradient);
+    const unsub = aspectStore.subscribe(
+      (state) => state.hoveredAspect,
+      (hoveredAspect) => {
+        highlightAspect(hoveredAspect);
       }
     );
     return unsub;
-  }, [updateGradients, gradientStore]);
+  }, [highlightAspect, aspectStore]);
+
   return null;
 };

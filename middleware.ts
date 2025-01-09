@@ -1,6 +1,9 @@
+import authConfig from "@/auth.config";
+import NextAuth from "next-auth";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { auth } from "@/auth";
+
+const { auth } = NextAuth(authConfig);
 
 export async function middleware(request: NextRequest) {
   const session = await auth();
@@ -15,7 +18,7 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: [
+  matcher: 
     /*
      * Match all paths except:
      * 1. /api/* (API endpoints)
@@ -25,5 +28,4 @@ export const config = {
      * 5. /favicon.ico, etc. (static files)
      */
     "/((?!api/|login|logout|_next|static|favicon.ico).*)",
-  ],
 };

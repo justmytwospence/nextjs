@@ -1,3 +1,17 @@
+-- CreateExtension
+CREATE EXTENSION IF NOT EXISTS "postgis";
+
+-- CreateExtension
+CREATE EXTENSION IF NOT EXISTS "postgis_raster";
+
+-- CreateTable
+CREATE TABLE "ElevationTile" (
+    "rid" SERIAL NOT NULL,
+    "rast" raster NOT NULL,
+
+    CONSTRAINT "ElevationTile_pkey" PRIMARY KEY ("rid")
+);
+
 -- CreateTable
 CREATE TABLE "User" (
     "id" TEXT NOT NULL,

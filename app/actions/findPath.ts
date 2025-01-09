@@ -1,7 +1,12 @@
 "use server";
 
 import { getTopo } from "@/lib/geo/open-topo";
-import type { LineString, Point } from "geojson";
+import {
+  checkGeoTIFFCache,
+  getGeoTiff,
+  insertGeoTiff,
+} from "@/lib/geo/tiling";
+import type { Point } from "geojson";
 import pathfinder, { type Results, type Aspect } from "pathfinder";
 const { processMap } = pathfinder;
 
@@ -22,14 +27,38 @@ export type Bounds = {
   west: number;
 };
 
+async function cacheGeoTIFF(geoTiffArrayBuffer: Buffer) {
+  try {
+    await insertGeoTiff(geoTiffArrayBuffer);
+    return true;
+  } catch (error) {
+    console.error("Failed to cache GeoTIFF:", error);
+    return false;
+  }
+}
+
 export default async function* findPath(
   waypoints: Point[],
   bounds: Bounds,
   excludedAspects: Aspect[] = []
 ): AsyncGenerator<findPathMessage, void, unknown> {
-  yield { type: "info", message: "Downloading DEM..." };
-  const geoTiffArrayBuffer = await getTopo(bounds);
-  yield { type: "success", message: "DEM downloaded." };
+  yield { type: "info", message: "Checking cache..." };
+  const boundsInCache = await checkGeoTIFFCache(bounds);
+
+  let geoTiffArrayBuffer: Buffer;
+  let cachingPromise: Promise<boolean> | null = null;
+
+  if (boundsInCache) {
+    yield { type: "info", message: "Downloading DEM from cache..." };
+    geoTiffArrayBuffer = await getGeoTiff(bounds);
+    yield { type: "success", message: "DEM downloaded" };
+  } else {
+    yield { type: "info", message: "Downloading DEM from OpenTopo..." };
+    geoTiffArrayBuffer = await getTopo(bounds);
+    yield { type: "success", message: "DEM downloaded" };
+    yield { type: "info", message: "Starting DEM cache in background..." };
+    cachingPromise = cacheGeoTIFF(geoTiffArrayBuffer);
+  }
 
   yield { type: "info", message: "Finding path..." };
   try {
@@ -38,7 +67,7 @@ export default async function* findPath(
       const end = waypoints[i + 1];
 
       const { pathLine, pathPoints } = await processMap(
-        Buffer.from(geoTiffArrayBuffer),
+        geoTiffArrayBuffer,
         JSON.stringify(start),
         JSON.stringify(end),
         excludedAspects
@@ -53,8 +82,16 @@ export default async function* findPath(
         type: "result",
         result: {
           pathLine,
-          pathPoints
-        }
+          pathPoints,
+        },
+      };
+    }
+
+    if (cachingPromise) {
+      const cacheResult = await cachingPromise;
+      yield {
+        type: "success",
+        message: cacheResult ? "DEM cached successfully" : "DEM caching failed",
       };
     }
   } catch (error) {

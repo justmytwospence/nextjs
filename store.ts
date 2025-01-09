@@ -1,4 +1,5 @@
-import { create, StoreApi, UseBoundStore } from "zustand";
+import type { Aspect } from "pathfinder";
+import { type StoreApi, type UseBoundStore, create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
 
 interface HoverIndexState {
@@ -9,6 +10,11 @@ interface HoverIndexState {
 interface GradientState {
   hoveredGradient: number | null;
   setHoveredGradient: (gradient: number | null) => void;
+}
+
+interface AspectState {
+  hoveredAspect: Aspect | null;
+  setHoveredAspect: (aspect: Aspect | null) => void;
 }
 
 export type HoverIndexStore = UseBoundStore<StoreApi<HoverIndexState>>;
@@ -35,3 +41,14 @@ export const createGradientStore = () => create<GradientState>()(
   }))
 );
 export const gradientStore = createGradientStore();
+
+export const createAspectStore = () => create<AspectState>()(
+  subscribeWithSelector((set) => ({
+    hoveredAspect: null,
+    setHoveredAspect: (aspect) => set((state) => {
+      if (state.hoveredAspect === aspect) return state;
+      return { hoveredAspect: aspect };
+    }),
+  }))
+);
+export const aspectStore = createAspectStore();

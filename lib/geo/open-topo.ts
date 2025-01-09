@@ -7,7 +7,7 @@ export async function getTopo(
   datasetName: OpenTopoDataset = "USGS10m",
   outputFormat = "GTiff",
   apiKey = "2313f9bc0e417e032bf9ff07fb6a0844" // process.env.OPEN_TOPO_API_KEY
-): Promise<ArrayBuffer> {
+): Promise<Buffer> {
   const baseUrl = "https://portal.opentopography.org/API/usgsdem";
   const { north, south, east, west } = bounds;
   const url = `${baseUrl}?datasetName=${datasetName}&south=${south}&north=${north}&west=${west}&east=${east}&outputFormat=${outputFormat}&API_Key=${apiKey}`;
@@ -21,5 +21,5 @@ export async function getTopo(
   if (!response.ok) {
     throw new Error(`Error fetching data: ${response.statusText}`);
   }
-  return await response.arrayBuffer();
+  return Buffer.from(await response.arrayBuffer());
 }

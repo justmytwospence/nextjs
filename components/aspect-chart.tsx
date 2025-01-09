@@ -1,5 +1,8 @@
-import { ArcElement, Chart as ChartJS, Legend, RadialLinearScale, Tooltip } from 'chart.js';
+import type { Aspect } from '@/pathfinder';
+import { aspectStore } from '@/store';
+import { type ActiveElement, ArcElement, type ChartEvent, Chart as ChartJS, Legend, RadialLinearScale, Tooltip } from 'chart.js';
 import type { FeatureCollection } from 'geojson';
+import { useState } from 'react';
 import { useMemo } from 'react';
 import { PolarArea } from 'react-chartjs-2';
 
@@ -11,6 +14,8 @@ export interface AspectChartProps {
 }
 
 export function AspectChart({ aspectPoints }: AspectChartProps) {
+  const { setHoveredAspect } = aspectStore();
+  const [isAspectLocked, setIsAspectLocked] = useState(false);
   const aspects = aspectPoints.features.map(feature => feature.properties?.aspect);
   
   const chartData = useMemo(() => {
@@ -84,11 +89,64 @@ export function AspectChart({ aspectPoints }: AspectChartProps) {
       legend: {
         display: false
       }
+    },
+    onHover: (event: ChartEvent, elements: ActiveElement[], chart: ChartJS) => {
+      if (!event?.native || !chart?.chartArea) {
+        if (!isAspectLocked) setHoveredAspect(null);
+        return;
+      }
+      
+      if (isAspectLocked) return;
+      
+      if (elements && elements[0]) {
+        const index = elements[0].index;
+        const direction = chartData.labels[index];
+        const aspectMap: Record<string, string> = {
+          'N': 'North',
+          'NE': 'Northeast',
+          'E': 'East',
+          'SE': 'Southeast',
+          'S': 'South',
+          'SW': 'Southwest',
+          'W': 'West',
+          'NW': 'Northwest'
+        };
+        const hoveredAspect = aspectMap[direction] as Aspect;
+        setHoveredAspect(hoveredAspect);
+      } else {
+        setHoveredAspect(null);
+      }
+    },
+    onClick: (event: any, elements: any[]) => {
+      if (elements && elements[0]) {
+        const index = elements[0].index;
+        const direction = chartData.labels[index];
+        const aspectMap: Record<string, string> = {
+          'N': 'North',
+          'NE': 'Northeast',
+          'E': 'East',
+          'SE': 'Southeast',
+          'S': 'South',
+          'SW': 'Southwest',
+          'W': 'West',
+          'NW': 'Northwest'
+        };
+        const hoveredAspect = aspectMap[direction] as Aspect;
+        setHoveredAspect(hoveredAspect);
+        setIsAspectLocked(true);
+      }
     }
   };
 
   return (
-    <div className="w-full h-full min-h-[300px] flex items-center justify-center">
+    <div 
+      className="w-full h-full min-h-[300px] flex items-center justify-center"
+      onMouseLeave={() => {
+        if (!isAspectLocked) {
+          setHoveredAspect(null);
+        }
+      }}
+    >
       <PolarArea data={chartData} options={options} />
     </div>
   );
