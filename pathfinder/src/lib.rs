@@ -4,7 +4,7 @@ use gdal::raster::processing::dem::{aspect, AspectOptions};
 use gdal::{
   errors::GdalError,
   raster,
-  vsi::{create_mem_file_from_ref, MemFileRef},
+  vsi::{create_mem_file_from_ref, MemFileRef, },
   Dataset,
 };
 use geo_types::Point;
@@ -153,7 +153,7 @@ pub fn pathfind(
 
   let aspect_dataset: Dataset = aspect(
     &elevation_dataset,
-    std::path::Path::new("temp.tif"),
+    std::path::Path::new("/tmp/aspect.tif"),
     &AspectOptions::new(),
   )
   .map_err(|e: GdalError| napi::Error::from_reason(format!("Failed to calculate aspect: {}", e)))?;

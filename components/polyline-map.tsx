@@ -346,18 +346,6 @@ const GeoJSONLayer = ({
     return unsub;
   }, [updateHoverPoint, hoverIndexStore]);
 
-  // hoveredGradient useEffect
-  useEffect(() => {
-    if (!interactive) return;
-    const unsub = gradientStore.subscribe(
-      (state) => state.hoveredGradient,
-      (hoveredGradient) => {
-        highlightGradients(hoveredGradient);
-      }
-    );
-    return unsub;
-  }, [highlightGradients, gradientStore]);
-
   // respond to hoveredGradient
   const highlightGradients = useCallback(
     (hoveredGradient: number | null) => {
@@ -373,6 +361,18 @@ const GeoJSONLayer = ({
     },
     [interactive]
   );
+
+  // hoveredGradient useEffect
+  useEffect(() => {
+    if (!interactive) return;
+    const unsub = gradientStore.subscribe(
+      (state) => state.hoveredGradient,
+      (hoveredGradient) => {
+        highlightGradients(hoveredGradient);
+      }
+    );
+    return unsub;
+  }, [highlightGradients, gradientStore]);
 
   // respond to hoveredAspect
   const highlightAspect = useCallback(
