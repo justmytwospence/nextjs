@@ -12,6 +12,8 @@ if (environment === "production") {
   execSync("npx prisma migrate reset --force", { stdio: "inherit" });
   execSync("npx prisma migrate deploy", { stdio: "inherit" });
   execSync("./scripts/install-rust.sh", { stdio: "inherit" });
+  const cargoPath = execSync("which cargo").toString().trim();
+  console.log(`Cargo is installed at: ${cargoPath}`);
 } else {
   console.log("No migrations for this environment.");
 }
