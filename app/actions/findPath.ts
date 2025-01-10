@@ -7,6 +7,7 @@ import {
   getGeoTiff,
   insertGeoTiff,
 } from "@/lib/geo/tiling";
+import { baseLogger } from "@/lib/logger";
 import type { Point } from "geojson";
 import pathfinder, { type Results, type Aspect } from "pathfinder";
 const { pathfind } = pathfinder;
@@ -44,8 +45,8 @@ export default async function* findPath(
   excludedAspects: Aspect[] = []
 ): AsyncGenerator<findPathMessage, void, unknown> {
 
-  console.log("LD_LIBRARY_PATH: ", process.env.LD_LIBRARY_PATH);
-  console.log("/var/tasks: ", await fs.readdir("/var/tasks"));
+  baseLogger.debug("LD_LIBRARY_PATH: ", process.env.LD_LIBRARY_PATH);
+  baseLogger.debug("/var/tasks: ", await fs.readdir("/var/tasks"));
 
   yield { type: "info", message: "Checking cache..." };
   const boundsInCache = await checkGeoTIFFCache(bounds);
