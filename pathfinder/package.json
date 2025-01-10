@@ -30,8 +30,5 @@
     "test": "ava",
     "universal": "napi universal",
     "version": "napi version"
-  },
-  "dependencies": {
-    "react-geolocated": "^4.3.0"
   }
 }
