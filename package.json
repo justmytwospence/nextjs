@@ -96,7 +96,7 @@
   "private": true,
   "scripts": {
     "build": "npm run build:rs && next build",
-    "build:rs": "(cd pathfinder && rustup default stable && wget --quiet -O miniconda.sh https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh && bash miniconda.sh -b > /dev/null && ~/miniconda3/bin/conda --quiet create -n gdal_env -c conda-forge gdal -y && ~/miniconda3/bin/conda init; exec $SHELL; ~/miniconda3/bin/conda activate gdal_env && npm install && npm run build)",
+    "build:rs": "(cd pathfinder && rustup default stable && wget --quiet -O miniconda.sh https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh && bash miniconda.sh -b > /dev/null && ~/miniconda3/bin/conda create --quiet -n gdal_env -c conda-forge gdal -y && ~/miniconda3/bin/conda init; exec $SHELL; ~/miniconda3/bin/conda activate gdal_env && npm install && npm run build)",
     "dev": "next dev",
     "preinstall": "npm install -g npm@11",
     "postinstall": "prisma generate"
