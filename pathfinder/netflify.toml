@@ -1,2 +1,5 @@
 [build]
   command = "npm run build"  
+
+[functions]
+  included_files = ["artifacts/**"]
