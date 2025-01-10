@@ -2,6 +2,7 @@
   "build": {
     "env": {
       "NODE_VERSION": "^22"
-    }
+    },
+    "installCommand": "npm install -g npm@11 && npm install"
   }
 }
