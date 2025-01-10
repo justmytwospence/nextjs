@@ -96,9 +96,10 @@
   "private": true,
   "scripts": {
     "build": "npm run build:rs && next build",
-    "build:rs": "(cd pathfinder && rustup default stable && npm install && npm run build)",
+    "build:rs": "(npm run installGDAL && cd pathfinder && rustup default stable && npm install && npm run build)",
     "dev": "next dev",
     "preinstall": "npm install -g npm@11",
+    "installGDAL": "apt update; apt install -y gdal-bin",
     "postinstall": "prisma generate"
   },
   "version": "0.1.0"
