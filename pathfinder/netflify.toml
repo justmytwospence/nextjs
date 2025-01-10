@@ -1,3 +1,2 @@
 [build]
-  install = "npm install -g npm@11 && npm install"  
   command = "npm run build"  
