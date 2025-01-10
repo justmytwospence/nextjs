@@ -5,3 +5,4 @@ bash miniconda.sh -b > /dev/null
 $HOME/miniconda3/bin/conda create --quiet -n gdal_env -c conda-forge gdal glibc -y 
 export GDAL_HOME="$HOME/miniconda3/envs/gdal_env"
 echo $(ls $GDAL_HOME)
+echo $(ls $GDAL_HOME/include)
