@@ -96,7 +96,7 @@
   "private": true,
   "scripts": {
     "build": "node scripts/prebuild-script.js && npm run build:rs && next build",
-    "build:rs": "(cd pathfinder && PATH=$HOME/.cargo/bin:$PATH npm run build)",
+    "build:rs": "(cd pathfinder && PATH=$HOME/.cargo/bin:$PATH LIBCLANG_PATH=$(conda info --base)/lib npm run build)",
     "dev": "next dev",
     "postinstall": "prisma generate"
   },
