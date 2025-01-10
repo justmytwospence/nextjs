@@ -3,5 +3,3 @@ bash miniconda.sh -b > /dev/null
 $HOME/miniconda3/bin/conda create --quiet -n gdal_env -c conda-forge gdal -y 
 $HOME/miniconda3/bin/conda init
 echo $SHELL
-exec $SHELL
-$HOME/miniconda3/bin/conda activate gdal_env 
