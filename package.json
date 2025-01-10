@@ -86,7 +86,7 @@
     "typescript": "^5"
   },
   "engines": {
-    "node": ">=22.0.0 <23.0.0",
+    "node": ">=22.0.0 <23.0.0"
   },
   "name": "my-next-app",
   "prisma": {
