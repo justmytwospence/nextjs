@@ -1,5 +1,6 @@
 "use server";
 
+import fs from "node:fs/promises";
 import { getTopo } from "@/lib/geo/open-topo";
 import {
   checkGeoTIFFCache,
@@ -42,6 +43,10 @@ export default async function* findPath(
   bounds: Bounds,
   excludedAspects: Aspect[] = []
 ): AsyncGenerator<findPathMessage, void, unknown> {
+
+  console.log("LD_LIBRARY_PATH: ", process.env.LD_LIBRARY_PATH);
+  console.log("/var/tasks: ", await fs.readdir("/var/tasks"));
+
   yield { type: "info", message: "Checking cache..." };
   const boundsInCache = await checkGeoTIFFCache(bounds);
 
