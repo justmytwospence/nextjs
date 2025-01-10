@@ -95,7 +95,7 @@
   },
   "private": true,
   "scripts": {
-    "build": "node scripts/prebuild-script.js && echo `which cargo` && npm run build:rs && next build",
+    "build": "node scripts/prebuild-script.js && PATH=$HOME/.cargo/bin/cargo:$PATH npm run build:rs && next build",
     "build:rs": "(cd pathfinder && npm run build)",
     "dev": "next dev",
     "postinstall": "prisma generate"
