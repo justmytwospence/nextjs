@@ -37,7 +37,7 @@ export default function SegmentsPage() {
   const [activityType, setActivityType] = useState<string>("all");
   const [page, setPage] = useState(1);
   const pageSize = 24;
-  const [sorting, setSorting] = useState([]);
+  const [sorting, setSorting] = useState<{ id: string; desc: boolean }[]>([]);
   const [rowSelection, setRowSelection] = useState({});
 
   const { data, isLoading } = useQuery({
@@ -88,10 +88,10 @@ export default function SegmentsPage() {
       header: "Activity Type",
     },
     {
-      accessorFn: (row) => row.distance / 1000,
+      accessorFn: (row): number => (row.distance ?? 0) / 1000,
       id: "distance",
       header: "Distance",
-      cell: (info) => `${info.getValue().toFixed(1)}km`,
+      cell: (info) => `${(info.getValue() as number).toFixed(1)}km`,
     },
     {
       accessorFn: (row) => ({
@@ -101,9 +101,9 @@ export default function SegmentsPage() {
       id: "grade",
       header: "Avg/Max Grade",
       cell: (info) =>
-        `${info.getValue().avg?.toFixed(1)}% / ${info
-          .getValue()
-          .max?.toFixed(1)}%`,
+        `${(info.getValue() as { avg: number | null; max: number | null }).avg?.toFixed(1)}% / ${(
+          info.getValue() as { avg: number | null; max: number | null }
+        ).max?.toFixed(1)}%`,
     },
     {
       accessorFn: (row) => ({
@@ -112,10 +112,10 @@ export default function SegmentsPage() {
       }),
       id: "elevation",
       header: "Elev (Low/High)",
-      cell: (info) =>
-        `${info.getValue().low?.toFixed(0)}m / ${info
-          .getValue()
-          .high?.toFixed(0)}m`,
+      cell: (info) => {
+        const value = info.getValue() as { low: number | null; high: number | null };
+        return `${value.low?.toFixed(0)}m / ${value.high?.toFixed(0)}m`;
+      },
     },
     {
       accessorKey: "climbCategory",

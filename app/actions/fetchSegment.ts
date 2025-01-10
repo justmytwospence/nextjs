@@ -4,11 +4,11 @@ import { auth } from "@/auth";
 import { enrichSegment, querySegment } from "@/lib/db/segments";
 import { fetchDetailedSegment, fetchSegmentStreams } from "@/lib/strava";
 import { isEnrichedSegment } from "@/types/transformers";
-import type { Segment } from "@prisma/client";
+import type { EnrichedSegment, Segment } from "@prisma/client";
 
 export default async function fetchSegment(
   segmentId: string
-): Promise<Segment> {
+): Promise<EnrichedSegment> {
   const session = await auth();
 
   if (!session) {
@@ -39,5 +39,5 @@ export default async function fetchSegment(
     return enrichedSegment;
   }
 
-  return segment;
+  return segment as EnrichedSegment;
 }

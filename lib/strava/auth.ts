@@ -51,4 +51,5 @@ export async function refreshToken(userId: string): Promise<Account | null> {
       },
     }) as Account;
   }
+  return null
 }

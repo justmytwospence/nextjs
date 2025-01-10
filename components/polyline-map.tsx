@@ -56,8 +56,9 @@ export default function PolylineMap(props: PolylineMapProps) {
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          setCenter(
-            L.latLng(position.coords.latitude, position.coords.longitude)
+          mapRef.current?.setView(
+            [position.coords.latitude, position.coords.longitude],
+            13
           );
         },
         (error) => {
@@ -196,7 +197,7 @@ function MapContent({
       {polyline && (
         <GeoJSONLayer
           polyline={polyline}
-          polylineProperties={polylineProperties}
+          polylineProperties={polylineProperties || { type: 'FeatureCollection', features: [] }}
           hoverIndexStore={hoverIndexStore}
           interactive={interactive}
           bounds={bounds}

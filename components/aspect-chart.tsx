@@ -64,11 +64,14 @@ export function AspectChart({ aspectPoints }: AspectChartProps) {
     responsive: true,
     scales: {
       r: {
+        type: 'radialLinear' as const,
         startAngle: -22.5,
         ticks: {
           display: true,
-          callback: function(value: number) {
-            return `${Math.round((value / this.chart.data.datasets[0].data.reduce((a: number, b: number) => a + b, 0)) * 100)}%`;
+          callback: function(tickValue: number | string, index: number, ticks: any[]) {
+            const chart = (this as any).chart;
+            const total = chart.data.datasets[0].data.reduce((a: number, b: number) => a + b, 0);
+            return `${Math.round((Number(tickValue) / total) * 100)}%`;
           },
           backdropColor: 'transparent'  // Makes the background transparent
         },

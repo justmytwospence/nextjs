@@ -143,7 +143,7 @@ export async function enrichSegment(
   segmentId: string,
   detailedSegment: DetailedSegment,
   segmentSteams: StreamSet
-): Promise<Segment> {
+): Promise<EnrichedSegment> {
   baseLogger.debug(`Enriching segment ${segmentId}`);
 
   const { athleteSegmentStats, map, ...segmentData } =
