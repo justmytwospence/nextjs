@@ -51,6 +51,7 @@ export default async function* findPath(
   console.log("Stats:", JSON.stringify(stats, null, 2));
 
   baseLogger.debug("LD_LIBRARY_PATH: ", process.env.LD_LIBRARY_PATH);
+  baseLogger.debug("LD_DEBUG: ", process.env.LD_DEBUG);
 
   const pathfinder = require("pathfinder");
   const { pathfind } = pathfinder;
