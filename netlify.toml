@@ -3,6 +3,3 @@
 
 [build.environment]
   GDAL_STATIC="true"
-
-[context.production]
-  cache = ["gdal-3.10.0/build/libgdal.a"]

@@ -11,6 +11,7 @@ $HOME/miniconda3/bin/conda create --quiet -n gdal_env -c conda-forge \
   pkg-config \
   proj -y
 
+BASEDIR = $(pwd)
 curl -Lo gdal-3.10.0.tar.gz https://github.com/OSGeo/gdal/releases/download/v3.10.0/gdal-3.10.0.tar.gz
 tar -xf gdal-3.10.0.tar.gz
 cd gdal-3.10.0
@@ -20,7 +21,7 @@ $HOME/miniconda3/bin/conda run -n gdal_env cmake .. \
   -DBUILD_APPS=OFF \
   -DBUILD_PYTHON_BINDINGS=OFF \
   -DBUILD_SHARED_LIBS=OFF \
-  -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY=../.. \
+  -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY=${BASEDIR} \
   -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
   -DCMAKE_C_FLAGS="-fPIC" \
@@ -33,8 +34,8 @@ $HOME/miniconda3/bin/conda run -n gdal_env cmake .. \
 echo "Building GDAL"
 cmake --build . --target GDAL -- -j4
 
-cd ../..
+cd $BASEDIR
+ls -lah 
 realpath libgdal.a
-ls -lah libgdal.a
 
 rm -rf gdal-3.10.0*
