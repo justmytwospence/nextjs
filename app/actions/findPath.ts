@@ -8,9 +8,10 @@ import type { Point } from "geojson";
 
 import type { Aspect, Results } from "pathfinder";
 
-// process.env.LD_LIBRARY_PATH = process.env.LD_LIBRARY_PATH
-//   ? `${process.env.LD_LIBRARY_PATH}:${"/var/tasks/artifacts"}`
-//   : "/var/tasks/artifacts";
+process.env.LD_DEBUG = "all";
+process.env.LD_LIBRARY_PATH = process.env.LD_LIBRARY_PATH
+  ? `${process.env.LD_LIBRARY_PATH}:${"/var/tasks/artifacts"}`
+  : "/var/tasks/artifacts";
 
 type findPathMessage =
   | {
