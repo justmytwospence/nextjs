@@ -41,19 +41,11 @@ export default async function* findPath(
   bounds: Bounds,
   excludedAspects: Aspect[] = []
 ): AsyncGenerator<findPathMessage, void, unknown> {
-  console.log("__dirname: ", __dirname);
-  console.log("Files in __dirname: ", await fs.readdir(__dirname));
-  const cwd = process.cwd();
-  console.log("CWD: ", cwd)
-  console.log("Files in CWD: ", await fs.readdir(cwd));
   const librariesDir = "/var/task/artifacts";
   const files = await fs.readdir(librariesDir);
   console.log("Files in /var/task/artifacts directory: ", files);
-  for (const file of files) {
-    const filePath = path.join(librariesDir, file); const stats = await fs.stat(filePath);
-    const permissions = `0${(stats.mode & 0o777).toString(8)}`;
-    console.log(`Permissions: ${permissions}`);
-  }
+  const stats = await fs.stat("/var/task/artifacts/libgdal.so.36.3.10.0");
+  console.log(`Stats: ${stats}`);
 
   process.env.LD_LIBRARY_PATH = librariesDir;
   baseLogger.debug("LD_LIBRARY_PATH: ", process.env.LD_LIBRARY_PATH);
