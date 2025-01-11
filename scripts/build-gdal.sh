@@ -21,7 +21,3 @@ $HOME/miniconda3/bin/conda run -n gdal_env cmake .. \
   -DOGR_BUILD_OPTIONAL_DRIVERS=OFF
 echo "Building GDAL"
 cmake --build . --target GDAL
-echo $PWD
-ls -lah $PWD
-echo $PWD/build
-ls -lah $PWD/build
