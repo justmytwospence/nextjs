@@ -16,7 +16,9 @@ $HOME/miniconda3/bin/conda run -n gdal_env cmake .. \
   -DGDAL_BUILD_OPTIONAL_DRIVERS=OFF \
   -DOGR_BUILD_OPTIONAL_DRIVERS=OFF \
   -DOGR_ENABLE_DRIVER_MEM=ON \
+  -DCMAKE_BUILD_TYPE=Release \
   -DOGR_ENABLE_DRIVER_GTIFF=ON \
   -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY=. 
-cmake --build . --target GDAL --config Release
+echo "Building GDAL"
+cmake --build . --target GDAL
 ls -lah .
