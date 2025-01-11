@@ -9,6 +9,10 @@ import type { Point } from "geojson";
 
 import type { Aspect, Results } from "pathfinder";
 
+process.env.LD_LIBRARY_PATH = process.env.LD_LIBRARY_PATH
+  ? `${process.env.LD_LIBRARY_PATH}:${"/var/tasks/artifacts"}`
+  : "/var/tasks/artifacts";
+
 type findPathMessage =
   | {
       type: "info" | "success" | "warning" | "error";
@@ -45,11 +49,8 @@ export default async function* findPath(
   const files = await fs.readdir(librariesDir);
   console.log("Files in /var/task/artifacts directory: ", files);
   const stats = await fs.stat("/var/task/artifacts/libgdal.so.36.3.10.0");
-  console.log('Stats:', JSON.stringify(stats, null, 2));
+  console.log("Stats:", JSON.stringify(stats, null, 2));
 
-  process.env.LD_LIBRARY_PATH = process.env.LD_LIBRARY_PATH 
-    ? `${process.env.LD_LIBRARY_PATH}:${librariesDir}`
-    : librariesDir;
   baseLogger.debug("LD_LIBRARY_PATH: ", process.env.LD_LIBRARY_PATH);
 
   const pathfinder = require("pathfinder");
