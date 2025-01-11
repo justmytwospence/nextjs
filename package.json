@@ -95,7 +95,7 @@
   "private": true,
   "scripts": {
     "build": "npm run build:rs && next build",
-    "build:rs": "./scripts/build-gdal.sh && rustup default stable && (cd pathfinder && npm install && GDAL_STATIC=TRUE npm run build)",
+    "build:rs": "./scripts/build-gdal.sh && rustup default stable && (cd pathfinder && npm install && GDAL_STATIC=1 RUST_BACKTRACE=1 npm run build)",
     "dev": "next dev",
     "postinstall": "prisma generate"
   },
