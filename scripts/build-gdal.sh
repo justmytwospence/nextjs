@@ -20,7 +20,7 @@ $HOME/miniconda3/bin/conda run -n gdal_env cmake .. \
   -DBUILD_APPS=OFF \
   -DBUILD_PYTHON_BINDINGS=OFF \
   -DBUILD_SHARED_LIBS=OFF \
-  -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY=. \
+  -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY=../.. \
   -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
   -DCMAKE_C_FLAGS="-fPIC" \
@@ -32,6 +32,10 @@ $HOME/miniconda3/bin/conda run -n gdal_env cmake .. \
   -DOGR_BUILD_OPTIONAL_DRIVERS=OFF
 echo "Building GDAL"
 cmake --build . --target GDAL -- -j4
+
+cd ../..
 realpath libgdal.a
 ls -lah libgdal.a
 readelf -h libgdal.a | grep "Flags"
+
+rm -rf gdal-3.10.0*
