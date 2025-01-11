@@ -8,6 +8,7 @@ ls $HOME/miniconda3/envs/gdal_env/lib
 ldd $HOME/miniconda3/envs/gdal_env/lib/libgdal.so.36
 
 mkdir -p artifacts/
+cp $HOME/miniconda3/envs/gdal_env/lib/libgdal.so.36 artifacts/
 ldd $HOME/miniconda3/envs/gdal_env/lib/libgdal.so.36 | grep "=> /" | awk '{print $3}' | while read -r lib; do
     echo "Copying dependency: $lib"
     cp "$lib" artifacts/
