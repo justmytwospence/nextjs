@@ -2,21 +2,11 @@
 
 import fs from "node:fs/promises";
 import { getTopo } from "@/lib/geo/open-topo";
-import {
-  checkGeoTIFFCache,
-  getGeoTiff,
-  insertGeoTiff,
-} from "@/lib/geo/tiling";
+import { checkGeoTIFFCache, getGeoTiff, insertGeoTiff } from "@/lib/geo/tiling";
 import { baseLogger } from "@/lib/logger";
 import type { Point } from "geojson";
 
-console.log("Test");
-baseLogger.debug("Test");
-baseLogger.debug("LD_LIBRARY_PATH: ", process.env.LD_LIBRARY_PATH);
-baseLogger.debug("/var/tasks: ", await fs.readdir("/var/tasks"));
-
-import pathfinder, { type Results, type Aspect } from "pathfinder";
-const { pathfind } = pathfinder;
+import type { Aspect, Results } from "pathfinder";
 
 type findPathMessage =
   | {
@@ -50,6 +40,17 @@ export default async function* findPath(
   bounds: Bounds,
   excludedAspects: Aspect[] = []
 ): AsyncGenerator<findPathMessage, void, unknown> {
+
+  const libraryPath = `${__dirname}/artifacts`;
+  baseLogger.debug("__dirname/artifacts: ", libraryPath);
+  const cwd = process.cwd();
+  baseLogger.debug("CWD: ", cwd);
+  baseLogger.debug('Contents of artifacts directory:', await fs.readdir(__dirname));
+  process.env.LD_LIBRARY_PATH = `${__dirname}/artifacts`;
+  baseLogger.debug("LD_LIBRARY_PATH: ", process.env.LD_LIBRARY_PATH);
+
+  const pathfinder = require("pathfinder");
+  const { pathfind } = pathfinder;
 
   yield { type: "info", message: "Checking cache..." };
   const boundsInCache = await checkGeoTIFFCache(bounds);
