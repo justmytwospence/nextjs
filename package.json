@@ -94,8 +94,8 @@
   },
   "private": true,
   "scripts": {
-    "build": "./scripts/build-gdal.sh && ./scripts/install-rust-deps.sh && npm run build:rs && next build",
-    "build:rs": "(cd pathfinder && npm install && ($HOME/miniconda3/bin/conda run -n gdal_env GDAL_STATIC=TRUE GDAL_HOME=$HOME/miniconda3/envs/gdal_env npm run build))",
+    "build": "./scripts/build-gdal.sh && npm run build:rs && next build",
+    "build:rs": "(cd pathfinder && npm install && GDAL_STATIC=TRUE npm run build))",
     "dev": "next dev",
     "postinstall": "prisma generate"
   },
