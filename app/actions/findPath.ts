@@ -42,11 +42,13 @@ export default async function* findPath(
 ): AsyncGenerator<findPathMessage, void, unknown> {
 
   const libraryPath = `${__dirname}/artifacts`;
-  baseLogger.debug("__dirname/artifacts: ", libraryPath);
+  baseLogger.debug("__dirname: ", libraryPath);
   const cwd = process.cwd();
   baseLogger.debug("CWD: ", cwd);
-  baseLogger.debug('Contents of artifacts directory:', await fs.readdir(__dirname));
-  process.env.LD_LIBRARY_PATH = `${__dirname}/artifacts`;
+  baseLogger.debug('Contents of __dirname directory:', await fs.readdir(cwd));
+  baseLogger.debug('Contents of CWD directory:', await fs.readdir(libraryPath));
+
+  process.env.LD_LIBRARY_PATH = `${cwd}/artifacts`;
   baseLogger.debug("LD_LIBRARY_PATH: ", process.env.LD_LIBRARY_PATH);
 
   const pathfinder = require("pathfinder");
