@@ -1,13 +1,20 @@
+# proj
+curl -s -o miniconda.sh https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+bash miniconda.sh -b > /dev/null
+$HOME/miniconda3/bin/conda create --quiet -n gdal_env -c conda-forge proj -y
+
 curl -Lo gdal-3.10.0.tar.gz https://github.com/OSGeo/gdal/releases/download/v3.10.0/gdal-3.10.0.tar.gz
 tar -xf gdal-3.10.0.tar.gz
 cd gdal-3.10.0
 mkdir build
 cd build
-cmake .. \
+$HOME/miniconda3/bin/conda run -n gdal_env cmake .. \
   -DBUILD_APPS=OFF \                
   -DBUILD_SHARED_LIBS=OFF \         
   -DENABLE_STATIC_LIB=ON \           
-  -DENABLE_PYTHON=OFF \              
+  -BUILD_PYTHON_BINDINGS=OFF \
+  -GDAL_USE_CRYPTOPP==OFF \
+  -GDAL_USE_ODBC=OFF \
   -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY=../artifacts 
 cmake --build . --target GDAL --config Release
 ls -lah ../artifacts
