@@ -8,3 +8,4 @@ ls $HOME/miniconda3/envs/gdal_env/lib
 mkdir -p artifacts/
 cp -r $HOME/miniconda3/envs/gdal_env/lib/libgdal.so* artifacts/
 ls -lah artifacts
+echo "LD_LIBRARY_PATH is $LD_LIBRARY_PATH"
