@@ -12,12 +12,29 @@ $HOME/miniconda3/bin/conda create --quiet -n gdal_env -c conda-forge \
   pkg-config \
   proj -y
 
+# Build libdeflate
+cd $BUILD_DIR
+curl -LO https://github.com/ebiggers/libdeflate/archive/v1.19.tar.gz
+tar xf v1.19.tar.gz
+cd libdeflate-1.19
+mkdir build && cd build
+cmake .. \
+  -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
+  -DLIBDEFLATE_BUILD_STATIC_LIB=ON \
+  -DLIBDEFLATE_BUILD_SHARED_LIB=OFF
+make -j4
+echo "Building libdeflate"
+make install
+mv libdeflate.a ../..
+cd ../..
+rm -rf libdeflate-1.19
+
+# gdal
 BASEDIR = $(pwd)
-curl -Lo gdal-3.10.0.tar.gz https://github.com/OSGeo/gdal/releases/download/v3.10.0/gdal-3.10.0.tar.gz
+curl -LO https://github.com/OSGeo/gdal/releases/download/v3.10.0/gdal-3.10.0.tar.gz
 tar -xf gdal-3.10.0.tar.gz
 cd gdal-3.10.0
-mkdir build
-cd build
+mkdir build && cd build
 $HOME/miniconda3/bin/conda run -n gdal_env cmake .. \
   -DBUILD_APPS=OFF \
   -DBUILD_PYTHON_BINDINGS=OFF \
@@ -26,6 +43,7 @@ $HOME/miniconda3/bin/conda run -n gdal_env cmake .. \
   -DCMAKE_CXX_FLAGS="-fPIC" \
   -DCMAKE_C_FLAGS="-fPIC" \
   -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
+  -DDeflate_LIBRARY_RELEASE=../../libdeflate.a \
   -DGDAL_BUILD_OPTIONAL_DRIVERS=OFF \
   -DGDAL_ENABLE_DRIVER_GTIFF=ON \
   -DGDAL_ENABLE_DRIVER_MEM=ON \
