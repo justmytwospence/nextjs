@@ -9,3 +9,4 @@ mkdir -p artifacts/
 cp -r $HOME/miniconda3/envs/gdal_env/lib/libgdal.so* artifacts/
 chmod +x artifacts/*
 ls -lah artifacts
+ldd artifacts/libgdal.so.36
