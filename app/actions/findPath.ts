@@ -44,7 +44,7 @@ export default async function* findPath(
   const cwd = process.cwd();
   baseLogger.debug("CWD: ", cwd);
   baseLogger.debug('Contents of CWD directory:', await fs.readdir(cwd));
-  baseLogger.debug('Contents of libraries directory:', await fs.readdir(`${cwd}/artifacts`));
+  baseLogger.debug('Contents of libraries directory:', await fs.readdir(`${cwd}/libraries`));
 
   process.env.LD_LIBRARY_PATH = `${cwd}/libraries`;
   baseLogger.debug("LD_LIBRARY_PATH: ", process.env.LD_LIBRARY_PATH);
