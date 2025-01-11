@@ -13,8 +13,11 @@ $HOME/miniconda3/bin/conda run -n gdal_env cmake .. \
   -DBUILD_SHARED_LIBS=OFF \         
   -DENABLE_STATIC_LIB=ON \           
   -BUILD_PYTHON_BINDINGS=OFF \
-  -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY=../artifacts 
+  -DGDAL_BUILD_OPTIONAL_DRIVERS=OFF \
+  -DOGR_BUILD_OPTIONAL_DRIVERS=OFF \
+  -DOGR_ENABLE_DRIVER_MEM=ON \
+  -DOGR_ENABLE_DRIVER_GTIFF=ON \
+  -GDAL_USE_TIFF_INTERNAL=ON/OFF \
+  -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY=. 
 cmake --build . --target GDAL --config Release
 ls -lah .
-ls -lah ..
-ls -lah ../..
