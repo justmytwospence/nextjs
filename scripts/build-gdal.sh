@@ -13,7 +13,6 @@ $HOME/miniconda3/bin/conda create --quiet -n gdal_env -c conda-forge \
   proj -y
 
 # Build libdeflate
-cd $BUILD_DIR
 curl -LO https://github.com/ebiggers/libdeflate/archive/v1.19.tar.gz
 tar xf v1.19.tar.gz
 cd libdeflate-1.19
@@ -30,7 +29,6 @@ cd ../..
 rm -rf libdeflate-1.19
 
 # gdal
-BASEDIR = $(pwd)
 curl -LO https://github.com/OSGeo/gdal/releases/download/v3.10.0/gdal-3.10.0.tar.gz
 tar -xf gdal-3.10.0.tar.gz
 cd gdal-3.10.0
