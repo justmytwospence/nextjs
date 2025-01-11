@@ -17,6 +17,7 @@ $HOME/miniconda3/bin/conda run -n gdal_env cmake .. \
   -DGDAL_BUILD_OPTIONAL_DRIVERS=OFF \
   -DGDAL_ENABLE_DRIVER_GTIFF=ON \
   -DGDAL_ENABLE_DRIVER_MEM=ON \
+  -DGDAL_USE_INTERNAL_LIBS=ON \
   -DOGR_BUILD_OPTIONAL_DRIVERS=OFF
 echo "Building GDAL"
 cmake --build . --target GDAL -- VERBOSE=1
