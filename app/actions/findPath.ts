@@ -41,6 +41,8 @@ export default async function* findPath(
   bounds: Bounds,
   excludedAspects: Aspect[] = []
 ): AsyncGenerator<findPathMessage, void, unknown> {
+  console.log("__dirname: ", __dirname);
+  console.log("Files in __dirname: ", await fs.readdir(__dirname));
   const cwd = process.cwd();
   console.log("CWD: ", cwd)
   console.log("Files in CWD: ", await fs.readdir(cwd));
@@ -48,8 +50,7 @@ export default async function* findPath(
   const files = await fs.readdir(librariesDir);
   console.log("Files in /var/task/artifacts directory: ", files);
   for (const file of files) {
-    const filePath = path.join(librariesDir, file);
-    const stats = await fs.stat(filePath);
+    const filePath = path.join(librariesDir, file); const stats = await fs.stat(filePath);
     const permissions = `0${(stats.mode & 0o777).toString(8)}`;
     console.log(`Permissions: ${permissions}`);
   }
