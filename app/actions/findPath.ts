@@ -1,17 +1,10 @@
 "use server";
 
-import fs from "node:fs/promises";
 import { getTopo } from "@/lib/geo/open-topo";
 import { checkGeoTIFFCache, getGeoTiff, insertGeoTiff } from "@/lib/geo/tiling";
 import { baseLogger } from "@/lib/logger";
 import type { Point } from "geojson";
-
 import type { Aspect, Results } from "pathfinder";
-
-process.env.LD_DEBUG = "libs";
-process.env.LD_LIBRARY_PATH = process.env.LD_LIBRARY_PATH
-  ? `${process.env.LD_LIBRARY_PATH}:/var/task/artifacts`
-  : "/var/task/artifacts";
 
 type findPathMessage =
   | {
@@ -45,15 +38,6 @@ export default async function* findPath(
   bounds: Bounds,
   excludedAspects: Aspect[] = []
 ): AsyncGenerator<findPathMessage, void, unknown> {
-  const librariesDir = "/var/task/artifacts";
-  const files = await fs.readdir(librariesDir);
-  console.log(`${librariesDir} directory: `, files);
-  const stats = await fs.stat(`${librariesDir}/libgdal.so.36.3.10.0`);
-  console.log("Stats:", JSON.stringify(stats, null, 2));
-
-  baseLogger.debug("LD_LIBRARY_PATH: ", process.env.LD_LIBRARY_PATH);
-  baseLogger.debug("LD_DEBUG: ", process.env.LD_DEBUG);
-
   const pathfinder = require("pathfinder");
   const { pathfind } = pathfinder;
 
