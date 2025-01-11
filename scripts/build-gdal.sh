@@ -32,9 +32,6 @@ $HOME/miniconda3/bin/conda run -n gdal_env cmake .. \
   -DOGR_BUILD_OPTIONAL_DRIVERS=OFF
 echo "Building GDAL"
 cmake --build . --target GDAL -- -j4
-ls -lah .
-cd .. 
-ls -lah .
-cd ..
-ls -lah 
-rm -rf gdal-3.10.0*
+mv libgdal.a ../..
+cd ../..
+rm -rf gdal-3.10.0 
