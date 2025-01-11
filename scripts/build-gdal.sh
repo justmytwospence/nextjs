@@ -9,10 +9,10 @@ cd gdal-3.10.0
 mkdir build
 cd build
 $HOME/miniconda3/bin/conda run -n gdal_env cmake .. \
-  -DBUILD_APPS=OFF \                
-  -DBUILD_SHARED_LIBS=OFF \         
+  -BUILD_APPS=OFF \                
+  -BUILD_SHARED_LIBS=OFF \         
   -DENABLE_STATIC_LIB=ON \           
-  -BUILD_PYTHON_BINDINGS=OFF \
+  -BUILD_PYTHON_BINDINGS:BOOL=OFF
   -DGDAL_BUILD_OPTIONAL_DRIVERS=OFF \
   -DOGR_BUILD_OPTIONAL_DRIVERS=OFF \
   -DOGR_ENABLE_DRIVER_MEM=ON \
