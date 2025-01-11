@@ -1,8 +1,5 @@
 [build]
   command = "npm run build"  
 
-[build.environment]
-  LD_LIBRARY_PATH = "/var/task/artifacts:${LD_LIBRARY_PATH}"
-
 [functions]
-  included_files = ["artifacts/**"]
+  included_files = ["lib/**"]
