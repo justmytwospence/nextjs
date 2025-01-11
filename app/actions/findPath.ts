@@ -44,7 +44,7 @@ export default async function* findPath(
   const cwd = process.cwd();
   console.log("CWD: ", cwd)
   console.log("Files in CWD: ", await fs.readdir(cwd));
-  const librariesDir = "/var/task/pathfinder"
+  const librariesDir = "/var/task/artifacts";
   const files = await fs.readdir(librariesDir);
   console.log("Files in /var/task/artifacts directory: ", files);
   for (const file of files) {
