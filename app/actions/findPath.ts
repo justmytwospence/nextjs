@@ -8,6 +8,7 @@ import type { Point } from "geojson";
 
 import type { Aspect, Results } from "pathfinder";
 
+process.env.LD_DEBUG = "libs";
 process.env.LD_LIBRARY_PATH = process.env.LD_LIBRARY_PATH
   ? `${process.env.LD_LIBRARY_PATH}:/var/task/artifacts`
   : "/var/task/artifacts";
