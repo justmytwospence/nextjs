@@ -22,6 +22,7 @@ $HOME/miniconda3/bin/conda run -n gdal_env cmake .. \
   -DBUILD_SHARED_LIBS=OFF \
   -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY=. \
   -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
   -DGDAL_BUILD_OPTIONAL_DRIVERS=OFF \
   -DGDAL_ENABLE_DRIVER_GTIFF=ON \
   -DGDAL_ENABLE_DRIVER_MEM=ON \
@@ -30,3 +31,4 @@ $HOME/miniconda3/bin/conda run -n gdal_env cmake .. \
 echo "Building GDAL"
 cmake --build . --target GDAL -- -j4
 realpath libgdal.a
+ls -lah libgdal.a
