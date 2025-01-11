@@ -28,9 +28,9 @@ cd ../..
 rm -rf libdeflate-1.19
 
 # webp
-curl -Lo webp.tar.gz https://github.com/webmproject/libwebp/archive/refs/tags/v1.5.0.tar.gz
-tar xf webp.tar.gz
-cd webp
+curl -LO https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-1.5.0.tar.gz
+tar xf libwebp-1.5.0.tar.gz
+cd libwebp-1.5.0
 mkdir build && cd build
 echo "Building libwebp"
 cmake .. \
