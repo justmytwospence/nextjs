@@ -2,7 +2,7 @@
   command = "npm run build"  
 
 [build.environment]
-  GDAL_STATIC=true
+  GDAL_STATIC="TRUE"
 
 [functions]
   included_files = ["artifacts/**"]
