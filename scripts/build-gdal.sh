@@ -34,3 +34,4 @@ echo "Building GDAL"
 cmake --build . --target GDAL -- -j4
 realpath libgdal.a
 ls -lah libgdal.a
+readelf -h libgdal.a | grep "Flags"
