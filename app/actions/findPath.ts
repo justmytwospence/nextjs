@@ -42,8 +42,8 @@ export default async function* findPath(
 ): AsyncGenerator<findPathMessage, void, unknown> {
   const librariesDir = "/var/task/artifacts";
   const files = await fs.readdir(librariesDir);
-  console.log("Files in /var/task/lib directory: ", files);
-  const stats = await fs.stat("/var/task/lib/libgdal.so.36.3.10.0");
+  console.log(`Files in the ${librariesDir} directory:`, files);
+  const stats = await fs.stat(`${librariesDir}/libgdal.so.36.3.10.0`);
   console.log("Stats:", JSON.stringify(stats, null, 2));
 
   baseLogger.debug("LD_LIBRARY_PATH: ", process.env.LD_LIBRARY_PATH);
