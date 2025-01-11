@@ -23,7 +23,6 @@ cmake .. \
   -DLIBDEFLATE_BUILD_SHARED_LIB=OFF
 make -j4
 echo "Building libdeflate"
-make install
 mv libdeflate.a ../..
 cd ../..
 rm -rf libdeflate-1.19
