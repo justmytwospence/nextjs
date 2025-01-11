@@ -1,7 +1,7 @@
 # dependencies
 curl -s -o miniconda.sh https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
 bash miniconda.sh -b > /dev/null
-$HOME/miniconda3/bin/conda create --quiet -n gdal_env -c conda-forge libjxl pkg-config libtiff proj -y
+$HOME/miniconda3/bin/conda create --quiet -n gdal_env -c conda-forge clang libcxx libcxxabi libjxl pkg-config libtiff proj -y
 
 curl -Lo gdal-3.10.0.tar.gz https://github.com/OSGeo/gdal/releases/download/v3.10.0/gdal-3.10.0.tar.gz
 tar -xf gdal-3.10.0.tar.gz
@@ -20,4 +20,4 @@ $HOME/miniconda3/bin/conda run -n gdal_env cmake .. \
   -DGDAL_USE_INTERNAL_LIBS=ON \
   -DOGR_BUILD_OPTIONAL_DRIVERS=OFF
 echo "Building GDAL"
-cmake --build . --target GDAL
+cmake --build . --target GDAL -- -j4
