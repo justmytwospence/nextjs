@@ -47,7 +47,9 @@ export default async function* findPath(
   const stats = await fs.stat("/var/task/artifacts/libgdal.so.36.3.10.0");
   console.log('Stats:', JSON.stringify(stats, null, 2));
 
-  // process.env.LD_LIBRARY_PATH = librariesDir;
+  process.env.LD_LIBRARY_PATH = process.env.LD_LIBRARY_PATH 
+    ? `${process.env.LD_LIBRARY_PATH}:${librariesDir}`
+    : librariesDir;
   baseLogger.debug("LD_LIBRARY_PATH: ", process.env.LD_LIBRARY_PATH);
 
   const pathfinder = require("pathfinder");
