@@ -6,6 +6,7 @@ $HOME/miniconda3/bin/conda create --quiet -n gdal_env -c conda-forge \
   gdal \
   libcxx \
   libcxxabi \
+  libdeflate \
   libjxl \
   libtiff \
   pkg-config \
@@ -22,12 +23,13 @@ $HOME/miniconda3/bin/conda run -n gdal_env cmake .. \
   -DBUILD_PYTHON_BINDINGS=OFF \
   -DBUILD_SHARED_LIBS=OFF \
   -DCMAKE_BUILD_TYPE=Release \
-  -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
-  -DCMAKE_C_FLAGS="-fPIC" \
   -DCMAKE_CXX_FLAGS="-fPIC" \
+  -DCMAKE_C_FLAGS="-fPIC" \
+  -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
   -DGDAL_BUILD_OPTIONAL_DRIVERS=OFF \
   -DGDAL_ENABLE_DRIVER_GTIFF=ON \
   -DGDAL_ENABLE_DRIVER_MEM=ON \
+  -DGDAL_USE_DEFLATE=ON \
   -DGDAL_USE_INTERNAL_LIBS=ON \
   -DOGR_BUILD_OPTIONAL_DRIVERS=OFF
 echo "Building GDAL"
