@@ -36,6 +36,5 @@ cmake --build . --target GDAL -- -j4
 cd ../..
 realpath libgdal.a
 ls -lah libgdal.a
-readelf -h libgdal.a | grep "Flags"
 
 rm -rf gdal-3.10.0*
