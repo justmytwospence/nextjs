@@ -21,7 +21,7 @@ $HOME/miniconda3/bin/conda run -n gdal_env cmake .. \
   -DBUILD_APPS=OFF \
   -DBUILD_PYTHON_BINDINGS=OFF \
   -DBUILD_SHARED_LIBS=OFF \
-  -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY=${BASEDIR} \
+  -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY=. \
   -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
   -DCMAKE_C_FLAGS="-fPIC" \
@@ -35,7 +35,6 @@ echo "Building GDAL"
 cmake --build . --target GDAL -- -j4
 
 cd $BASEDIR
+mv gdal-3.10.0/build/libgdal.a ./libgdal.a
 ls -lah 
-realpath libgdal.a
-
 rm -rf gdal-3.10.0*
