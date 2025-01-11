@@ -1,6 +1,7 @@
 "use server";
 
 import fs from "node:fs/promises";
+import path from "node:path";
 import { getTopo } from "@/lib/geo/open-topo";
 import { checkGeoTIFFCache, getGeoTiff, insertGeoTiff } from "@/lib/geo/tiling";
 import { baseLogger } from "@/lib/logger";
@@ -40,13 +41,16 @@ export default async function* findPath(
   bounds: Bounds,
   excludedAspects: Aspect[] = []
 ): AsyncGenerator<findPathMessage, void, unknown> {
+  const librariesDir = "/var/task/libraries"
+  const files = await fs.readdir(librariesDir);
+  for (const file of files) {
+    const filePath = path.join(librariesDir, file);
+    const stats = await fs.stat(filePath);
+    const permissions = `0${(stats.mode & 0o777).toString(8)}`;
+    console.log(`Permissions: ${permissions}`);
+  }
 
-  const cwd = process.cwd();
-  baseLogger.debug("CWD: ", cwd);
-  baseLogger.debug('Contents of CWD directory:', await fs.readdir(cwd));
-  baseLogger.debug('Contents of libraries directory:', await fs.readdir(`${cwd}/libraries`));
-
-  process.env.LD_LIBRARY_PATH = `${cwd}/libraries`;
+  process.env.LD_LIBRARY_PATH = librariesDir;
   baseLogger.debug("LD_LIBRARY_PATH: ", process.env.LD_LIBRARY_PATH);
 
   const pathfinder = require("pathfinder");
