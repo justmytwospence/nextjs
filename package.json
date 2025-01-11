@@ -95,7 +95,7 @@
   "private": true,
   "scripts": {
     "build": "./scripts/build-gdal.sh && npm run build:rs && next build",
-    "build:rs": "(cd pathfinder && npm install && GDAL_STATIC=TRUE npm run build))",
+    "build:rs": "(cd pathfinder && npm install && GDAL_STATIC=TRUE npm run build)",
     "dev": "next dev",
     "postinstall": "prisma generate"
   },

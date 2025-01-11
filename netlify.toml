@@ -4,5 +4,5 @@
 [build.environment]
   GDAL_STATIC="true"
 
-[functions]
-  included_files = ["artifacts/**"]
+[context.production]
+  cache = ["gdal-3.10.0/build/libgdal.a"]
