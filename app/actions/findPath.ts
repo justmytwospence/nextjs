@@ -1,7 +1,6 @@
 "use server";
 
 import fs from "node:fs/promises";
-import path from "node:path";
 import { getTopo } from "@/lib/geo/open-topo";
 import { checkGeoTIFFCache, getGeoTiff, insertGeoTiff } from "@/lib/geo/tiling";
 import { baseLogger } from "@/lib/logger";
@@ -9,9 +8,9 @@ import type { Point } from "geojson";
 
 import type { Aspect, Results } from "pathfinder";
 
-process.env.LD_LIBRARY_PATH = process.env.LD_LIBRARY_PATH
-  ? `${process.env.LD_LIBRARY_PATH}:${"/var/tasks/artifacts"}`
-  : "/var/tasks/artifacts";
+// process.env.LD_LIBRARY_PATH = process.env.LD_LIBRARY_PATH
+//   ? `${process.env.LD_LIBRARY_PATH}:${"/var/tasks/artifacts"}`
+//   : "/var/tasks/artifacts";
 
 type findPathMessage =
   | {
