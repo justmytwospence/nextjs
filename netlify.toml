@@ -2,7 +2,7 @@
   command = "npm run build"  
 
 [build.environment]
-  RUSTFLAGS="-C link-arg=-Wl,-rpath,/var/task/artifacts"
+  RUSTFLAGS="-C link-arg=-Wl,-rpath,$ORIGIN/../artifacts"
 
 [functions]
   included_files = ["artifacts/**"]
