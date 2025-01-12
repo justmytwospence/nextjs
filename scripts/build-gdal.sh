@@ -64,8 +64,8 @@ echo "$LD_LIBRARY_PATH"
   -DBUILD_PYTHON_BINDINGS=OFF \
   -DBUILD_SHARED_LIBS=ON \
   -DCMAKE_BUILD_TYPE=Release \
-  -DCMAKE_C_COMPILER="$CONDA_DIR"/envs/gdal_env/bin/gcc \
-  -DCMAKE_CXX_COMPILER="$CONDA_DIR"/envs/gdal_env/bin/g++ \
+  -DCMAKE_C_COMPILER="$CONDA_DIR"/envs/gdal_env/bin/x86_64-conda-linux-gnu-gcc \
+  -DCMAKE_CXX_COMPILER="$CONDA_DIR"/envs/gdal_env/bin/x86_64-conda-linux-gnu-g++ \
   -DCMAKE_CXX_FLAGS="-nostdlib --sysroot=$CONDA_DIR/envs/gdal_env -I$CONDA_DIR/envs/gdal_env/include -L$CONDA_DIR/envs/gdal_env/lib" \
   -DCMAKE_C_FLAGS="-nostdlib --sysroot=$CONDA_DIR/envs/gdal_env -I$CONDA_DIR/envs/gdal_env/include -L$CONDA_DIR/envs/gdal_env/lib" \
   -DCMAKE_EXE_LINKER_FLAGS="-L$CONDA_DIR/envs/gdal_env/lib" \
