@@ -3,9 +3,8 @@
 
 [build.environment]
   # GDAL_STATIC="true"
-  GDAL_HOME="/opt/build/repo/miniconda3/envs/gdal_env"
+  GDAL_HOME="/opt/buildhome/miniconda3/envs/gdal_env"
   RUST_BACKTRACE="1"
-
 
 [functions]
   included_files = ["dylibs/**"]
