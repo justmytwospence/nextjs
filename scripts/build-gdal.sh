@@ -18,6 +18,7 @@ bash miniconda.sh -b > /dev/null
   clang \
   gdal \
   geos \
+  gxx_linux-64 \
   libcurl \
   libcxx \
   libcxxabi \
