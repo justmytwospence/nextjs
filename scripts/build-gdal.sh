@@ -12,10 +12,10 @@ $HOME/miniconda3/bin/conda create --quiet -n gdal_env -c conda-forge \
   pkg-config \
   proj -y
 
-# libproj
-curl -LO https://download.osgeo.org/proj/proj-data-1.20.tar.gz
-tar xf proj-data-1.20.tar.gz
-cd proj-data-1.20
+# proj
+curl -LO https://download.osgeo.org/proj/proj-9.5.1.tar.gz
+tar xf proj-9.5.1.tar.gz
+cd proj-9.5.1
 mkdir build && cd build
 $HOME/miniconda3/bin/conda run -n gdal_env cmake .. \
   -DBUILD_APPS=OFF \
@@ -27,7 +27,7 @@ make -j4
 ls -lah .
 mv libproj.a ../..
 cd ../..
-rm -rf proj-data-1.20
+rm -rf proj-9.5.1
 
 # geos
 curl -LO https://download.osgeo.org/geos/geos-3.13.0.tar.bz2
