@@ -4,7 +4,7 @@ use gdal::raster::processing::dem::{aspect, AspectOptions};
 use gdal::{
   errors::GdalError,
   raster,
-  vsi::{create_mem_file_from_ref, MemFileRef, },
+  vsi::{create_mem_file_from_ref, MemFileRef },
   Dataset,
 };
 use geo_types::Point;
