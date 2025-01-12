@@ -23,7 +23,7 @@ cmake .. \
   -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_POSITION_INDEPENDENT_CODE=ON
 make -j4
-ls -lah .
+ls -lah lib
 mv libgeos.a ../..
 cd ../..
 rm -rf geos-3.13.0
