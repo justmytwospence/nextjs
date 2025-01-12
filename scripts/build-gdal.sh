@@ -103,7 +103,7 @@ mkdir build && cd build
   -DBUILD_PYTHON_BINDINGS=OFF \
   -DBUILD_SHARED_LIBS=ON \
   -DCMAKE_BUILD_TYPE=Release \
-  -DCMAKE_INSTALL_PREFIX=$HOME/miniconda3/envs/gdal_env \
+  -DCMAKE_INSTALL_PREFIX="$HOME"/miniconda3/envs/gdal_env \
   -DGDAL_BUILD_OPTIONAL_DRIVERS=OFF \
   -DGDAL_ENABLE_DRIVER_GTIFF=ON \
   -DGDAL_ENABLE_DRIVER_MEM=ON \
@@ -129,5 +129,10 @@ cmake --build . --target install -- -j"${NUM_CPUS}"
 ls -lah .
 cd ../..
 rm -rf gdal-3.10.0
+
+ls -lah "$HOME"/miniconda3/envs/gdal_env/lib
+ls -lah "$HOME"/miniconda3/envs/gdal_env/include
+
+"$HOME"/miniconda3/bin/conda run -n gdal_env ldd /opt/buildhome/miniconda3/envs/gdal_env/lib/libgdal.so 
 
 rustup default stable
