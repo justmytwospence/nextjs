@@ -21,6 +21,7 @@ bash miniconda.sh -b > /dev/null
   libcurl \
   libcxxabi \
   libdeflate \
+  libgcc-ng \
   libjxl \
   libsqlite \
   libstdcxx-ng \
