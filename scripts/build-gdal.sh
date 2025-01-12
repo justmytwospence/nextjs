@@ -129,10 +129,10 @@ mkdir build && cd build
 
 echo "Building GDAL"
 cmake --build . --target install -- -j"${NUM_CPUS}"
-ls -lah .
 cd ../..
 rm -rf gdal-3.10.0
 
+ls -lah "$HOME"/miniconda3/envs/gdal_env
 ls -lah "$HOME"/miniconda3/envs/gdal_env/lib
 ls -lah "$HOME"/miniconda3/envs/gdal_env/include
 
