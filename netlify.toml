@@ -3,7 +3,7 @@
 
 [build.environment]
   # GDAL_STATIC="true"
-  GDAL_HOME="$HOME/miniconda3/envs/gdal_env"
+  GDAL_HOME="/opt/build/repo/miniconda3/envs/gdal_env"
   RUST_BACKTRACE="1"
 
 
