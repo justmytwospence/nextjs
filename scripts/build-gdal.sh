@@ -10,7 +10,7 @@ echo "Number of CPUs: $NUM_CPUS"
 curl -s -o miniconda.sh https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
 bash miniconda.sh -b > /dev/null
 
-"$HOME"/miniconda3/bin/conda install -c conda-forge libtree patchelf -y
+"$HOME"/miniconda3/bin/conda install --quiet -c conda-forge libtree patchelf -y
 
 "$HOME"/miniconda3/bin/conda create --quiet -n gdal_env -c conda-forge \
   clang \
@@ -133,8 +133,8 @@ mkdir build && cd build
 
 echo "Building GDAL"
 "$HOME"/miniconda3/bin/conda run -n gdal_env cmake --build . --target install -- -j"${NUM_CPUS}"
-patchelf --set-rpath /opt/buildhome/miniconda3/envs/gdal_env/lib/libgdal.so.3.10.0
-readelf -d /opt/buildhome/miniconda3/envs/gdal_env/lib/libgdal.so.3.10.0
+"$HOME"/miniconda3/bin/patchelf --set-rpath /opt/buildhome/miniconda3/envs/gdal_env/lib/libgdal.so.3.10.0
+"$HOME"/miniconda3/bin/readelf -d /opt/buildhome/miniconda3/envs/gdal_env/lib/libgdal.so.36.3.10.0
 cd ../..
 rm -rf gdal-3.10.0
 
