@@ -24,6 +24,7 @@ bash miniconda.sh -b > /dev/null
   libdeflate \
   libjxl \
   libtiff \
+  linux-headers \
   pkg-config \
   proj -y
 
