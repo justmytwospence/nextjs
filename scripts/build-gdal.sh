@@ -29,6 +29,7 @@ bash miniconda.sh -b > /dev/null
   # gxx_linux-64 \
   # libcxx \
 
+ls -lah "$CONDA_DIR"/envs/gdal_env/bin
 "$CONDA_DIR"/bin/conda list glibc
 "$CONDA_DIR"/bin/conda list gxx_linux-64
 "$CONDA_DIR"/bin/conda run -n gdal_env ldd --version
@@ -63,8 +64,8 @@ echo $(which "$CXX")
   -DBUILD_PYTHON_BINDINGS=OFF \
   -DBUILD_SHARED_LIBS=ON \
   -DCMAKE_BUILD_TYPE=Release \
-  -DCMAKE_C_COMPILER="$CC" \
-  -DCMAKE_CXX_COMPILER="$CXX" \
+  -DCMAKE_C_COMPILER="$CONDA_DIR"/envs/gdal_env/bin/clang \
+  -DCMAKE_CXX_COMPILER="$CONDA_DIR"/envs/gdal_env/bin/clang++ \
   -DCMAKE_CXX_FLAGS="-I$CONDA_DIR/envs/gdal_env/include -L$CONDA_DIR/envs/gdal_env/lib" \
   -DCMAKE_C_FLAGS="-I$CONDA_DIR/envs/gdal_env/include -L$CONDA_DIR/envs/gdal_env/lib" \
   -DCMAKE_EXE_LINKER_FLAGS="-L$CONDA_DIR/envs/gdal_env/lib" \
