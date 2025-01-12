@@ -18,17 +18,19 @@ bash miniconda.sh -b > /dev/null
   clang \
   cmake \
   geos \
-  glib \
-  gxx_linux-64 \
   libcurl \
   libcxx \
   libcxxabi \
   libdeflate \
   libjxl \
   libsqlite \
+  libstdcxx-ng \
   libtiff \
   pkg-config \
   proj -y
+
+  # glib \
+  # gxx_linux-64 \
 
 ls -lah "$CONDA_DIR"/envs/gdal_env/bin
 "$CONDA_DIR"/bin/conda list glibc
