@@ -9,9 +9,6 @@ echo "Number of CPUs: $NUM_CPUS"
 # dependencies
 CONDA_DIR="$HOME"/miniconda3
 
-"$CONDA_DIR"/bin/conda list glibc
-"$CONDA_DIR"/bin/conda run -n gdal_env ldd --version
-
 curl -s -o miniconda.sh https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
 bash miniconda.sh -b > /dev/null
 
@@ -29,6 +26,9 @@ bash miniconda.sh -b > /dev/null
   libtiff \
   pkg-config \
   proj -y
+
+"$CONDA_DIR"/bin/conda list glibc
+"$CONDA_DIR"/bin/conda run -n gdal_env ldd --version
 
 # # libc 
 # curl -LO https://ftp.gnu.org/gnu/libc/glibc-2.40.tar.xz
