@@ -36,8 +36,6 @@ echo "Building libwebp"
 cmake .. \
   -DCMAKE_POSITION_INDEPENDENT_CODE=ON
 make -j4 
-ls -lah .
-ls -lah src
 mv libwebp.a ../..
 cd ../..
 rm -rf libwebp-1.5.0
@@ -48,26 +46,21 @@ tar -xf gdal-3.10.0.tar.gz
 cd gdal-3.10.0
 mkdir build && cd build
 $HOME/miniconda3/bin/conda run -n gdal_env cmake .. \
-   # minimal build
   -DBUILD_APPS=OFF \
   -DBUILD_PYTHON_BINDINGS=OFF \
   -DBUILD_SHARED_LIBS=OFF \
-  -DGDAL_BUILD_OPTIONAL_DRIVERS=OFF \
-  -DGDAL_USE_INTERNAL_LIBS=ON \
-  -DOGR_BUILD_OPTIONAL_DRIVERS=OFF \
-
-  # settings
   -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_CXX_FLAGS="-fPIC" \
   -DCMAKE_C_FLAGS="-fPIC" \
   -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
-
-  # add things back in
+  -DDeflate_LIBRARY_RELEASE=../../libdeflate.a \
+  -DGDAL_BUILD_OPTIONAL_DRIVERS=OFF \
   -DGDAL_ENABLE_DRIVER_GTIFF=ON \
   -DGDAL_ENABLE_DRIVER_MEM=ON \
   -DGDAL_USE_DEFLATE=ON \
-  -DDeflate_LIBRARY_RELEASE=../../libdeflate.a \
+  -DGDAL_USE_INTERNAL_LIBS=ON \
   -DGDAL_USE_WEBP=ON \
+  -DOGR_BUILD_OPTIONAL_DRIVERS=OFF \
   -DWEBP_LIBRARY=../../libwebp.a
 
 echo "Building GDAL"
