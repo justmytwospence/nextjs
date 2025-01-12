@@ -4,6 +4,8 @@
 [build.environment]
   # GDAL_STATIC="true"
   GDAL_HOME="/opt/build/repo/gdal-3.10.0/build"
+  RUST_BACKTRACE=1
+
 
 [functions]
   included_files = ["dylibs/**"]

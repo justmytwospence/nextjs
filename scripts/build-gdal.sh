@@ -98,7 +98,7 @@ mkdir build && cd build
   -DBUILD_PYTHON_BINDINGS=OFF \
   -DBUILD_SHARED_LIBS=ON \
   -DCMAKE_BUILD_TYPE=Release \
-  -DCMAKE_INSTALL_PREFIX=. \
+  -DCMAKE_INSTALL_PREFIX=$HOME/miniconda3/envs/gdal_env \
   -DGDAL_BUILD_OPTIONAL_DRIVERS=OFF \
   -DGDAL_ENABLE_DRIVER_GTIFF=ON \
   -DGDAL_ENABLE_DRIVER_MEM=ON \
@@ -122,3 +122,7 @@ mkdir build && cd build
 echo "Building GDAL"
 cmake --build . --target install -- -j4
 ls -lah .
+cd ../..
+rm -rf gdal-3.10.0
+
+rustup default stable
