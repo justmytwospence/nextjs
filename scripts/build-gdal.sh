@@ -16,6 +16,7 @@ bash miniconda.sh -b > /dev/null
 
 "$CONDA_DIR"/bin/conda create --quiet -n gdal_env -c conda-forge \
   clang \
+  cmake \
   geos \
   libcurl \
   libcxxabi \
