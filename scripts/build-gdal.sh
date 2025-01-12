@@ -1,3 +1,8 @@
+#!/bin/bash
+
+# Set and export number of CPUs for parallel builds
+NUM_CPUS=$(nproc)
+
 # dependencies
 curl -s -o miniconda.sh https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
 bash miniconda.sh -b > /dev/null
@@ -120,7 +125,7 @@ mkdir build && cd build
   # -DPROJ_LIBRARY_RELEASE=../../libproj.a 
 
 echo "Building GDAL"
-cmake --build . --target install -- -j4
+cmake --build . --target install -- -j"${NUM_CPUS}"
 ls -lah .
 cd ../..
 rm -rf gdal-3.10.0
