@@ -78,7 +78,7 @@ $HOME/miniconda3/bin/conda run -n gdal_env cmake .. \
   -DGDAL_USE_WEBP=ON \
   -DOGR_BUILD_OPTIONAL_DRIVERS=OFF \
   -DWEBP_LIBRARY=../../libwebp.a \
-  -DGEOS_LIBRARY=../../libgeos_c
+  -DGEOS_LIBRARY=../../libgeos_c.a
 
 echo "Building GDAL"
 cmake --build . --target GDAL -- -j4
