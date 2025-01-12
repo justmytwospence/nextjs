@@ -24,7 +24,7 @@ cmake .. \
   -DCMAKE_POSITION_INDEPENDENT_CODE=ON
 make -j4
 ls -lah lib
-mv libgeos.a ../..
+mv /lib/libgeos_c.a ../..
 cd ../..
 rm -rf geos-3.13.0
 
