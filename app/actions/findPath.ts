@@ -7,11 +7,6 @@ import { baseLogger } from "@/lib/logger";
 import type { Point } from "geojson";
 import type { Aspect, Results } from "pathfinder";
 
-const cwd = process.cwd();
-console.log(cwd);
-console.log("CWD: ", fs.readdirSync(cwd));
-console.log('dylibs: ', fs.readdirSync(`${cwd}/dylibs`));
-
 type findPathMessage =
   | {
       type: "info" | "success" | "warning" | "error";
@@ -44,6 +39,12 @@ export default async function* findPath(
   bounds: Bounds,
   excludedAspects: Aspect[] = []
 ): AsyncGenerator<findPathMessage, void, unknown> {
+
+  const cwd = process.cwd();
+  console.log(cwd);
+  console.log("CWD: ", fs.readdirSync(cwd));
+  console.log("dylibs: ", fs.readdirSync(`${cwd}/dylibs`));
+
   const pathfinder = require("pathfinder");
   const { pathfind } = pathfinder;
 
