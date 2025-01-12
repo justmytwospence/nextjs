@@ -18,8 +18,10 @@ tar xf glibc-2.40.tar.xz
 cd glibc-2.40
 mkdir build && cd build
 echo "Building libc"
-$HOME/miniconda3/bin/conda run -n gdal_env CFLAGS="-O2 -Wno-error=attributes" ../configure \
-  --prefix=/opt/build/repo/glibc-2.40/build 
+$HOME/miniconda3/bin/conda run -n gdal_env ../configure \
+  --prefix=/opt/build/repo/glibc-2.40/build \
+  CFLAGS="-O2" \
+  CXXFLAGS="-O2"
 make -j4
 ls -lah .
 ls -lah lib
