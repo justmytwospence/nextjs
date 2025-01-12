@@ -65,7 +65,7 @@ echo $(which "$CXX")
   -DBUILD_SHARED_LIBS=ON \
   -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_C_COMPILER="$CONDA_DIR"/envs/gdal_env/bin/clang \
-  -DCMAKE_CXX_COMPILER="$CONDA_DIR"/envs/gdal_env/bin/clang++ \
+  -DCMAKE_CXX_COMPILER="$CONDA_DIR"/envs/gdal_env/bin/clang-cpp \
   -DCMAKE_CXX_FLAGS="-I$CONDA_DIR/envs/gdal_env/include -L$CONDA_DIR/envs/gdal_env/lib" \
   -DCMAKE_C_FLAGS="-I$CONDA_DIR/envs/gdal_env/include -L$CONDA_DIR/envs/gdal_env/lib" \
   -DCMAKE_EXE_LINKER_FLAGS="-L$CONDA_DIR/envs/gdal_env/lib" \
