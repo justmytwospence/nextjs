@@ -124,7 +124,6 @@ mkdir build && cd build
   # -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
   # -DBUILD_SHARED_LIBS=OFF \
   # -DDeflate_LIBRARY_RELEASE=../../libdeflate.a \
-  # -DGDAL_USE_DEFLATE=ON \
   # -DGDAL_USE_WEBP=ON \
   # -DWEBP_LIBjARARY=../../libwebp.a \
   # -DGEOS_LIBRARY=../../libgeos_c.a \
