@@ -2,6 +2,9 @@
 
 set -x
 
+"$CONDA_DIR"/bin/conda list glibc
+"$CONDA_DIR"/bin/conda run -n gdal_env ldd --version
+
 # Set and export number of CPUs for parallel builds
 NUM_CPUS=$(nproc)
 echo "Number of CPUs: $NUM_CPUS"
