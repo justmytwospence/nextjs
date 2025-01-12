@@ -1,10 +1,16 @@
 "use server";
 
+import fs from "node:fs";
 import { getTopo } from "@/lib/geo/open-topo";
 import { checkGeoTIFFCache, getGeoTiff, insertGeoTiff } from "@/lib/geo/tiling";
 import { baseLogger } from "@/lib/logger";
 import type { Point } from "geojson";
 import type { Aspect, Results } from "pathfinder";
+
+const cwd = process.cwd();
+console.log(cwd);
+console.log("CWD: ", fs.readdirSync(cwd));
+console.log('dylibs: ', fs.readdirSync(`${cwd}/dylibs`));
 
 type findPathMessage =
   | {
