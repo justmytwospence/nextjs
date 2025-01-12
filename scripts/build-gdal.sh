@@ -21,7 +21,7 @@ echo "Building libc"
 $HOME/miniconda3/bin/conda run -n gdal_env CFLAGS="-Wno-error=attributes" ../configure
 make -j4
 ls -lah .
-ls -lah .
+ls -lah lib
 mv lib/libc.a ../..
 cd ../..
 rm -rf glibc-2.40
