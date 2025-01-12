@@ -9,6 +9,7 @@ bash miniconda.sh -b > /dev/null
   libdeflate \
   libjxl \
   libtiff \
+  libtree \
   pkg-config \
   proj -y
 
