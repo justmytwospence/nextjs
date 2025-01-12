@@ -54,6 +54,7 @@ curl -LO https://github.com/OSGeo/gdal/releases/download/v3.10.0/gdal-3.10.0.tar
 tar -xf gdal-3.10.0.tar.gz
 cd gdal-3.10.0
 mkdir build && cd build
+echo "$LD_LIBRARY_PATH"
 "$CONDA_DIR"/bin/conda run -n gdal_env cmake .. \
   -DBUILD_APPS=OFF \
   -DBUILD_PYTHON_BINDINGS=OFF \
