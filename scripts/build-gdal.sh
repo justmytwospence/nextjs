@@ -24,6 +24,7 @@ bash miniconda.sh -b > /dev/null
   libcxxabi \
   libdeflate \
   libjxl \
+  libsqlite \
   libtiff \
   pkg-config \
   proj -y
