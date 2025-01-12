@@ -96,6 +96,7 @@ mkdir build && cd build
 "$HOME"/miniconda3/bin/conda run -n gdal_env cmake .. \
   -DBUILD_APPS=OFF \
   -DBUILD_PYTHON_BINDINGS=OFF \
+  -DBUILD_SHARED_LIBS=ON \
   -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_INSTALL_PREFIX=. \
   -DGDAL_BUILD_OPTIONAL_DRIVERS=OFF \
