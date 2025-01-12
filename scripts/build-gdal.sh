@@ -29,6 +29,7 @@ bash miniconda.sh -b > /dev/null
   proj -y
 
 "$CONDA_DIR"/bin/conda list glibc
+"$CONDA_DIR"/bin/conda list gxx_linux-64
 "$CONDA_DIR"/bin/conda run -n gdal_env ldd --version
 
 # # libc 
