@@ -9,7 +9,6 @@ bash miniconda.sh -b > /dev/null
 "$HOME"/miniconda3/bin/conda create --quiet -n gdal_env -c conda-forge \
   clang \
   libcxx \
-  # libgdal \
   libcxxabi \
   libdeflate \
   libjxl \
