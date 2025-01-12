@@ -20,6 +20,7 @@ bash miniconda.sh -b > /dev/null
   libjxl \
   libtiff \
   libtree \
+  patchelf \
   pkg-config \
   proj -y
 
@@ -132,7 +133,7 @@ mkdir build && cd build
 echo "Building GDAL"
 "$HOME"/miniconda3/bin/conda run -n gdal_env cmake --build . --target install -- -j"${NUM_CPUS}"
 patchelf --set-rpath /opt/buildhome/miniconda3/envs/gdal_env/lib/libgdal.so.3.10.0
-readelf -d /opt/buildhome/miniconda3/envs/gdal_env/lib/libgdal.so.3.10.0 | grep RPATH
+readelf -d /opt/buildhome/miniconda3/envs/gdal_env/lib/libgdal.so.3.10.0
 cd ../..
 rm -rf gdal-3.10.0
 
