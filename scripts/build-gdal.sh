@@ -19,6 +19,7 @@ bash miniconda.sh -b > /dev/null
   cmake \
   geos \
   libcurl \
+  libcxx \
   libcxxabi \
   libdeflate \
   libjxl \
@@ -27,7 +28,6 @@ bash miniconda.sh -b > /dev/null
   proj -y
 
   # gxx_linux-64 \
-  # libcxx \
 
 ls -lah "$CONDA_DIR"/envs/gdal_env/bin
 "$CONDA_DIR"/bin/conda list glibc
