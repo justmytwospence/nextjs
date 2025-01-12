@@ -54,12 +54,17 @@ curl -LO https://github.com/OSGeo/gdal/releases/download/v3.10.0/gdal-3.10.0.tar
 tar -xf gdal-3.10.0.tar.gz
 cd gdal-3.10.0
 mkdir build && cd build
+echo "Building GDAL"
 echo "$LD_LIBRARY_PATH"
+echo $(which "$CC")
+echo $(which "$CXX")
 "$CONDA_DIR"/bin/conda run -n gdal_env cmake .. \
   -DBUILD_APPS=OFF \
   -DBUILD_PYTHON_BINDINGS=OFF \
   -DBUILD_SHARED_LIBS=ON \
   -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_C_COMPILER="$CC" \
+  -DCMAKE_CXX_COMPILER="$CXX" \
   -DCMAKE_CXX_FLAGS="-I$CONDA_DIR/envs/gdal_env/include -L$CONDA_DIR/envs/gdal_env/lib" \
   -DCMAKE_C_FLAGS="-I$CONDA_DIR/envs/gdal_env/include -L$CONDA_DIR/envs/gdal_env/lib" \
   -DCMAKE_EXE_LINKER_FLAGS="-L$CONDA_DIR/envs/gdal_env/lib" \
@@ -85,7 +90,6 @@ echo "$LD_LIBRARY_PATH"
   # -DGEOS_LIBRARY=../../libgeos_c.a \
   # -DPROJ_LIBRARY_RELEASE=../../libproj.a 
 
-echo "Building GDAL"
 "$CONDA_DIR"/bin/conda run -n gdal_env cmake --build . --target install -- -j"${NUM_CPUS}"
 "$CONDA_DIR"/bin/patchelf --set-rpath /var/task/dylibs "$CONDA_DIR"/envs/gdal_env/lib/libgdal.so.36.3.10.0
 cd ../..
