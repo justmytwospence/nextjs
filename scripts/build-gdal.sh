@@ -1,7 +1,10 @@
 #!/bin/bash
 
+set -x
+
 # Set and export number of CPUs for parallel builds
 NUM_CPUS=$(nproc)
+echo "Number of CPUs: $NUM_CPUS"
 
 # dependencies
 curl -s -o miniconda.sh https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
