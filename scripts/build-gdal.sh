@@ -36,7 +36,9 @@ echo "Building libwebp"
 cmake .. \
   -DCMAKE_POSITION_INDEPENDENT_CODE=ON
 make -j4 
-mv src/libwebp.a ../..
+ls -lah .
+ls -lah src
+mv libwebp.a ../..
 cd ../..
 rm -rf libwebp-1.5.0
 
