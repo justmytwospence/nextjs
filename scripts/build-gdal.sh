@@ -24,8 +24,8 @@ $HOME/miniconda3/bin/conda run -n gdal_env cmake .. \
   -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_POSITION_INDEPENDENT_CODE=ON
 make -j4
-ls -lah .
-mv libproj.a ../..
+ls -lah lib
+mv lib/libproj.a ../..
 cd ../..
 rm -rf proj-9.5.1
 
