@@ -25,8 +25,7 @@ $HOME/miniconda3/bin/conda run -n gdal_env ../configure \
   CXXFLAGS="-O2 -fPIC"
 make -j4
 ls -lah .
-ls -lah lib
-mv lib/libc.a ../..
+mv libc.a ../..
 cd ../..
 rm -rf glibc-2.40
 
