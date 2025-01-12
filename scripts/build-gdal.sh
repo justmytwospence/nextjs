@@ -131,7 +131,7 @@ mkdir build && cd build
   # -DPROJ_LIBRARY_RELEASE=../../libproj.a 
 
 echo "Building GDAL"
-cmake --build . --target install -- -j"${NUM_CPUS}"
+"$HOME"/miniconda3/bin/conda run -n gdal_env cmake --build . --target install -- -j"${NUM_CPUS}"
 cd ../..
 rm -rf gdal-3.10.0
 
