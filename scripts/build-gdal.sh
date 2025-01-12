@@ -120,5 +120,5 @@ mkdir build && cd build
   # -DPROJ_LIBRARY_RELEASE=../../libproj.a 
 
 echo "Building GDAL"
-cmake --build . --target GDAL -- -j4
+cmake --build . --target install -- -j4
 ls -lah .
