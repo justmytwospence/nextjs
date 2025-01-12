@@ -1,8 +1,6 @@
 #!/bin/bash
 
-set -e  
-
-"$HOME"/miniconda3/bin/conda run -n gdal_env ldd pathfinder/pathfinder.linux-x64-gnu.node 
+"$HOME"/miniconda3/bin/conda run -n gdal_env ldd pathfinder/pathfinder.linux-x64-gnu.node
 
 mkdir dylibs
 
