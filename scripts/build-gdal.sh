@@ -15,9 +15,9 @@ bash miniconda.sh -b > /dev/null
 "$CONDA_DIR"/bin/conda install --quiet -c conda-forge libtree patchelf -y
 
 "$CONDA_DIR"/bin/conda create --quiet -n gdal_env -c conda-forge \
-  clang \
   cmake \
   geos \
+  gxx_linux-64 \
   libcurl \
   libcxx \
   libcxxabi \
@@ -27,7 +27,7 @@ bash miniconda.sh -b > /dev/null
   pkg-config \
   proj -y
 
-  # gxx_linux-64 \
+  # clang \
 
 ls -lah "$CONDA_DIR"/envs/gdal_env/bin
 "$CONDA_DIR"/bin/conda list glibc
@@ -62,8 +62,8 @@ echo "$LD_LIBRARY_PATH"
   -DBUILD_PYTHON_BINDINGS=OFF \
   -DBUILD_SHARED_LIBS=ON \
   -DCMAKE_BUILD_TYPE=Release \
-  -DCMAKE_CXX_FLAGS="-nostdlib -D_GNU_SOURCE -D_LARGEFILE64_SOURCE -I$CONDA_DIR/envs/gdal_env/include -L$CONDA_DIR/envs/gdal_env/lib" \
-  -DCMAKE_C_FLAGS="-nostdlib -D_GNU_SOURCE -D_LARGEFILE64_SOURCE -I$CONDA_DIR/envs/gdal_env/include -L$CONDA_DIR/envs/gdal_env/lib" \
+  -DCMAKE_CXX_FLAGS="-nostdlib -I$CONDA_DIR/envs/gdal_env/include -L$CONDA_DIR/envs/gdal_env/lib" \
+  -DCMAKE_C_FLAGS="-nostdlib -I$CONDA_DIR/envs/gdal_env/include -L$CONDA_DIR/envs/gdal_env/lib" \
   -DCMAKE_EXE_LINKER_FLAGS="-L$CONDA_DIR/envs/gdal_env/lib" \
   -DCMAKE_INSTALL_PREFIX="$CONDA_DIR"/envs/gdal_env \
   -DCMAKE_SHARED_LINKER_FLAGS="-L$CONDA_DIR/envs/gdal_env/lib" \
