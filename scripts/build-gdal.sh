@@ -57,17 +57,13 @@ cd gdal-3.10.0
 mkdir build && cd build
 echo "Building GDAL"
 echo "$LD_LIBRARY_PATH"
-echo $(which "$CC")
-echo $(which "$CXX")
 "$CONDA_DIR"/bin/conda run -n gdal_env cmake .. \
   -DBUILD_APPS=OFF \
   -DBUILD_PYTHON_BINDINGS=OFF \
   -DBUILD_SHARED_LIBS=ON \
   -DCMAKE_BUILD_TYPE=Release \
-  -DCMAKE_C_COMPILER="$CONDA_DIR"/envs/gdal_env/bin/clang \
-  -DCMAKE_CXX_COMPILER="$CONDA_DIR"/envs/gdal_env/bin/clang-cpp \
-  -DCMAKE_CXX_FLAGS="-I$CONDA_DIR/envs/gdal_env/include -L$CONDA_DIR/envs/gdal_env/lib" \
-  -DCMAKE_C_FLAGS="-I$CONDA_DIR/envs/gdal_env/include -L$CONDA_DIR/envs/gdal_env/lib" \
+  -DCMAKE_CXX_FLAGS="--sysroot=$CONDA_DIR/envs/gdal_env -I$CONDA_DIR/envs/gdal_env/include -L$CONDA_DIR/envs/gdal_env/lib" \
+  -DCMAKE_C_FLAGS="--sysroot=$CONDA_DIR/envs/gdal_env -I$CONDA_DIR/envs/gdal_env/include -L$CONDA_DIR/envs/gdal_env/lib" \
   -DCMAKE_EXE_LINKER_FLAGS="-L$CONDA_DIR/envs/gdal_env/lib" \
   -DCMAKE_INSTALL_PREFIX="$CONDA_DIR"/envs/gdal_env \
   -DCMAKE_SHARED_LINKER_FLAGS="-L$CONDA_DIR/envs/gdal_env/lib" \
@@ -82,6 +78,8 @@ echo $(which "$CXX")
   -DGDAL_USE_WEBP=ON \
   -DOGR_BUILD_OPTIONAL_DRIVERS=OFF
 
+  # -DCMAKE_C_COMPILER="$CONDA_DIR"/envs/gdal_env/bin/clang \
+  # -DCMAKE_CXX_COMPILER="$CONDA_DIR"/envs/gdal_env/bin/clang-cpp \
   # -DCMAKE_CXX_FLAGS="-fPIC" \
   # -DCMAKE_C_FLAGS="-fPIC" \
   # -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
