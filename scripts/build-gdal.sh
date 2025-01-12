@@ -22,9 +22,9 @@ cmake .. \
   -DBUILD_SHARED_LIBS=OFF \
   -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_POSITION_INDEPENDENT_CODE=ON
-make -j4
+make -j4 libgeos_c
 ls -lah lib
-mv /lib/libgeos_c.a ../..
+mv lib/libgeos_c.a ../..
 cd ../..
 rm -rf geos-3.13.0
 
