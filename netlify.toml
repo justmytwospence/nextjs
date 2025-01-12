@@ -3,3 +3,6 @@
 
 [build.environment]
   GDAL_STATIC="true"
+
+[functions]
+  included_files = ["dylibs/**"]
