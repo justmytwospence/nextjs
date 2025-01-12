@@ -11,10 +11,10 @@ curl -s -o miniconda.sh https://repo.anaconda.com/miniconda/Miniconda3-latest-Li
 bash miniconda.sh -b > /dev/null
 "$HOME"/miniconda3/bin/conda create --quiet -n gdal_env -c conda-forge \
   clang \
+  geos \
   libcxx \
   libcxxabi \
   libdeflate \
-  libgeos \
   libjxl \
   libtiff \
   libtree \
