@@ -7,7 +7,7 @@ version = "0.0.0"
 crate-type = ["cdylib"]
 
 [dependencies]
-gdal = { version = "0.17.1", features = ["bindgen"] }
+gdal = { version = "0.17.1" }
 gdal-sys = { version = "0.10.0", features = ["bindgen"] }
 geo-types = "0.4.3"
 geojson = "0.24.1"
