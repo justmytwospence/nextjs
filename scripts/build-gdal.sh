@@ -14,6 +14,7 @@ bash miniconda.sh -b > /dev/null
   libcxx \
   libcxxabi \
   libdeflate \
+  libgeos \
   libjxl \
   libtiff \
   libtree \
