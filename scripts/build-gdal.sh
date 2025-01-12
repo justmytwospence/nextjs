@@ -12,8 +12,20 @@ $HOME/miniconda3/bin/conda create --quiet -n gdal_env -c conda-forge \
   pkg-config \
   proj -y
 
-# libstdc++
-find /usr -name "libstdc++.a"
+# libc 
+curl -LO https://ftp.gnu.org/gnu/libc/glibc-2.40.tar.xz
+tar xf glibc-2.40.tar.xz
+cd glibc-2.40
+mkdir build && cd build
+echo "Building glibc"
+$HOME/miniconda3/bin/conda run -n gdal_env ../configure \
+  --prefix=$HOME/glibc-2.40
+make -j4
+ls -lah .
+ls -lah .
+mv lib/libc.a ../..
+cd ../..
+rm -rf glibc-2.40
 
 # proj
 curl -LO https://download.osgeo.org/proj/proj-9.5.1.tar.gz

@@ -4,6 +4,6 @@ fn main() {
   println!("cargo:rustc-link-search=native=/opt/build/repo");
   println!("cargo:rustc-link-lib=static=gdal");
   println!("cargo:rustc-link-lib=static=stdc++"); 
-  println!("cargo:rustc-link-lib=static=gcc");   
+  println!("cargo:rustc-link-lib=static=libc");   
   napi_build::setup();
 }
