@@ -18,17 +18,15 @@ bash miniconda.sh -b > /dev/null
   clang \
   geos \
   libcurl \
+  libcxxabi \
   libdeflate \
   libjxl \
   libtiff \
   pkg-config \
   proj -y
 
-  # clang \
-  # gdal \
   # gxx_linux-64 \
   # libcxx \
-  # libcxxabi \
 
 "$CONDA_DIR"/bin/conda list glibc
 "$CONDA_DIR"/bin/conda list gxx_linux-64
@@ -49,65 +47,6 @@ bash miniconda.sh -b > /dev/null
 # mv libc.a ../..
 # cd ../..
 # rm -rf glibc-2.40
-
-# # proj
-# curl -LO https://download.osgeo.org/proj/proj-9.5.1.tar.gz
-# tar xf proj-9.5.1.tar.gz
-# cd proj-9.5.1
-# mkdir build && cd build
-# $HOME/miniconda3/bin/conda run -n gdal_env cmake .. \
-#   -DBUILD_APPS=OFF \
-#   -DBUILD_SHARED_LIBS=OFF \
-#   -DBUILD_TESTING=OFF \
-#   -DCMAKE_BUILD_TYPE=Release \
-#   -DCMAKE_POSITION_INDEPENDENT_CODE=ON
-# make -j4
-# mv lib/libproj.a ../..
-# cd ../..
-# rm -rf proj-9.5.1
-
-# # geos
-# curl -LO https://download.osgeo.org/geos/geos-3.13.0.tar.bz2
-# tar -xf geos-3.13.0.tar.bz2
-# cd geos-3.13.0
-# mkdir build && cd build
-# echo "Building GEOS"
-# cmake .. \
-#   -DBUILD_SHARED_LIBS=OFF \
-#   -DCMAKE_BUILD_TYPE=Release \
-#   -DCMAKE_POSITION_INDEPENDENT_CODE=ON
-# make -j4 
-# mv lib/libgeos_c.a ../..
-# cd ../..
-# rm -rf geos-3.13.0
-
-# # libdeflate
-# curl -LO https://github.com/ebiggers/libdeflate/archive/v1.19.tar.gz
-# tar xf v1.19.tar.gz
-# cd libdeflate-1.19
-# mkdir build && cd build
-# echo "Building libdeflate"
-# cmake .. \
-#   -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
-#   -DLIBDEFLATE_BUILD_STATIC_LIB=ON \
-#   -DLIBDEFLATE_BUILD_SHARED_LIB=OFF
-# make -j4
-# mv libdeflate.a ../..
-# cd ../..
-# rm -rf libdeflate-1.19
-
-# # webp
-# curl -LO https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-1.5.0.tar.gz
-# tar xf libwebp-1.5.0.tar.gz
-# cd libwebp-1.5.0
-# mkdir build && cd build
-# echo "Building libwebp"
-# cmake .. \
-#   -DCMAKE_POSITION_INDEPENDENT_CODE=ON
-# make -j4 
-# mv libwebp.a ../..
-# cd ../..
-# rm -rf libwebp-1.5.0
 
 # gdal
 curl -LO https://github.com/OSGeo/gdal/releases/download/v3.10.0/gdal-3.10.0.tar.gz
