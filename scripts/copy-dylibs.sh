@@ -1,6 +1,5 @@
 #!/bin/bash
 
-set -x  # Print commands as they execute
 set -e  # Exit on error
 
 mkdir dylibs
