@@ -12,6 +12,22 @@ $HOME/miniconda3/bin/conda create --quiet -n gdal_env -c conda-forge \
   pkg-config \
   proj -y
 
+# geos
+curl -LO https://download.osgeo.org/geos/geos-3.13.0.tar.bz2
+tar -xf geos-3.13.0.tar.bz2
+cd geos-3.13.0
+mkdir build && cd build
+echo "Building GEOS"
+cmake .. \
+  -DBUILD_SHARED_LIBS=OFF \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_POSITION_INDEPENDENT_CODE=ON
+make -j4
+ls -lah .
+mv libgeos.a ../..
+cd ../..
+rm -rf geos-3.13.0
+
 # libdeflate
 curl -LO https://github.com/ebiggers/libdeflate/archive/v1.19.tar.gz
 tar xf v1.19.tar.gz
@@ -61,7 +77,8 @@ $HOME/miniconda3/bin/conda run -n gdal_env cmake .. \
   -DGDAL_USE_INTERNAL_LIBS=ON \
   -DGDAL_USE_WEBP=ON \
   -DOGR_BUILD_OPTIONAL_DRIVERS=OFF \
-  -DWEBP_LIBRARY=../../libwebp.a
+  -DWEBP_LIBRARY=../../libwebp.a \
+  -DGEOS_LIBRARY=../../libgeos_c
 
 echo "Building GDAL"
 cmake --build . --target GDAL -- -j4
