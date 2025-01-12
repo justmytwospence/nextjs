@@ -35,7 +35,7 @@ mkdir build && cd build
 echo "Building libwebp"
 cmake .. \
   -DCMAKE_POSITION_INDEPENDENT_CODE=ON
-make -j4
+make -j4 -f makefile.unix
 mv src/libwebp.a ../..
 cd ../..
 rm -rf libwebp-1.5.0
