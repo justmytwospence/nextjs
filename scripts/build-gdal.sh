@@ -119,3 +119,4 @@ mkdir build && cd build
 
 echo "Building GDAL"
 cmake --build . --target GDAL -- -j4
+ls -lah .
