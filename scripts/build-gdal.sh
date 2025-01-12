@@ -34,7 +34,7 @@ cd libwebp-1.5.0
 mkdir build && cd build
 echo "Building libwebp"
 cmake .. \
-  -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
+  -DCMAKE_POSITION_INDEPENDENT_CODE=ON
 make -j4
 mv src/libwebp.a ../..
 cd ../..
@@ -66,7 +66,8 @@ $HOME/miniconda3/bin/conda run -n gdal_env cmake .. \
   -DGDAL_USE_DEFLATE=ON \
   -DDeflate_LIBRARY_RELEASE=../../libdeflate.a \
   -DGDAL_USE_WEBP=ON \
-  -DWEBP_LIBRARY=../../libwebp.a \
+  -DWEBP_LIBRARY=../../libwebp.a
+
 echo "Building GDAL"
 cmake --build . --target GDAL -- -j4
 mv libgdal.a ../..
