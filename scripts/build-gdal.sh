@@ -18,6 +18,7 @@ bash miniconda.sh -b > /dev/null
   clang \
   cmake \
   geos \
+  glib \
   gxx_linux-64 \
   libcurl \
   libcxx \
@@ -84,11 +85,6 @@ echo "$LD_LIBRARY_PATH"
   # -DCMAKE_CXX_FLAGS="-fPIC" \
   # -DCMAKE_C_FLAGS="-fPIC" \
   # -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
-  # -DDeflate_LIBRARY_RELEASE=../../libdeflate.a \
-  # -DGDAL_USE_WEBP=ON \
-  # -DWEBP_LIBjARARY=../../libwebp.a \
-  # -DGEOS_LIBRARY=../../libgeos_c.a \
-  # -DPROJ_LIBRARY_RELEASE=../../libproj.a 
 
 "$CONDA_DIR"/bin/conda run -n gdal_env cmake --build . --target install -- -j"${NUM_CPUS}"
 "$CONDA_DIR"/bin/patchelf --set-rpath /var/task/dylibs "$CONDA_DIR"/envs/gdal_env/lib/libgdal.so.36.3.10.0
