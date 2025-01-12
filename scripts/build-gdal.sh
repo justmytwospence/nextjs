@@ -12,6 +12,9 @@ $HOME/miniconda3/bin/conda create --quiet -n gdal_env -c conda-forge \
   pkg-config \
   proj -y
 
+# libstdc++
+find /usr -name "libstdc++.a"
+
 # proj
 curl -LO https://download.osgeo.org/proj/proj-9.5.1.tar.gz
 tar xf proj-9.5.1.tar.gz
