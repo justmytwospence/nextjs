@@ -15,6 +15,7 @@ bash miniconda.sh -b > /dev/null
 "$CONDA_DIR"/bin/conda install --quiet -c conda-forge libtree patchelf -y
 
 "$CONDA_DIR"/bin/conda create --quiet -n gdal_env -c conda-forge \
+  clang \
   cmake \
   geos \
   gxx_linux-64 \
@@ -26,8 +27,6 @@ bash miniconda.sh -b > /dev/null
   libtiff \
   pkg-config \
   proj -y
-
-  # clang \
 
 ls -lah "$CONDA_DIR"/envs/gdal_env/bin
 "$CONDA_DIR"/bin/conda list glibc
