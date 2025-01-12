@@ -2,7 +2,8 @@
   command = "npm run build"  
 
 [build.environment]
-  GDAL_STATIC="true"
+  # GDAL_STATIC="true"
+  GDAL_HOME="/opt/build/repo/gdal-3.10.0/build"
 
 [functions]
   included_files = ["dylibs/**"]

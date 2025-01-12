@@ -94,8 +94,8 @@
   },
   "private": true,
   "scripts": {
-    "build": "npm run build:rs && ./scripts/copy-dylibs.sh && next build",
-    "build:rs": "./scripts/build-gdal.sh && rustup default stable && (cd pathfinder && npm install && $HOME/miniconda3/bin/conda run -n gdal_env GDAL_STATIC=1 RUST_BACKTRACE=1 npm run build)",
+    "build": "npm run build:rs && ./scripts/copy-dylibs.sh rm -rf gdal-3.10.0 && next build",
+    "build:rs": "./scripts/build-gdal.sh && rustup default stable && (cd pathfinder && npm install && $HOME/miniconda3/bin/conda run -n gdal_env GDAL_HOME=/opt/build/repo/gdal-3.10.0/build RUST_BACKTRACE=1 npm run build)",
     "dev": "next dev",
     "postinstall": "prisma generate"
   },

@@ -96,7 +96,6 @@ mkdir build && cd build
 "$HOME"/miniconda3/bin/conda run -n gdal_env cmake .. \
   -DBUILD_APPS=OFF \
   -DBUILD_PYTHON_BINDINGS=OFF \
-  -DBUILD_SHARED_LIBS=OFF \
   -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_CXX_FLAGS="-fPIC" \
   -DCMAKE_C_FLAGS="-fPIC" \
@@ -110,6 +109,7 @@ mkdir build && cd build
   -DGDAL_USE_WEBP=ON \
   -DOGR_BUILD_OPTIONAL_DRIVERS=OFF 
 
+  # -DBUILD_SHARED_LIBS=OFF \
   # -DDeflate_LIBRARY_RELEASE=../../libdeflate.a \
   # -DGDAL_USE_DEFLATE=ON \
   # -DGDAL_USE_WEBP=ON \
@@ -119,6 +119,3 @@ mkdir build && cd build
 
 echo "Building GDAL"
 cmake --build . --target GDAL -- -j4
-mv libgdal.a ../..
-cd ../..
-rm -rf gdal-3.10.0 
