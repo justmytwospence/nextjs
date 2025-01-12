@@ -20,6 +20,7 @@ mkdir build && cd build
 echo "Building libc"
 $HOME/miniconda3/bin/conda run -n gdal_env ../configure \
   --prefix=/opt/build/repo/glibc-2.40/build \
+  --enable-static-pie \
   CFLAGS="-O2 -fPIC -Wno-error=attributes" \
   CXXFLAGS="-O2 -fPIC"
 make -j4
