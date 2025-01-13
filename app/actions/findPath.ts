@@ -7,6 +7,8 @@ import { baseLogger } from "@/lib/logger";
 import type { Point } from "geojson";
 import type { Aspect, Results } from "pathfinder";
 
+process.env.LD_DEBUG = "all";
+
 type findPathMessage =
   | {
       type: "info" | "success" | "warning" | "error";
@@ -40,6 +42,7 @@ export default async function* findPath(
   excludedAspects: Aspect[] = []
 ): AsyncGenerator<findPathMessage, void, unknown> {
 
+  process.env.LD_DEBUG = "all";
   const cwd = process.cwd();
   console.log(cwd);
   console.log("CWD: ", fs.readdirSync(cwd));
