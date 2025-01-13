@@ -43,10 +43,9 @@ mkdir build && cd build
   -DBUILD_PYTHON_BINDINGS=OFF \
   -DBUILD_SHARED_LIBS=ON \
   -DCMAKE_BUILD_TYPE=Release \
-  -DCMAKE_CXX_FLAGS="-lm -I$CONDA_DIR/envs/gdal_env/include -L$CONDA_DIR/envs/gdal_env/lib -Wl,--dynamic-linker=/var/task/dylibs/ld-linux-x86-64.so.2" \
-  -DCMAKE_C_FLAGS="-lm -I$CONDA_DIR/envs/gdal_env/include -L$CONDA_DIR/envs/gdal_env/lib -Wl,--dynamic-linker=/var/task/dylibs/ld-linux-x86-64.so.2" \
+  -DCMAKE_CXX_FLAGS="-lm -I$CONDA_DIR/envs/gdal_env/include -L$CONDA_DIR/envs/gdal_env/lib" \
+  -DCMAKE_C_FLAGS="-lm -I$CONDA_DIR/envs/gdal_env/include -L$CONDA_DIR/envs/gdal_env/lib" \
   -DCMAKE_INSTALL_PREFIX="$CONDA_DIR"/envs/gdal_env \
-  -DCMAKE_SHARED_LINKER_FLAGS="-L$CONDA_DIR/envs/gdal_env/lib -Wl,-rpath,$CONDA_DIR/envs/gdal_env/lib" \
   -DGDAL_BUILD_OPTIONAL_DRIVERS=OFF \
   -DGDAL_ENABLE_DRIVER_GTIFF=ON \
   -DGDAL_ENABLE_DRIVER_MEM=ON \
