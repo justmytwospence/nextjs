@@ -1,7 +1,7 @@
 {
   "installCommand": "npm install -g npm@10 && npm install",
   "functions": {
-    "pathfinder": {
+    "app/actions/findPath.js": {
       "maxDuration": 300,
       "memory": 3009
     }
