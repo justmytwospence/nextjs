@@ -69,6 +69,5 @@ ls -lah "$CONDA_DIR"/envs/gdal_env/lib
 ls -lah "$CONDA_DIR"/envs/gdal_env/include
 
 "$CONDA_DIR"/bin/conda run -n gdal_env ldd "$CONDA_DIR"/envs/gdal_env/lib/libgdal.so 
-"$CONDA_DIR"/bin/conda run -n gdal_env ldd "$CONDA_DIR"/envs/gdal_env/lib/libm.so.6
 
 rustup default stable

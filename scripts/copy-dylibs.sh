@@ -16,6 +16,8 @@ cp /opt/buildhome/miniconda3/envs/gdal_env/lib/libgdal.so* dylibs/
   "$CONDA_DIR"/bin/patchelf --set-rpath /var/task/dylibs dylibs/$(basename "$lib")
 done
 
+ldd dylibs/libm.so.6
+
 # copy .node dependencies
 echo "Copying .node dynamic dependencies"
 "$HOME"/miniconda3/bin/conda run -n gdal_env ldd pathfinder/pathfinder.linux-x64-gnu.node
