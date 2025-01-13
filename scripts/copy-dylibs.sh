@@ -3,6 +3,8 @@
 set -x
 
 CONDA_DIR="$HOME"/miniconda3
+"$CONDA_DIR"/bin/patchelf --set-rpath --force-rpath /var/task/dylibs "$CONDA_DIR"/envs/gdal_env/lib/libgdal.so.36
+"$CONDA_DIR"/bin/patchelf --set-interpreter /var/task/dylibs/ld-linux-x86.so.2 "$CONDA_DIR"/envs/gdal_env/lib/libgdal.so.36
 
 mkdir dylibs
 
