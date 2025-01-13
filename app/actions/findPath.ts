@@ -42,7 +42,9 @@ export default async function* findPath(
   excludedAspects: Aspect[] = []
 ): AsyncGenerator<findPathMessage, void, unknown> {
 
-  process.env.LD_DEBUG = "all";
+  console.log("LD_DEBUG: ", process.env.LD_DEBUG);
+  console.log("LD_LIBRARY_PATH: ", process.env.LD_LIBRARY_PATH);
+  console.log("LD_PRELOAD: ", process.env.LD_PRELOAD);
   const cwd = process.cwd();
   console.log(cwd);
   console.log("CWD: ", fs.readdirSync(cwd));
