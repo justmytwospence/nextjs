@@ -95,7 +95,7 @@
   "private": true,
   "scripts": {
     "build": "npm run build:rs && next build",
-    "build:rs": "curl https://sh.rustup.rs -sSf | sh -s -- -y && (cd pathfinder && npm install && npm run build)",
+    "build:rs": "curl https://sh.rustup.rs -sSf | sh -s -- -y && (cd pathfinder && npm install PATH=$HOME/.cargo/bin && npm run build)",
     "dev": "next dev",
     "postinstall": "prisma generate"
   },
