@@ -6,7 +6,7 @@ use georaster::Coordinate;
 use napi::JsUndefined;
 use napi::{bindgen_prelude::*, JsGlobal, JsObject, JsString};
 use napi_derive::napi;
-use pathfinding::prelude::astar;
+use pathfinding::prelude::{fringe, idastar};
 use std::io::Cursor;
 
 #[derive(PartialEq, Debug)]
@@ -65,6 +65,7 @@ pub fn pathfind(
   let (width, height) = geotiff.image_info().dimensions.unwrap();
   let width: usize = width as usize;
   let height: usize = height as usize;
+  let _ = console_log(&env, format!("Width: {:?}, Height: {:?}", width, height).as_str());
   let pixels: Vec<RasterValue> = geotiff
     .pixels(0, 0, width as u32, height as u32)
     .map(|pixel: (u32, u32, RasterValue)| pixel.2)
@@ -78,7 +79,7 @@ pub fn pathfind(
     .collect::<Result<Vec<f32>>>()?;
 
   let cost_fn = |&(x, y): &(usize, usize), &(nx, ny): &(usize, usize)| -> i32 {
-    const MAX_GRADIENT_MULTIPLIER: f32 = 5.0;
+    const MAX_GRADIENT_MULTIPLIER: f32 = 100.0;
 
     let dx: f32 = (nx as isize - x as isize).abs() as f32 * 10.0;
     let dy: f32 = (ny as isize - y as isize).abs() as f32 * 10.0;
@@ -86,7 +87,7 @@ pub fn pathfind(
     let distance: f32 = ((dx * dx) + (dy * dy)).sqrt();
     let gradient: f32 = dz / distance;
     let gradient_ratio: f32 = (gradient / MAX_GRADIENT).clamp(0.0, 1.0);
-    let gradient_multiplier: f32 = 1.0 + gradient_ratio.powf(2.0) * (MAX_GRADIENT_MULTIPLIER - 1.0);
+    let gradient_multiplier: f32 = 1.0 + gradient_ratio.powf(1.5) * (MAX_GRADIENT_MULTIPLIER - 1.0);
     // let _ = console_log(&env, format!("Cost: {:?}, {:?} -> {:?}, {:?}, Distance: {:?}, Gradient: {:?}, Gradient Multiplier: {:?}, Total: {:?}", x, y, nx, ny, distance, gradient, gradient_multiplier, (distance * gradient_multiplier) as i32).as_str());
     (distance * gradient_multiplier) as i32
   };
@@ -129,7 +130,7 @@ pub fn pathfind(
   let is_end_node = |&node: &(usize, usize)| -> bool { node == end_node };
 
   let result: Option<(Vec<(usize, usize)>, i32)> =
-    astar(&start_node, successors, heuristic, is_end_node);
+    idastar(&start_node, successors, heuristic, is_end_node);
 
   let path_nodes: Vec<(usize, usize)> = match result {
     Some((path, _)) => path,

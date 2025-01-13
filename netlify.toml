@@ -1,5 +1,2 @@
 [build]
   command = "npm run build"  
-
-[build.environment]
-  RUST_BACKTRACE="1"
