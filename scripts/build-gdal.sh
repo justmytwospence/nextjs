@@ -33,22 +33,6 @@ bash miniconda.sh -b > /dev/null
 "$CONDA_DIR"/bin/conda list gxx_linux-64
 "$CONDA_DIR"/bin/conda run -n gdal_env ldd --version
 
-# # libc 
-# curl -LO https://ftp.gnu.org/gnu/libc/glibc-2.40.tar.xz
-# tar xf glibc-2.40.tar.xz
-# cd glibc-2.40
-# mkdir build && cd build
-# echo "Building libc"
-# $HOME/miniconda3/bin/conda run -n gdal_env ../configure \
-#   --prefix=/opt/build/repo/glibc-2.40/build \
-#   --enable-static-pie \
-#   CFLAGS="-O2 -fPIC -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0 -Wno-error=attributes" \
-#   CXXFLAGS="-O2 -fPIC"
-# make -j4
-# mv libc.a ../..
-# cd ../..
-# rm -rf glibc-2.40
-
 # gdal
 curl -LO https://github.com/OSGeo/gdal/releases/download/v3.10.0/gdal-3.10.0.tar.gz
 tar -xf gdal-3.10.0.tar.gz
@@ -73,16 +57,6 @@ mkdir build && cd build
   -DGDAL_USE_INTERNAL_LIBS=ON \
   -DGDAL_USE_WEBP=ON \
   -DOGR_BUILD_OPTIONAL_DRIVERS=OFF
-
-  # -DCMAKE_CXX_FLAGS="-fPIC" \
-  # -DCMAKE_C_FLAGS="-fPIC" \
-  # -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
-  # -DBUILD_SHARED_LIBS=OFF \
-  # -DDeflate_LIBRARY_RELEASE=../../libdeflate.a \
-  # -DGDAL_USE_WEBP=ON \
-  # -DWEBP_LIBjARARY=../../libwebp.a \
-  # -DGEOS_LIBRARY=../../libgeos_c.a \
-  # -DPROJ_LIBRARY_RELEASE=../../libproj.a 
 
 echo "Building GDAL"
 "$CONDA_DIR"/bin/conda run -n gdal_env cmake --build . --target install -- -j"${NUM_CPUS}"
