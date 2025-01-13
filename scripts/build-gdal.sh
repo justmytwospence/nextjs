@@ -46,17 +46,18 @@ echo "$LD_LIBRARY_PATH"
   -DCMAKE_CXX_FLAGS=" -I$CONDA_DIR/envs/gdal_env/include -L$CONDA_DIR/envs/gdal_env/lib" \
   -DCMAKE_C_FLAGS=" -I$CONDA_DIR/envs/gdal_env/include -L$CONDA_DIR/envs/gdal_env/lib" \
   -DCMAKE_INSTALL_PREFIX="$CONDA_DIR"/envs/gdal_env \
+  -DACCEPT_MISSING_LINUX_FS_HEADER=ON \
+  -DACCEPT_MISSING_SQLITE3_MUTEX_ALLOC=ON \
   -DBUILD_APPS=OFF \
   -DBUILD_PYTHON_BINDINGS=OFF \
   -DBUILD_SHARED_LIBS=ON \
-  -DACCEPT_MISSING_LINUX_FS_HEADER=ON \
-  -DACCEPT_MISSING_SQLITE3_MUTEX_ALLOC=ON \
   -DGDAL_BUILD_OPTIONAL_DRIVERS=OFF \
   -DGDAL_ENABLE_DRIVER_GTIFF=ON \
   -DGDAL_ENABLE_DRIVER_MEM=ON \
   -DGDAL_USE_CURL=ON \
   -DGDAL_USE_DEFLATE=ON \
   -DGDAL_USE_GEOS=ON \
+  -DGDAL_USE_INTERNAL_LIBS=ON \
   -DGDAL_USE_JPEG=OFF \
   -DGDAL_USE_WEBP=ON \
   -DOGR_BUILD_OPTIONAL_DRIVERS=OFF
@@ -65,7 +66,6 @@ echo "$LD_LIBRARY_PATH"
   # -DCMAKE_CXX_COMPILER="$CONDA_DIR"/envs/gdal_env/bin/x86_64-conda-linux-gnu-g++ \
   # -DCMAKE_SHARED_LINKER_FLAGS="-L$CONDA_DIR/envs/gdal_env/lib" \
   # -DCMAKE_EXE_LINKER_FLAGS="-L$CONDA_DIR/envs/gdal_env/lib" \
-  # -DGDAL_USE_INTERNAL_LIBS=ON \
   # -DCMAKE_CXX_FLAGS="-nostdlib --sysroot=$CONDA_DIR/envs/gdal_env -I$CONDA_DIR/envs/gdal_env/include -L$CONDA_DIR/envs/gdal_env/lib" \
   # -DCMAKE_C_FLAGS="-nostdlib --sysroot=$CONDA_DIR/envs/gdal_env -I$CONDA_DIR/envs/gdal_env/include -L$CONDA_DIR/envs/gdal_env/lib" \
   # -DCMAKE_CXX_FLAGS="-fPIC" \
