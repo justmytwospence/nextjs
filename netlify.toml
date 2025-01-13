@@ -2,8 +2,9 @@
   command = "npm run build"  
 
 [build.environment]
-  LD_LIBRARY_PATH="/opt/buildhome/miniconda3/envs/gdal_env/lib"
   GDAL_HOME="/opt/buildhome/miniconda3/envs/gdal_env"
+  LD_LIBRARY_PATH="/opt/buildhome/miniconda3/envs/gdal_env/lib"
+  PKG_CONFIG_PATH="/opt/buildhome/miniconda3/envs/gdal_env/lib/pkgconfig"
   RUST_BACKTRACE="1"
 
 [functions]
