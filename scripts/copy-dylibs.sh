@@ -6,6 +6,9 @@ CONDA_DIR="$HOME"/miniconda3
 
 mkdir dylibs
 
+echo "Copying linker"
+cp /lib64/ld-linux-x86-64.so.2 dylibs/
+
 # copy GDAL dependencies
 echo "Copying GDAL dependencies"
 "$HOME"/miniconda3/bin/conda run -n gdal_env ldd /opt/buildhome/miniconda3/envs/gdal_env/lib/libgdal.so
