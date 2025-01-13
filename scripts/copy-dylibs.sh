@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -x
+
 CONDA_DIR="$HOME"/miniconda3
 
 mkdir dylibs
@@ -22,3 +24,5 @@ echo "Copying .node dynamic dependencies"
   cp "$lib" dylibs/
   "$CONDA_DIR"/bin/patchelf --set-rpath /var/task/dylibs dylibs/$(basename $lib)
 done
+
+rm dylibs/libm.so.6
