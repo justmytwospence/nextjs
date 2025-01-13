@@ -95,7 +95,7 @@
   "private": true,
   "scripts": {
     "build": "npm run build:rs && ./scripts/copy-dylibs.sh && next build",
-    "build:rs": "./scripts/build-gdal.sh && (cd pathfinder && npm install && $HOME/miniconda3/bin/conda run -n gdal_env npm run build)",
+    "build:rs": "./scripts/build-gdal.sh && (cd pathfinder && npm install && npm run build)",
     "dev": "next dev",
     "postinstall": "prisma generate"
   },
