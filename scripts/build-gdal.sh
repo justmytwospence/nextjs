@@ -13,7 +13,6 @@ curl -s -o miniconda.sh https://repo.anaconda.com/miniconda/Miniconda3-latest-Li
 bash miniconda.sh -b > /dev/null
 
 "$CONDA_DIR"/bin/conda install --quiet -c conda-forge libtree patchelf -y
-
 "$CONDA_DIR"/bin/conda create --quiet -n gdal_env -c conda-forge \
   clang \
   geos \
