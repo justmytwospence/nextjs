@@ -9,6 +9,20 @@ use napi_derive::napi;
 use pathfinding::prelude::fringe;
 use std::io::Cursor;
 
+#[derive(PartialEq, Debug)]
+#[napi(string_enum)]
+pub enum Aspect {
+  North,
+  Northeast,
+  East,
+  Southeast,
+  South,
+  Southwest,
+  West,
+  Northwest,
+  Flat,
+}
+
 #[napi]
 pub struct Results {
   pub path_line: String,

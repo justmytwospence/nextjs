@@ -1,6 +1,6 @@
 import findPath, { type Bounds } from "@/app/actions/findPath";
-import type { Aspect } from "@/app/pathfinder/page";
 import { Button } from "@/components/ui/button";
+import type { Aspect } from "@/pathfinder/index.d.ts";
 import type { FeatureCollection, LineString, Point } from "geojson";
 import { Loader } from "lucide-react";
 import { toast } from "sonner";

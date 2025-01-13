@@ -13,18 +13,6 @@ import { SelectAspectsDialog } from "@/components/ui/select-aspects-dialog";
 import type { Feature, FeatureCollection, LineString, Point } from "geojson";
 import { useCallback, useState } from "react";
 
-export enum Aspect {
-  North = 'North',
-  Northeast = 'Northeast',
-  East = 'East',
-  Southeast = 'Southeast',
-  South = 'South',
-  Southwest = 'Southwest',
-  West = 'West',
-  Northwest = 'Northwest',
-  Flat = 'Flat'
-};
-
 export default function PathFinderPage() {
   const [waypoints, setWaypoints] = useState<Point[]>([]);
   const [path, setPath] = useState<LineString | null>(null);

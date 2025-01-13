@@ -1,6 +1,5 @@
 "use client";
 
-import type { Aspect } from "@/app/pathfinder/page";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
@@ -11,6 +10,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import type { Aspect } from "@/pathfinder/index.d.ts";
 import { useState } from "react";
 
 const aspects = new Set<Aspect>([
@@ -60,7 +60,9 @@ export function SelectAspectsDialog({
             <Card
               key={direction}
               className={`p-2 text-center cursor-pointer hover:bg-accent ${
-                selected.has(direction) ? "bg-primary text-primary-foreground" : ""
+                selected.has(direction)
+                  ? "bg-primary text-primary-foreground"
+                  : ""
               }`}
               onClick={() => {
                 const newSelected = new Set(selected);

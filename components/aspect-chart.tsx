@@ -1,4 +1,4 @@
-import type { Aspect } from '@/app/pathfinder/page';
+import type { Aspect } from "@/pathfinder/index.d.ts";
 import { aspectStore } from '@/store';
 import { type ActiveElement, ArcElement, type ChartEvent, Chart as ChartJS, Legend, RadialLinearScale, Tooltip } from 'chart.js';
 import type { FeatureCollection } from 'geojson';
