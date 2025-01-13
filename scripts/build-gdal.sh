@@ -44,8 +44,8 @@ echo "$LD_LIBRARY_PATH"
 "$CONDA_DIR"/bin/conda run -n gdal_env cmake .. \
   -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_CXX_COMPILER="$CONDA_DIR"/envs/gdal_env/bin/x86_64-conda-linux-gnu-g++ \
-  -DCMAKE_CXX_FLAGS="-I$CONDA_DIR/envs/gdal_env/include -L$CONDA_DIR/envs/gdal_env/lib" \
-  -DCMAKE_C_COMPILER="$CONDA_DIR"/envs/gdal_env/bin/x86_64-conda-linux-gnu-gcc \
+  -DCMAKE_CXX_FLAGS="--sysroot=$CONDA_DIR/envs/gdal_env -I$CONDA_DIR/envs/gdal_env/include -L$CONDA_DIR/envs/gdal_env/lib" \
+  -DCMAKE_C_COMPILER="--sysroot=$CONDA_DIR/envs/gdal_env $CONDA_DIR"/envs/gdal_env/bin/x86_64-conda-linux-gnu-gcc \
   -DCMAKE_C_FLAGS="-I$CONDA_DIR/envs/gdal_env/include -L$CONDA_DIR/envs/gdal_env/lib" \
   -DCMAKE_EXE_LINKER_FLAGS="-L$CONDA_DIR/envs/gdal_env/lib" \
   -DCMAKE_INSTALL_PREFIX="$CONDA_DIR"/envs/gdal_env \
