@@ -47,7 +47,7 @@ cmake .. \
   -DOGR_BUILD_OPTIONAL_DRIVERS=OFF
 
 echo "Building GDAL"
-cmake --build . --target GDAL -- -j"${NUM_CPUS}"
+cmake --build . --target install -- -j"${NUM_CPUS}"
 "$CONDA_DIR"
 cd ../..
 rm -rf gdal-3.9.3
