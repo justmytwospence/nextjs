@@ -60,7 +60,7 @@ mkdir build && cd build
 
 echo "Building GDAL"
 "$CONDA_DIR"/bin/conda run -n gdal_env cmake --build . --target install -- -j"${NUM_CPUS}"
-"$CONDA_DIR"/bin/patchelf --set-rpath /var/task/dylibs "$CONDA_DIR"/envs/gdal_env/lib/libgdal.so.36.3.10.0
+"$CONDA_DIR"/bin/patchelf --set-rpath --force-rpath /var/task/dylibs "$CONDA_DIR"/envs/gdal_env/lib/libgdal.so.36.3.10.0
 cd ../..
 rm -rf gdal-3.10.0
 
