@@ -6,7 +6,7 @@ use georaster::Coordinate;
 use napi::JsUndefined;
 use napi::{bindgen_prelude::*, JsGlobal, JsObject, JsString};
 use napi_derive::napi;
-use pathfinding::prelude::fringe;
+use pathfinding::prelude::astar;
 use std::io::Cursor;
 
 #[derive(PartialEq, Debug)]
@@ -87,7 +87,7 @@ pub fn pathfind(
     let gradient: f32 = dz / distance;
     let gradient_ratio: f32 = (gradient / MAX_GRADIENT).clamp(0.0, 1.0);
     let gradient_multiplier: f32 = 1.0 + gradient_ratio.powf(2.0) * (MAX_GRADIENT_MULTIPLIER - 1.0);
-    let _ = console_log(&env, format!("Cost: {:?}, {:?} -> {:?}, {:?}, Distance: {:?}, Gradient: {:?}, Gradient Multiplier: {:?}, Total: {:?}", x, y, nx, ny, distance, gradient, gradient_multiplier, (distance * gradient_multiplier) as i32).as_str());
+    // let _ = console_log(&env, format!("Cost: {:?}, {:?} -> {:?}, {:?}, Distance: {:?}, Gradient: {:?}, Gradient Multiplier: {:?}, Total: {:?}", x, y, nx, ny, distance, gradient, gradient_multiplier, (distance * gradient_multiplier) as i32).as_str());
     (distance * gradient_multiplier) as i32
   };
 
@@ -114,7 +114,6 @@ pub fn pathfind(
         let current_elevation: f32 = elevations[y * width + x];
         let new_elevation: f32 = elevations[ny * width + nx];
         let gradient: f32 = (new_elevation - current_elevation).abs() / 10.0;
-        let _ = console_log(&env, format!("gradient: {:?}", gradient).as_str());
         if gradient < MAX_GRADIENT {
           neighbors.push(((nx as usize, ny as usize), cost_fn(&(x, y), &(nx, ny))));
         }
@@ -130,7 +129,7 @@ pub fn pathfind(
   let is_end_node = |&node: &(usize, usize)| -> bool { node == end_node };
 
   let result: Option<(Vec<(usize, usize)>, i32)> =
-    fringe(&start_node, successors, heuristic, is_end_node);
+    astar(&start_node, successors, heuristic, is_end_node);
 
   let path_nodes: Vec<(usize, usize)> = match result {
     Some((path, _)) => path,
