@@ -15,30 +15,19 @@ bash miniconda.sh -b > /dev/null
 "$CONDA_DIR"/bin/conda install --quiet -c conda-forge libtree patchelf -y
 
 "$CONDA_DIR"/bin/conda create --quiet -n gdal_env -c conda-forge \
-  clang \
-  cmake \
   geos \
   libcurl \
-  libcxxabi \
   libdeflate \
   libjxl \
   libtiff \
-  pkg-config \
   proj -y
-
-  # gxx_linux-64 \
-  # libcxx \
-
-"$CONDA_DIR"/bin/conda list glibc
-"$CONDA_DIR"/bin/conda list gxx_linux-64
-"$CONDA_DIR"/bin/conda run -n gdal_env ldd --version
 
 # gdal
 curl -LO https://github.com/OSGeo/gdal/releases/download/v3.9.3/gdal-3.9.3.tar.gz
 tar -xf gdal-3.9.3.tar.gz
 cd gdal-3.9.3
 mkdir build && cd build
-"$CONDA_DIR"/bin/conda run -n gdal_env cmake .. \
+cmake .. \
   -DBUILD_APPS=OFF \
   -DBUILD_PYTHON_BINDINGS=OFF \
   -DBUILD_SHARED_LIBS=ON \
@@ -57,7 +46,7 @@ mkdir build && cd build
   -DOGR_BUILD_OPTIONAL_DRIVERS=OFF
 
 echo "Building GDAL"
-"$CONDA_DIR"/bin/conda run -n gdal_env cmake --build . --target install -- -j"${NUM_CPUS}"
+cmake --build . --target install -- -j"${NUM_CPUS}"
 "$CONDA_DIR"
 cd ../..
 rm -rf gdal-3.9.3
