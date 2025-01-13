@@ -1,5 +1,7 @@
 #!/bin/bash
 
+CONDA_DIR="$HOME"/miniconda3
+
 mkdir dylibs
 
 # copy GDAL dependencies
