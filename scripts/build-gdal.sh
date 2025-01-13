@@ -61,11 +61,11 @@ echo "$LD_LIBRARY_PATH"
   -DGDAL_USE_CURL=ON \
   -DGDAL_USE_DEFLATE=ON \
   -DGDAL_USE_GEOS=ON \
-  -DGDAL_USE_INTERNAL_LIBS=ON \
   -DGDAL_USE_JPEG=OFF \
   -DGDAL_USE_WEBP=ON \
   -DOGR_BUILD_OPTIONAL_DRIVERS=OFF
 
+  # -DGDAL_USE_INTERNAL_LIBS=ON \
   # -DCMAKE_CXX_FLAGS="-nostdlib --sysroot=$CONDA_DIR/envs/gdal_env -I$CONDA_DIR/envs/gdal_env/include -L$CONDA_DIR/envs/gdal_env/lib" \
   # -DCMAKE_C_FLAGS="-nostdlib --sysroot=$CONDA_DIR/envs/gdal_env -I$CONDA_DIR/envs/gdal_env/include -L$CONDA_DIR/envs/gdal_env/lib" \
   # -DCMAKE_CXX_FLAGS="-fPIC" \
