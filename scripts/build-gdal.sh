@@ -34,9 +34,9 @@ bash miniconda.sh -b > /dev/null
 "$CONDA_DIR"/bin/conda run -n gdal_env ldd --version
 
 # gdal
-curl -LO https://github.com/OSGeo/gdal/releases/download/v3.10.0/gdal-3.10.0.tar.gz
-tar -xf gdal-3.10.0.tar.gz
-cd gdal-3.10.0
+curl -LO https://github.com/OSGeo/gdal/releases/download/v3.9.3/gdal-3.9.3.tar.gz
+tar -xf gdal-3.9.3.tar.gz
+cd gdal-3.9.3
 mkdir build && cd build
 "$CONDA_DIR"/bin/conda run -n gdal_env cmake .. \
   -DBUILD_APPS=OFF \
@@ -59,9 +59,9 @@ mkdir build && cd build
 
 echo "Building GDAL"
 "$CONDA_DIR"/bin/conda run -n gdal_env cmake --build . --target install -- -j"${NUM_CPUS}"
-"$CONDA_DIR"/bin/patchelf --set-rpath --force-rpath /var/task/dylibs "$CONDA_DIR"/envs/gdal_env/lib/libgdal.so.36.3.10.0
+"$CONDA_DIR"/bin/patchelf --set-rpath --force-rpath /var/task/dylibs "$CONDA_DIR"/envs/gdal_env/lib/libgdal.so.36
 cd ../..
-rm -rf gdal-3.10.0
+rm -rf gdal-3.9.3
 
 ls -lah "$CONDA_DIR"/envs/gdal_env
 ls -lah "$CONDA_DIR"/envs/gdal_env/lib
