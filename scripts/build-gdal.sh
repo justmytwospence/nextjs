@@ -59,6 +59,7 @@ mkdir build && cd build
 
 echo "Building GDAL"
 "$CONDA_DIR"/bin/conda run -n gdal_env cmake --build . --target install -- -j"${NUM_CPUS}"
+"$CONDA_DIR"
 cd ../..
 rm -rf gdal-3.9.3
 
@@ -66,6 +67,7 @@ ls -lah "$CONDA_DIR"/envs/gdal_env
 ls -lah "$CONDA_DIR"/envs/gdal_env/lib
 ls -lah "$CONDA_DIR"/envs/gdal_env/include
 
+"$CONDA_DIR"/bin/patchelf --set-rpath /var/task/dylibs "$CONDA_DIR"/envs/gdal_env/lib/libgdal.so
 "$CONDA_DIR"/bin/conda run -n gdal_env ldd "$CONDA_DIR"/envs/gdal_env/lib/libgdal.so 
 
 curl https://sh.rustup.rs -sSf | sh -s -- -y # vercel
