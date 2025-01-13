@@ -15,6 +15,7 @@ bash miniconda.sh -b > /dev/null
 "$CONDA_DIR"/bin/conda install --quiet -c conda-forge libtree patchelf -y
 
 "$CONDA_DIR"/bin/conda create --quiet -n gdal_env -c conda-forge \
+  clang \
   geos \
   libcurl \
   libdeflate \
@@ -46,7 +47,7 @@ cmake .. \
   -DOGR_BUILD_OPTIONAL_DRIVERS=OFF
 
 echo "Building GDAL"
-cmake --build . --target install -- -j"${NUM_CPUS}"
+cmake --build . --target GDAL -- -j"${NUM_CPUS}"
 "$CONDA_DIR"
 cd ../..
 rm -rf gdal-3.9.3
