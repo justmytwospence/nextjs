@@ -10,6 +10,7 @@ import LazyPolylineMap from "@/components/polyline-map-lazy";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { SelectAspectsDialog } from "@/components/ui/select-aspects-dialog";
+import type { Aspect } from "@/pathfinder";
 import type { Feature, FeatureCollection, LineString, Point } from "geojson";
 import { useCallback, useState } from "react";
 
