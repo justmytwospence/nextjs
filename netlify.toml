@@ -3,7 +3,7 @@
 
 [build.environment]
   # GDAL_STATIC="true"
-  LD_LIBRARY_PATH="/opt/buildhome/miniconda3/envs/gdal_env/lib"
+  # LD_LIBRARY_PATH="/opt/buildhome/miniconda3/envs/gdal_env/lib"
   GDAL_HOME="/opt/buildhome/miniconda3/envs/gdal_env"
   RUST_BACKTRACE="1"
 
