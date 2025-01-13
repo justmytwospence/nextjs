@@ -27,6 +27,8 @@ export type Bounds = {
   west: number;
 };
 
+export type Aspect = "North" | "South" | "East" | "West";
+
 async function cacheGeoTIFF(geoTiffArrayBuffer: Buffer) {
   try {
     await insertGeoTiff(geoTiffArrayBuffer);

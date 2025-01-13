@@ -1,6 +1,6 @@
 "use client";
 
-import type { Bounds } from "@/app/actions/findPath";
+import type { Aspect, Bounds } from "@/app/actions/findPath";
 import { AspectChart } from "@/components/aspect-chart";
 import ElevationProfile from "@/components/elevation-chart";
 import FindPathButton from "@/components/find-path-button";
@@ -10,7 +10,6 @@ import LazyPolylineMap from "@/components/polyline-map-lazy";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { SelectAspectsDialog } from "@/components/ui/select-aspects-dialog";
-import type { Aspect } from "@/pathfinder/index.d.ts";
 import type { Feature, FeatureCollection, LineString, Point } from "geojson";
 import { useCallback, useState } from "react";
 
