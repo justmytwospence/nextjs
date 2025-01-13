@@ -1,6 +1,6 @@
 "use client";
 
-import type { Aspect, Bounds } from "@/app/actions/findPath";
+import type { Bounds } from "@/app/actions/findPath";
 import { AspectChart } from "@/components/aspect-chart";
 import ElevationProfile from "@/components/elevation-chart";
 import FindPathButton from "@/components/find-path-button";
@@ -12,6 +12,18 @@ import { Card } from "@/components/ui/card";
 import { SelectAspectsDialog } from "@/components/ui/select-aspects-dialog";
 import type { Feature, FeatureCollection, LineString, Point } from "geojson";
 import { useCallback, useState } from "react";
+
+export enum Aspect {
+  North = 'North',
+  Northeast = 'Northeast',
+  East = 'East',
+  Southeast = 'Southeast',
+  South = 'South',
+  Southwest = 'Southwest',
+  West = 'West',
+  Northwest = 'Northwest',
+  Flat = 'Flat'
+};
 
 export default function PathFinderPage() {
   const [waypoints, setWaypoints] = useState<Point[]>([]);

@@ -3,6 +3,3 @@
 
 [build.environment]
   RUST_BACKTRACE="1"
-
-[functions]
-  included_files = ["dylibs/**"]

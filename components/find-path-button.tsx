@@ -1,5 +1,5 @@
-import findPath from "@/app/actions/findPath";
-import type { Aspect, Bounds } from "@/app/actions/findPath";
+import findPath, { type Bounds } from "@/app/actions/findPath";
+import type { Aspect } from "@/app/pathfinder/page";
 import { Button } from "@/components/ui/button";
 import type { FeatureCollection, LineString, Point } from "geojson";
 import { Loader } from "lucide-react";

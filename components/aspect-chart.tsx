@@ -1,4 +1,4 @@
-import type { Aspect } from '@/app/actions/findPath';
+import type { Aspect } from '@/app/pathfinder/page';
 import { aspectStore } from '@/store';
 import { type ActiveElement, ArcElement, type ChartEvent, Chart as ChartJS, Legend, RadialLinearScale, Tooltip } from 'chart.js';
 import type { FeatureCollection } from 'geojson';

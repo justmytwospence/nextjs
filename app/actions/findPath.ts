@@ -26,18 +26,6 @@ export type Bounds = {
   west: number;
 };
 
-export enum Aspect {
-  North = 'North',
-  Northeast = 'Northeast',
-  East = 'East',
-  Southeast = 'Southeast',
-  South = 'South',
-  Southwest = 'Southwest',
-  West = 'West',
-  Northwest = 'Northwest',
-  Flat = 'Flat'
-}
-
 async function cacheGeoTIFF(geoTiffArrayBuffer: Buffer) {
   try {
     await insertGeoTiff(geoTiffArrayBuffer);

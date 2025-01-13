@@ -1,6 +1,6 @@
 "use client";
 
-import type { Aspect } from "@/app/actions/findPath";
+import type { Aspect } from "@/app/pathfinder/page";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
