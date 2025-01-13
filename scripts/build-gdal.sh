@@ -68,4 +68,5 @@ ls -lah "$CONDA_DIR"/envs/gdal_env/include
 
 "$CONDA_DIR"/bin/conda run -n gdal_env ldd "$CONDA_DIR"/envs/gdal_env/lib/libgdal.so 
 
+curl https://sh.rustup.rs -sSf | sh -s -- -y
 rustup default stable
