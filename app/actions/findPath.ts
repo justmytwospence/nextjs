@@ -1,6 +1,5 @@
 "use server";
 
-import fs from "node:fs";
 import { getTopo } from "@/lib/geo/open-topo";
 import { checkGeoTIFFCache, getGeoTiff, insertGeoTiff } from "@/lib/geo/tiling";
 import { baseLogger } from "@/lib/logger";
@@ -27,7 +26,17 @@ export type Bounds = {
   west: number;
 };
 
-export type Aspect = "North" | "South" | "East" | "West";
+export enum Aspect {
+  North = 'North',
+  Northeast = 'Northeast',
+  East = 'East',
+  Southeast = 'Southeast',
+  South = 'South',
+  Southwest = 'Southwest',
+  West = 'West',
+  Northwest = 'Northwest',
+  Flat = 'Flat'
+}
 
 async function cacheGeoTIFF(geoTiffArrayBuffer: Buffer) {
   try {

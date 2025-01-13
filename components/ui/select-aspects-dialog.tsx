@@ -1,5 +1,6 @@
 "use client";
 
+import type { Aspect } from "@/app/actions/findPath";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
@@ -10,7 +11,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import type { Aspect } from "@/pathfinder";
 import { useState } from "react";
 
 const aspects = new Set<Aspect>([
