@@ -94,8 +94,8 @@
   },
   "private": true,
   "scripts": {
-    "build": "npm run build:rs && ./scripts/copy-dylibs.sh && next build",
-    "build:rs": "./scripts/build-gdal.sh && (cd pathfinder && npm install && npm run build)",
+    "build": "npm run build:rs && next build",
+    "build:rs": "(cd pathfinder && npm install && npm run build)",
     "dev": "next dev",
     "postinstall": "prisma generate"
   },
