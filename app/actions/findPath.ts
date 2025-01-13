@@ -5,7 +5,10 @@ import { getTopo } from "@/lib/geo/open-topo";
 import { checkGeoTIFFCache, getGeoTiff, insertGeoTiff } from "@/lib/geo/tiling";
 import { baseLogger } from "@/lib/logger";
 import type { Point } from "geojson";
-import type { Aspect, Results } from "pathfinder";
+import type { Results } from "pathfinder";
+
+const pathfinder = require("pathfinder");
+const { pathfind } = pathfinder;
 
 type findPathMessage =
   | {
@@ -37,19 +40,8 @@ async function cacheGeoTIFF(geoTiffArrayBuffer: Buffer) {
 export default async function* findPath(
   waypoints: Point[],
   bounds: Bounds,
-  excludedAspects: Aspect[] = []
+  excludedAspects: string[] = []
 ): AsyncGenerator<findPathMessage, void, unknown> {
-
-  console.log("LD_DEBUG: ", process.env.LD_DEBUG);
-  console.log("LD_LIBRARY_PATH: ", process.env.LD_LIBRARY_PATH);
-  console.log("LD_PRELOAD: ", process.env.LD_PRELOAD);
-  const cwd = process.cwd();
-  console.log(cwd);
-  console.log("CWD: ", fs.readdirSync(cwd));
-  console.log("dylibs: ", fs.readdirSync(`${cwd}/dylibs`));
-
-  const pathfinder = require("pathfinder");
-  const { pathfind } = pathfinder;
 
   yield { type: "info", message: "Checking cache..." };
   const boundsInCache = await checkGeoTIFFCache(bounds);
