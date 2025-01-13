@@ -7,8 +7,6 @@ import { baseLogger } from "@/lib/logger";
 import type { Point } from "geojson";
 import type { Aspect, Results } from "pathfinder";
 
-process.env.LD_DEBUG = "all";
-
 type findPathMessage =
   | {
       type: "info" | "success" | "warning" | "error";
