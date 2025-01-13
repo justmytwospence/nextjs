@@ -25,4 +25,5 @@ echo "Copying .node dynamic dependencies"
   "$CONDA_DIR"/bin/patchelf --set-rpath /var/task/dylibs dylibs/$(basename $lib)
 done
 
+rm dylibs/libc.so.6
 rm dylibs/libm.so.6
