@@ -21,7 +21,9 @@ export default function PathFinderPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [excludedAspects, setExcludedAspects] = useState<Aspect[]>([]);
   const [mapCenter, setMapCenter] = useState<[number, number] | undefined>();
-  const [aspectPoints, setAspectPoints] = useState<FeatureCollection | null>(null);
+  const [aspectPoints, setAspectPoints] = useState<FeatureCollection | null>(
+    null
+  );
 
   function handleMapClick(point: Point) {
     setWaypoints([...waypoints, point]);
@@ -49,7 +51,7 @@ export default function PathFinderPage() {
     setIsLoading(false);
     setAspectPoints(null);
 
-    const mapElement = document.querySelector('.leaflet-container');
+    const mapElement = document.querySelector(".leaflet-container");
     if (mapElement) {
       // @ts-ignore - accessing custom property
       const map = mapElement._leaflet_map;
@@ -83,27 +85,50 @@ export default function PathFinderPage() {
     });
   }, []);
 
-  const handleSetAspectPoints = useCallback((newPoints: FeatureCollection | null) => {
-    setAspectPoints((currentAspectPoints) => {
-      if (newPoints === null) {
-        return null;
-      }
+  const handleSetAspectPoints = useCallback(
+    (newPoints: FeatureCollection | null) => {
+      setAspectPoints((currentAspectPoints) => {
+        if (newPoints === null) {
+          return null;
+        }
 
-      const combinedPoints: FeatureCollection = {
-        type: "FeatureCollection",
-        features: [
-          ...currentAspectPoints?.features || [],
-          ...newPoints.features,
-        ]
-      };
+        const combinedPoints: FeatureCollection = {
+          type: "FeatureCollection",
+          features: [
+            ...(currentAspectPoints?.features || []),
+            ...newPoints.features,
+          ],
+        };
 
-      return combinedPoints;
-    })
-  }, []);
+        return combinedPoints;
+      });
+    },
+    []
+  );
 
   const handleLocationSelect = useCallback((center: [number, number]) => {
     setMapCenter(center);
   }, []);
+
+  function handleFindPath() {
+    setIsLoading(true);
+    fetch("/api/findPath", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ waypoints, bounds, excludedAspects }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        // handle the path data
+        setIsLoading(false);
+      })
+      .catch((error) => {
+        // handle error
+        setIsLoading(false);
+      });
+  }
 
   return (
     <div className="container mx-auto p-4">
@@ -117,6 +142,7 @@ export default function PathFinderPage() {
           setIsLoading={setIsLoading}
           setPath={handleSetPath}
           setAspectPoints={handleSetAspectPoints}
+          onClick={handleFindPath}
         />
         <Button onClick={handleReset}>Reset</Button>
         <Button onClick={handleCenter}>Center Points</Button>
