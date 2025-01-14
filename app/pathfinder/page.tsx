@@ -12,9 +12,7 @@ import { Card } from "@/components/ui/card";
 import { SelectAspectsDialog } from "@/components/ui/select-aspects-dialog";
 import type { Aspect } from "@/pathfinder";
 import type { Feature, FeatureCollection, LineString, Point } from "geojson";
-import { useCallback, useEffect, useState } from "react";
-
-export const maxDuration = 300;
+import { useCallback, useState } from "react";
 
 export default function PathFinderPage() {
   const [waypoints, setWaypoints] = useState<Point[]>([]);
@@ -107,26 +105,6 @@ export default function PathFinderPage() {
     setMapCenter(center);
   }, []);
 
-  function handleFindPath() {
-    setIsLoading(true);
-    fetch('/api/findPath', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ waypoints, bounds, excludedAspects })
-    })
-      .then(response => response.json())
-      .then(data => {
-        // handle the path data
-        setIsLoading(false);
-      })
-      .catch(error => {
-        // handle error
-        setIsLoading(false);
-      });
-  }
-
   return (
     <div className="container mx-auto p-4">
       <div className="flex gap-4 mb-4">
@@ -139,7 +117,6 @@ export default function PathFinderPage() {
           setIsLoading={setIsLoading}
           setPath={handleSetPath}
           setAspectPoints={handleSetAspectPoints}
-          onClick={handleFindPath}
         />
         <Button onClick={handleReset}>Reset</Button>
         <Button onClick={handleCenter}>Center Points</Button>
