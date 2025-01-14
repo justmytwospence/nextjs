@@ -6,6 +6,8 @@ import { baseLogger } from "@/lib/logger";
 import type { Point } from "geojson";
 import type { Results } from "pathfinder";
 
+export const maxDuration = 300;
+
 const pathfinder = require("pathfinder");
 const { pathfind } = pathfinder;
 

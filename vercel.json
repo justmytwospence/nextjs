@@ -1,9 +1,3 @@
 {
-  "installCommand": "npm install -g npm@10 && npm install",
-  "functions": {
-    "app/actions/**/*": {
-      "maxDuration": 300,
-      "memory": 3009
-    }
-  }
+  "installCommand": "npm install -g npm@10 && npm install"
 }
