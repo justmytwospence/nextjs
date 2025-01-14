@@ -14,6 +14,8 @@ import type { Aspect } from "@/pathfinder";
 import type { Feature, FeatureCollection, LineString, Point } from "geojson";
 import { useCallback, useState } from "react";
 
+export const maxDuration = 300;
+
 export default function PathFinderPage() {
   const [waypoints, setWaypoints] = useState<Point[]>([]);
   const [path, setPath] = useState<LineString | null>(null);
