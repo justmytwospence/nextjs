@@ -65,7 +65,7 @@ pub fn pathfind(
   let (width, height) = geotiff.image_info().dimensions.unwrap();
   let width: usize = width as usize;
   let height: usize = height as usize;
-  let _ = console_log(&env, format!("Starting at {:}, {:} out of {:?} {:?}", start_node[0], start_node[1], width, height).as_str());
+  let _ = console_log(&env, format!("Starting at {:?}, {:?} out of {:?} {:?}", start_node.0, start_node.1, width, height).as_str());
   let pixels: Vec<RasterValue> = geotiff
     .pixels(0, 0, width as u32, height as u32)
     .map(|pixel: (u32, u32, RasterValue)| pixel.2)
@@ -93,7 +93,7 @@ pub fn pathfind(
   };
 
   let successors = |&(x, y): &(usize, usize)| -> Vec<((usize, usize), i32)> {
-    // let _ = console_log(&env, format!("Exploring node ({:?}, {:?})", x, y).as_str());
+    let _ = console_log(&env, format!("Exploring node ({:?}, {:?})", x, y).as_str());
 
     let directions: [(isize, isize); 8] = [
       (0, 1),
