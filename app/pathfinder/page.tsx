@@ -21,9 +21,8 @@ export default function PathFinderPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [excludedAspects, setExcludedAspects] = useState<Aspect[]>([]);
   const [mapCenter, setMapCenter] = useState<[number, number] | undefined>();
-  const [aspectPoints, setAspectPoints] = useState<FeatureCollection | null>(
-    null
-  );
+  const [aspectPoints, setAspectPoints] = useState<FeatureCollection | null>(null);
+  const [azimuthRaster, setAzimuthRaster] = useState<Uint8Array | null>(null);
 
   function handleMapClick(point: Point) {
     setWaypoints([...waypoints, point]);
@@ -110,6 +109,10 @@ export default function PathFinderPage() {
     setMapCenter(center);
   }, []);
 
+  const handleSetAzimuths = useCallback((azimuths: Uint8Array) => {
+    setAzimuthRaster(azimuths);
+  }, []);
+
   return (
     <div className="container mx-auto p-4">
       <div className="flex gap-4 mb-4">
@@ -122,6 +125,7 @@ export default function PathFinderPage() {
           setIsLoading={setIsLoading}
           setPath={handleSetPath}
           setAspectPoints={handleSetAspectPoints}
+          setAzimuths={handleSetAzimuths}
         />
         <Button onClick={handleReset}>Reset</Button>
         <Button onClick={handleCenter}>Center Points</Button>
@@ -142,6 +146,7 @@ export default function PathFinderPage() {
             polyline={path}
             polylineProperties={aspectPoints}
             center={mapCenter}
+            azimuthRaster={azimuthRaster}
           />
         </Card>
 

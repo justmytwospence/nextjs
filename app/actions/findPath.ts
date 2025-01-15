@@ -2,8 +2,8 @@
 
 import { getTopo } from "@/lib/geo/open-topo";
 import { checkGeoTIFFCache, getGeoTiff, insertGeoTiff } from "@/lib/geo/tiling";
-import { baseLogger } from "@/lib/logger";
 import type { Point } from "geojson";
+import type { Aspect, PathResults } from "pathfinder";
 
 const pathfinder = require("pathfinder");
 const { pathfind } = pathfinder;
@@ -15,7 +15,10 @@ type findPathMessage =
     }
   | {
       type: "result";
-      result: Results;
+      result: {
+        path: string;
+        azimuths: Buffer;
+      };
     };
 
 export type Bounds = {
@@ -38,7 +41,7 @@ async function cacheGeoTIFF(geoTiffArrayBuffer: Buffer) {
 export default async function* findPath(
   waypoints: Point[],
   bounds: Bounds,
-  excludedAspects: string[] = []
+  excludedAspects: Aspect[] = []
 ): AsyncGenerator<findPathMessage, void, unknown> {
   yield { type: "info", message: "Downloading DEM from OpenTopo..." };
   const geoTiffArrayBuffer = await getTopo(bounds);
@@ -50,7 +53,7 @@ export default async function* findPath(
       const start = waypoints[i];
       const end = waypoints[i + 1];
 
-      const path = await pathfind(
+      const { path, azimuths } = await pathfind(
         geoTiffArrayBuffer,
         JSON.stringify(start),
         JSON.stringify(end),
@@ -59,7 +62,10 @@ export default async function* findPath(
 
       yield {
         type: "result",
-        result: path,
+        result: {
+          path: path,
+          azimuths: azimuths
+        } 
       };
       yield { type: "success", message: `Path ${i} found` };
     }

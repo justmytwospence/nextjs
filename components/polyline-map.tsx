@@ -13,6 +13,7 @@ import {
 import type { Feature, FeatureCollection, LineString, Point } from "geojson";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import GeoRasterLayer from "georaster-layer-for-leaflet";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   CircleMarker,
@@ -34,6 +35,7 @@ interface PolylineMapProps {
   clickable?: boolean;
   onCenterChange?: (center: L.LatLng) => void;
   center?: [number, number];
+  azimuthRaster?: Uint8Array | null;
 }
 
 export default function PolylineMap(props: PolylineMapProps) {
@@ -96,6 +98,7 @@ function MapContent({
   markers = [],
   clickable = true,
   onCenterChange,
+  azimuthRaster,
 }: PolylineMapProps) {
   const map = useMap();
   const bounds = polyline
@@ -177,6 +180,23 @@ function MapContent({
   return (
     <>
       <TileLayer url="https://tile.jawg.io/jawg-terrain/{z}/{x}/{y}{r}.png?access-token=bDE5WHMnFV1P973D59QWuGaq6hebBcjPSyud6vVGYqqi2r4kZyaShdbC3SF2Bc7y" />
+      {azimuthRaster &&
+        (() => {
+          try {
+            console.log("Parsing azimuthRaster with parseGeoRaster: ", azimuthRaster);
+            const parseGeoRaster = require("georaster");
+            baseLogger.debug("Parsing azimuthRaster with parseGeoRaster", azimuthRaster);
+            const georaster = parseGeoRaster(azimuthRaster.buffer);
+            baseLogger.debug("Successfully parsed GeoRaster", georaster);
+            return <GeoRasterLayer georaster={georaster} />;
+          } catch (error) {
+            baseLogger.error(
+              "Error parsing azimuthRaster with parseGeoRaster",
+              { error, azimuthRaster }
+            );
+            return null; 
+          }
+        })()}
       {polyline === null && (
         <Polyline
           positions={markers.map((point) => [
@@ -197,7 +217,9 @@ function MapContent({
       {polyline && (
         <GeoJSONLayer
           polyline={polyline}
-          polylineProperties={polylineProperties || { type: 'FeatureCollection', features: [] }}
+          polylineProperties={
+            polylineProperties || { type: "FeatureCollection", features: [] }
+          }
           hoverIndexStore={hoverIndexStore}
           interactive={interactive}
           bounds={bounds}
@@ -236,7 +258,9 @@ const GeoJSONLayer = ({
         type: "Feature" as const,
         properties: {
           gradient: computedGradients[i],
-          aspect: polylineProperties ? (polylineProperties.features[i]?.properties?.aspect as Aspect) : null,
+          aspect: polylineProperties
+            ? (polylineProperties.features[i]?.properties?.aspect as Aspect)
+            : null,
         },
         geometry: {
           type: "LineString" as const,

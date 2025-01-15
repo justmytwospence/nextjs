@@ -13,6 +13,7 @@ interface FindPathButtonProps {
   setIsLoading: (loading: boolean) => void;
   setPath: (path: LineString | null) => void;
   setAspectPoints: (aspectPoints: FeatureCollection | null) => void;
+  setAzimuths: (azimuths: ArrayBuffer) => void;
 }
 
 export default function FindPathButton({
@@ -23,6 +24,7 @@ export default function FindPathButton({
   setIsLoading,
   setPath,
   setAspectPoints,
+  setAzimuths
 }: FindPathButtonProps) {
   async function handleClick() {
     if (!bounds) return;
@@ -47,14 +49,21 @@ export default function FindPathButton({
             toast.error(result.message);
             break;
           case "result": {
+            const base64String = result.result.azimuths;
+            const binaryString = window.atob(base64String);
+            const bytes = new Uint8Array(binaryString.length);
+            setAzimuths(result.result.azimuths);
+            for (let i = 0; i < binaryString.length; i++) {
+              bytes[i] = binaryString.charCodeAt(i);
+            }
             const path = {
               type: "LineString",
-              coordinates: JSON.parse(result.result).features.map(
+              coordinates: JSON.parse(result.result.path).features.map(
                 (point) => point.geometry.coordinates
               ),
             } as LineString
             setPath(path);
-            setAspectPoints(JSON.parse(result.result));
+            setAspectPoints(JSON.parse(result.result.path));
             break;
           }
         }

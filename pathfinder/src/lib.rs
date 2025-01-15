@@ -1,6 +1,5 @@
 #![deny(clippy::all)]
 
-use azimuth::compute_azimuth_5x5;
 use geojson::{FeatureCollection, GeoJson, Geometry, Value};
 use georaster::geotiff::{GeoTiffReader, RasterValue};
 use georaster::Coordinate;
@@ -13,6 +12,14 @@ use std::io::Cursor;
 mod azimuth;
 mod console_log;
 use console_log::console_log;
+use azimuth::serialize_azimuth_to_geotiff;
+use azimuth::compute_azimuth_5x5;
+
+#[napi]
+pub struct PathResults {
+  pub path: String,
+  pub azimuths: Buffer, 
+}
 
 #[derive(PartialEq, Debug)]
 #[napi(string_enum)]
@@ -118,7 +125,7 @@ pub fn pathfind(
   start: String,
   end: String,
   excluded_aspects: Option<Vec<Aspect>>,
-) -> napi::Result<String> {
+) -> napi::Result<PathResults> { 
   let excluded_aspects: Vec<Aspect> = excluded_aspects.unwrap_or(vec![]);
 
   let start_coord: Coordinate = parse_point_to_coordinate(&start)?;
@@ -256,5 +263,15 @@ pub fn pathfind(
   }
   .to_string();
 
-  Ok(results)
+  let _ = console_log(&env, format!("Serializing azimuths to GeoTIFF: {:?}", geotiff.geo_keys).as_str());
+  let origin: [f64; 2] = geotiff.origin().unwrap();
+  let _ = console_log(&env, format!("Origin: {:?}", origin).as_str());
+  let azimuth_geotiff: Buffer = serialize_azimuth_to_geotiff(azimuths, width, height, geotiff.geo_keys.unwrap(), origin.to_vec()).unwrap().into();
+  let _ = console_log(&env, format!("Writing azimuth file to: {}", std::env::current_dir().unwrap().join("azimuths.tif").display()).as_str());
+  std::fs::write("azimuths.tif", &azimuth_geotiff).unwrap();
+
+  Ok(PathResults {
+    path: results,
+    azimuths: azimuth_geotiff
+  })
 }
