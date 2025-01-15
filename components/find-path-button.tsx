@@ -48,7 +48,7 @@ export default function FindPathButton({
             break;
           case "result":
             setPath(JSON.parse(result.result.pathLine));
-            setAspectPoints(JSON.parse(result.result.pathPoints));
+            // setAspectPoints(JSON.parse(result.result.pathPoints));
             break;
         }
       }

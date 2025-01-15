@@ -41,28 +41,16 @@ export default async function* findPath(
   bounds: Bounds,
   excludedAspects: string[] = []
 ): AsyncGenerator<findPathMessage, void, unknown> {
-
-  yield { type: "info", message: "Checking cache..." };
-  const boundsInCache = await checkGeoTIFFCache(bounds);
-
   let geoTiffArrayBuffer: Buffer;
-  let cachingPromise: Promise<boolean> | null = null;
+  const cachingPromise: Promise<boolean> | null = null;
 
-  if (boundsInCache) {
-    yield { type: "info", message: "Downloading DEM from cache..." };
-    geoTiffArrayBuffer = await getGeoTiff(bounds);
-    yield { type: "success", message: "DEM downloaded" };
-  } else {
-    yield { type: "info", message: "Downloading DEM from OpenTopo..." };
-    geoTiffArrayBuffer = await getTopo(bounds);
-    yield { type: "success", message: "DEM downloaded" };
-    yield { type: "info", message: "Starting DEM cache in background..." };
-    cachingPromise = cacheGeoTIFF(geoTiffArrayBuffer);
-  }
+  yield { type: "info", message: "Downloading DEM from OpenTopo..." };
+  geoTiffArrayBuffer = await getTopo(bounds);
+  yield { type: "success", message: "DEM downloaded" };
 
-  yield { type: "info", message: "Finding path..." };
   try {
     for (let i = 0; i < waypoints.length - 1; i++) {
+      yield { type: "info", message: `Finding path ${i}` };
       const start = waypoints[i];
       const end = waypoints[i + 1];
 
@@ -74,25 +62,13 @@ export default async function* findPath(
       );
 
       yield {
-        type: "success",
-        message: "Path successfully found.",
-      };
-
-      yield {
         type: "result",
         result: {
           pathLine,
           pathPoints,
         },
       };
-    }
-
-    if (cachingPromise) {
-      const cacheResult = await cachingPromise;
-      yield {
-        type: "success",
-        message: cacheResult ? "DEM cached successfully" : "DEM caching failed",
-      };
+      yield { type: "success", message: `Path ${i} found` };
     }
   } catch (error) {
     yield { type: "error", message: "Failed to find path." };
