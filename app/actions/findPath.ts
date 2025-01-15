@@ -41,11 +41,8 @@ export default async function* findPath(
   bounds: Bounds,
   excludedAspects: string[] = []
 ): AsyncGenerator<findPathMessage, void, unknown> {
-  let geoTiffArrayBuffer: Buffer;
-  const cachingPromise: Promise<boolean> | null = null;
-
   yield { type: "info", message: "Downloading DEM from OpenTopo..." };
-  geoTiffArrayBuffer = await getTopo(bounds);
+  const geoTiffArrayBuffer = await getTopo(bounds);
   yield { type: "success", message: "DEM downloaded" };
 
   try {
