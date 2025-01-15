@@ -1,14 +1,18 @@
 #![deny(clippy::all)]
 
-use geojson::{GeoJson, Geometry, Value};
+use azimuth::compute_azimuth_5x5;
+use geojson::{FeatureCollection, GeoJson, Geometry, Value};
 use georaster::geotiff::{GeoTiffReader, RasterValue};
 use georaster::Coordinate;
-use napi::JsUndefined;
-use napi::{bindgen_prelude::*, JsGlobal, JsObject, JsString};
+use napi::bindgen_prelude::*;
 use napi_derive::napi;
 use pathfinding::prelude::{dijkstra, fringe, idastar};
 use std::f32::consts::E;
 use std::io::Cursor;
+
+mod azimuth;
+mod console_log;
+use console_log::console_log;
 
 #[derive(PartialEq, Debug)]
 #[napi(string_enum)]
@@ -24,10 +28,42 @@ pub enum Aspect {
   Flat,
 }
 
-#[napi]
-pub struct Results {
-  pub path_line: String,
-  pub path_points: String,
+impl Aspect {
+  pub fn from_azimuth(azimuth: f32) -> Aspect {
+    if azimuth == -1.0 {
+        Aspect::Flat
+    } else {
+      match azimuth as f64 {
+        a if a < 22.5 => Aspect::North,
+        a if a < 67.5 => Aspect::Northeast,
+        a if a < 112.5 => Aspect::East,
+        a if a < 157.5 => Aspect::Southeast,
+        a if a < 202.5 => Aspect::South,
+        a if a < 247.5 => Aspect::Southwest,
+        a if a < 292.5 => Aspect::West,
+        a if a < 337.5 => Aspect::Northwest,
+        _ => Aspect::North,
+      }
+    }
+  }
+
+  pub fn is_in_aspect(&self, azimuth: f32) -> bool {
+    if azimuth == -1.0 {
+        *self == Aspect::Flat
+    } else {
+        match azimuth as f64 {
+            a if a < 22.5 => *self == Aspect::North,
+            a if a < 67.5 => *self == Aspect::Northeast,
+            a if a < 112.5 => *self == Aspect::East,
+            a if a < 157.5 => *self == Aspect::Southeast,
+            a if a < 202.5 => *self == Aspect::South,
+            a if a < 247.5 => *self == Aspect::Southwest,
+            a if a < 292.5 => *self == Aspect::West,
+            a if a < 337.5 => *self == Aspect::Northwest,
+            _ => *self == Aspect::North,
+        }
+    }
+  }
 }
 
 fn parse_point_to_coordinate(point_str: &str) -> napi::Result<Coordinate> {
@@ -81,8 +117,10 @@ pub fn pathfind(
   geotiff_buffer: Buffer,
   start: String,
   end: String,
-  _excluded_aspects: Option<Vec<String>>,
-) -> napi::Result<Results> {
+  excluded_aspects: Option<Vec<Aspect>>,
+) -> napi::Result<String> {
+  let excluded_aspects: Vec<Aspect> = excluded_aspects.unwrap_or(vec![]);
+
   let start_coord: Coordinate = parse_point_to_coordinate(&start)?;
   let end_coord: Coordinate = parse_point_to_coordinate(&end)?;
 
@@ -107,6 +145,8 @@ pub fn pathfind(
     }?;
     elevations[y as usize * width + x as usize] = elevation;
   }
+
+  let azimuths: Vec<f32> = compute_azimuth_5x5(&elevations, width, height);
 
   let heuristic = |&(x, y): &(usize, usize)| -> i32 {
     let cost: i32 = distance((x, y), end_node) as i32;
@@ -154,12 +194,19 @@ pub fn pathfind(
       let ny: usize = ((y as isize) + dy) as usize;
 
       if nx < width && ny < height {
+        let azimuth: f32 = azimuths[ny * width + nx];
+        let aspect: Aspect = Aspect::from_azimuth(azimuth);
+        if excluded_aspects.contains(&aspect) {
+          let _ = console_log(&env, format!("Excluding {:?} aspect at ({:?}, {:?})", aspect, nx, ny).as_str());
+          continue;
+        }
+
         let d: f32 = distance((x, y), (nx, ny));
         let dz: f32 = elevations[ny * width + nx] - elevations[y * width + x];
         let gradient: f32 = dz / d;
         // let _ = console_log(&env, format!("distance: {:?}, dz: {:?}, gradient: {:?}", distance, dz, gradient).as_str());
         const MAX_GRADIENT: f32 = 0.25;
-        if gradient < MAX_GRADIENT {
+        if gradient < MAX_GRADIENT && true {
           let cost: i32 = cost_fn(d, gradient);
           neighbors.push(((nx, ny), cost));
         }
@@ -179,30 +226,35 @@ pub fn pathfind(
     None => return Err(napi::Error::from_reason("No path found".to_string())),
   };
 
-  // Convert path to coordinates (including elevation)
-  let path_coords: Vec<Vec<f64>> = path_nodes
-    .iter()
-    .map(|(x, y)| {
-      let coordinate: Coordinate = geotiff.pixel_to_coord(*x as u32, *y as u32).unwrap();
-      let elevation: f64 = elevations[y * width + x] as f64;
-      vec![coordinate.x, coordinate.y, elevation]
-    })
-    .collect();
-
   // Create feature collection with both linestring and points
-  let results: Results = Results {
-    path_line: Geometry::new(Value::LineString(path_coords)).to_string(),
-    path_points: "foo".to_string(),
-  };
+  let results: String = FeatureCollection {
+    features: path_nodes
+      .iter()
+      .map(|(x, y)| {
+        let coordinate: Coordinate = geotiff.pixel_to_coord(*x as u32, *y as u32).unwrap();
+        let elevation: f32 = elevations[y * width + x];
+        let azimuth: f32 = azimuths[y * width + x];
+        let aspect: Aspect = Aspect::from_azimuth(azimuth);
+        geojson::Feature {
+          bbox: None,
+          geometry: Some(Geometry::new(Value::Point(vec![
+            coordinate.x,
+            coordinate.y,
+            elevation as f64,
+          ]))),
+          id: None,
+          properties: Some(serde_json::json!({
+            "aspect": format!("{:?}", aspect),
+            "azimuth": azimuth.to_string(),
+          }).as_object().unwrap().clone()),
+          foreign_members: None,
+        }
+      })
+      .collect::<Vec<geojson::Feature>>(),
+    bbox: None,
+    foreign_members: None,
+  }
+  .to_string();
 
   Ok(results)
-}
-
-fn console_log(env: &Env, message: &str) -> Result<JsUndefined> {
-  let global: JsGlobal = env.get_global()?;
-  let console: JsObject = global.get_named_property("console")?;
-  let log_fn: JsFunction = console.get_named_property("log")?;
-  let js_string: JsString = env.create_string(message)?;
-  log_fn.call(None, &[js_string])?;
-  env.get_undefined()
 }

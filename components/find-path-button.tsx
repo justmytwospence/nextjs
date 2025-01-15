@@ -46,10 +46,17 @@ export default function FindPathButton({
           case "error":
             toast.error(result.message);
             break;
-          case "result":
-            setPath(JSON.parse(result.result.pathLine));
-            // setAspectPoints(JSON.parse(result.result.pathPoints));
+          case "result": {
+            const path = {
+              type: "LineString",
+              coordinates: JSON.parse(result.result).features.map(
+                (point) => point.geometry.coordinates
+              ),
+            } as LineString
+            setPath(path);
+            setAspectPoints(JSON.parse(result.result));
             break;
+          }
         }
       }
     } catch (error) {

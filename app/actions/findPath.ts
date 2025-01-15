@@ -51,7 +51,7 @@ export default async function* findPath(
       const start = waypoints[i];
       const end = waypoints[i + 1];
 
-      const { pathLine, pathPoints } = await pathfind(
+      const path = await pathfind(
         geoTiffArrayBuffer,
         JSON.stringify(start),
         JSON.stringify(end),
@@ -60,10 +60,7 @@ export default async function* findPath(
 
       yield {
         type: "result",
-        result: {
-          pathLine,
-          pathPoints,
-        },
+        result: path,
       };
       yield { type: "success", message: `Path ${i} found` };
     }

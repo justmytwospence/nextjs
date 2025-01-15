@@ -14,8 +14,4 @@ export const enum Aspect {
   Northwest = 'Northwest',
   Flat = 'Flat'
 }
-export declare function pathfind(geotiffBuffer: Buffer, start: string, end: string, excludedAspects?: Array<string> | undefined | null): Results
-export declare class Results {
-  pathLine: string
-  pathPoints: string
-}
+export declare function pathfind(geotiffBuffer: Buffer, start: string, end: string, excludedAspects?: Array<Aspect> | undefined | null): string
