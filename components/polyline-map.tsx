@@ -180,7 +180,7 @@ function MapContent({
   return (
     <>
       <TileLayer url="https://tile.jawg.io/jawg-terrain/{z}/{x}/{y}{r}.png?access-token=bDE5WHMnFV1P973D59QWuGaq6hebBcjPSyud6vVGYqqi2r4kZyaShdbC3SF2Bc7y" />
-      {azimuthRaster &&
+      {/* {azimuthRaster &&
         (() => {
           try {
             console.log("Parsing azimuthRaster with parseGeoRaster: ", azimuthRaster);
@@ -196,7 +196,7 @@ function MapContent({
             );
             return null; 
           }
-        })()}
+        })()} */}
       {polyline === null && (
         <Polyline
           positions={markers.map((point) => [

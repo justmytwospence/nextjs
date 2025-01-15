@@ -17,7 +17,7 @@ type findPathMessage =
       type: "result";
       result: {
         path: string;
-        azimuths: Buffer;
+        azimuths: number[];
       };
     };
 
@@ -64,7 +64,7 @@ export default async function* findPath(
         type: "result",
         result: {
           path: path,
-          azimuths: azimuths
+          azimuths: Array.from(azimuths)
         } 
       };
       yield { type: "success", message: `Path ${i} found` };
