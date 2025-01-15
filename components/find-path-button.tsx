@@ -49,7 +49,7 @@ export default function FindPathButton({
             toast.error(result.message);
             break;
           case "result": {
-            setAzimuths(new Uint8Array(result.result.azimuths));
+            // setAzimuths(new Uint8Array(result.result.azimuths));
             const path = {
               type: "LineString",
               coordinates: JSON.parse(result.result.path).features.map(

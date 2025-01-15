@@ -13,6 +13,7 @@ import {
 import type { Feature, FeatureCollection, LineString, Point } from "geojson";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import parseGeoRaster from "georaster";
 import GeoRasterLayer from "georaster-layer-for-leaflet";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
@@ -182,20 +183,15 @@ function MapContent({
       <TileLayer url="https://tile.jawg.io/jawg-terrain/{z}/{x}/{y}{r}.png?access-token=bDE5WHMnFV1P973D59QWuGaq6hebBcjPSyud6vVGYqqi2r4kZyaShdbC3SF2Bc7y" />
       {azimuthRaster &&
         (() => {
-          try {
-            console.log("Parsing azimuthRaster with parseGeoRaster: ", azimuthRaster);
-            const parseGeoRaster = require("georaster");
-            baseLogger.debug("Parsing azimuthRaster with parseGeoRaster", azimuthRaster);
-            const georaster = parseGeoRaster(azimuthRaster.buffer.slice(0));
-            baseLogger.debug("Successfully parsed GeoRaster", georaster);
-            return <GeoRasterLayer georaster={georaster} />;
-          } catch (error) {
-            baseLogger.error(
-              "Error parsing azimuthRaster with parseGeoRaster",
-              { error, azimuthRaster }
-            );
-            return null; 
-          }
+          console.log(
+            "Parsing azimuthRaster with parseGeoRaster: ",
+            azimuthRaster
+          );
+          const buffer = azimuthRaster.buffer.slice(0);
+          console.log("Buffer is: ", buffer);
+          const georaster = parseGeoRaster(buffer);
+          baseLogger.debug("Successfully parsed GeoRaster", georaster);
+          return <GeoRasterLayer georaster={georaster} />;
         })()}
       {polyline === null && (
         <Polyline
