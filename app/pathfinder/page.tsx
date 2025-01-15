@@ -68,7 +68,6 @@ export default function PathFinderPage() {
   }
 
   const handleSetPath = useCallback((newPath: LineString | null) => {
-    console.log("Setting path", newPath);
     setPath((currentPath) => {
       if (newPath === null) {
         return null;
@@ -132,7 +131,7 @@ export default function PathFinderPage() {
         />
       </div>
 
-      <div className="grid lg:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <Card className="aspect-square">
           <LazyPolylineMap
             onMapClick={handleMapClick}
@@ -146,39 +145,34 @@ export default function PathFinderPage() {
           />
         </Card>
 
-        {/* Charts section */}
-        <div className="space-y-4">
-          <Card className="p-4">
-            <h2 className="text-lg font-semibold mb-2">Elevation Profile</h2>
-            {path && (
-              <div className="h-[300px]">
-                <ElevationProfile polyline={path} />
-              </div>
-            )}
-          </Card>
+        <Card className="p-4">
+          <h2 className="text-lg font-semibold mb-2">Aspect Distribution</h2>
+          {aspectPoints && (
+            <div className="h-[300px]">
+              <AspectChart aspectPoints={aspectPoints} />
+            </div>
+          )}
+        </Card>
 
-          <Card className="p-4">
-            <h2 className="text-lg font-semibold mb-2">
-              Gradient Distribution
-            </h2>
-            {path && (
-              <div className="h-[300px]">
-                <GradientCDF
-                  mappables={[{ polyline: path, name: "Path", id: "path" }]}
-                />
-              </div>
-            )}
-          </Card>
+        <Card className="p-4">
+          <h2 className="text-lg font-semibold mb-2">Elevation Profile</h2>
+          {path && (
+            <div className="h-[300px]">
+              <ElevationProfile polyline={path} />
+            </div>
+          )}
+        </Card>
 
-          <Card className="p-4">
-            <h2 className="text-lg font-semibold mb-2">Aspect Distribution</h2>
-            {aspectPoints && (
-              <div className="h-[300px]">
-                <AspectChart aspectPoints={aspectPoints} />
-              </div>
-            )}
-          </Card>
-        </div>
+        <Card className="p-4">
+          <h2 className="text-lg font-semibold mb-2">Gradient Distribution</h2>
+          {path && (
+            <div className="h-[300px]">
+              <GradientCDF
+                mappables={[{ polyline: path, name: "Path", id: "path" }]}
+              />
+            </div>
+          )}
+        </Card>
       </div>
     </div>
   );

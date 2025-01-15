@@ -7,8 +7,8 @@ fn calculate_azimuth(gx: f32, gy: f32) -> f32 {
     }
 
     // Calculate azimuth in radians, then convert to degrees
-    let azimuth_radians = (gy as f64).atan2(-(gx as f64)); // -Gx for compass orientation
-    let mut azimuth_degrees = azimuth_radians * 180.0 / PI;
+    let azimuth_radians: f64 = ((-gx) as f64).atan2(gy as f64); // Invert gx to correct E/W mapping
+    let mut azimuth_degrees: f64 = azimuth_radians * 180.0 / PI;
 
     // Normalize to [0, 360)
     if azimuth_degrees < 0.0 {

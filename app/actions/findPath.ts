@@ -4,7 +4,6 @@ import { getTopo } from "@/lib/geo/open-topo";
 import { checkGeoTIFFCache, getGeoTiff, insertGeoTiff } from "@/lib/geo/tiling";
 import { baseLogger } from "@/lib/logger";
 import type { Point } from "geojson";
-import type { Results } from "pathfinder";
 
 const pathfinder = require("pathfinder");
 const { pathfind } = pathfinder;

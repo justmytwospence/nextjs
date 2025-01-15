@@ -236,7 +236,7 @@ const GeoJSONLayer = ({
         type: "Feature" as const,
         properties: {
           gradient: computedGradients[i],
-          aspect: polylineProperties ? polylineProperties.features[i]?.properties?.aspect : null,
+          aspect: polylineProperties ? (polylineProperties.features[i]?.properties?.aspect as Aspect) : null,
         },
         geometry: {
           type: "LineString" as const,
