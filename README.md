@@ -69,7 +69,7 @@ STRAVA_WEBHOOK_VERIFY_TOKEN=""
 - [ ] Increase athlete headcount
 - pathfinder
   - [X] Fix map implementation
-  - [ ] Change polyline color
+  - [X] Change polyline color
   - [ ] Hide charts at the beginning
   - [ ] Allow appending to paths
   - [ ] Speed up Geotiff caching 

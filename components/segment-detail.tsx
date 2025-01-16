@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Card, CardContent } from "@/components/ui/card";
 import type { EnrichedSegment } from "@prisma/client";
+import GeoJSONLayer from "./leaflet-geojson-layer";
 
 export default function SegmentDetail({
   segment,
@@ -49,7 +50,12 @@ export default function SegmentDetail({
           <CardContent className="h-full p-0">
             {segment.polyline && (
               <div className="h-full w-full rounded-lg overflow-hidden">
-                <LazyPolylineMap polyline={segment.polyline} />
+                <LazyPolylineMap>
+                  <GeoJSONLayer
+                    polyline={segment.polyline}
+                    interactive={true}
+                  />
+                </LazyPolylineMap>
               </div>
             )}
           </CardContent>
