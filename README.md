@@ -4,15 +4,22 @@ Advanced route analysis and comparison tools for Strava users. Work in Progress.
 
 ## Tech Stack
 
-- **Framework:** Next.js 15 with App Router
+- **Framework** React 19
+- **Meta Framework:** Next.js 15 with App Router
+- **Deployment** Vercel
 - **Authentication:** NextAuth.js v5
-- **Database:** PostgreSQL (Neon) with Prisma ORM
+- **State management** Zustand
+- **Database:** PostgreSQL with Prisma ORM
+- **GIS** PostGIS
 - **Styling:** Tailwind CSS, shadcn/ui
 - **Maps:** Leaflet, React Leaflet
-- **Charts:** Chart.js, Recharts
-- **API Integration:** Strava API
-- **Logging:** Winston
+- **Charts:** Chart.js
+- **Route/Course data:** Strava API
 - **Type Safety:** TypeScript, Zod
+- **Rust WASM** napi-rs
+- **Pathfinding algorithm** pathfinding.rs
+- **Azimuths analysis**  Custom Sobel filter
+- **DEM data** Open Topography API
 
 ## Environment variables
 
