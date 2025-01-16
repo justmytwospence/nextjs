@@ -3,12 +3,12 @@ import type { Aspect } from "@/pathfinder";
 import type { HoverIndexStore } from "@/store";
 import {
   aspectStore,
-  hoverIndexStore as defaultHoverIndexStore, 
+  hoverIndexStore as defaultHoverIndexStore,
 } from "@/store";
 import type { Feature, FeatureCollection, LineString, Point } from "geojson";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useMap } from "react-leaflet";
 import GeoJSONInteractionLayer from "./leaflet-geojson-interactive-layer";
 
@@ -30,10 +30,12 @@ export default function GeoJSONLayer({
   const hoverMarkerRef = useRef<L.Marker | null>(null);
   const { hoveredAspect } = aspectStore();
 
-  // polyline useEffect
-  useEffect(() => {
+  // Memoize features to prevent unnecessary recalculations
+  const features = useMemo(() => {
+    if (!polyline) return [];
+
     const computedGradients = computeGradient(polyline.coordinates);
-    const features: Feature<LineString>[] = polyline.coordinates
+    return polyline.coordinates
       .slice(0, -1)
       .map((coord, i) => ({
         type: "Feature" as const,
@@ -52,6 +54,10 @@ export default function GeoJSONLayer({
       .sort(
         (a, b) => (a.properties?.gradient || 0) - (b.properties?.gradient || 0)
       );
+  }, [polyline, polylineProperties]);
+
+  useEffect(() => {
+    if (!polyline || features.length === 0) return;
 
     // Create GeoJSON layer
     geoJsonRef.current = L.geoJSON(
@@ -66,7 +72,9 @@ export default function GeoJSONLayer({
     // Center and zoom the map to fit the GeoJSON layer
     if (geoJsonRef.current) {
       const bounds = geoJsonRef.current.getBounds();
-      map.fitBounds(bounds, { padding: [30, 30] });
+      if (bounds.isValid()) { // Check if bounds are valid
+        map.fitBounds(bounds, { padding: [30, 30] });
+      }
     }
 
     // geoJSON cleanup
@@ -74,11 +82,16 @@ export default function GeoJSONLayer({
       geoJsonRef.current?.remove();
       hoverMarkerRef.current?.remove();
     };
-
-  }, [polyline, hoveredAspect]);
+  }, [features, map]); // Updated dependencies
 
   if (interactive) {
-    return (<GeoJSONInteractionLayer polyline={polyline} geoJsonRef={geoJsonRef} hoverIndexStore={hoverIndexStore}/>)
+    return (
+      <GeoJSONInteractionLayer
+        polyline={polyline}
+        geoJsonRef={geoJsonRef}
+        hoverIndexStore={hoverIndexStore}
+      />
+    );
   }
 
   return null;

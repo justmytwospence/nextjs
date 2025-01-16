@@ -71,6 +71,5 @@ STRAVA_WEBHOOK_VERIFY_TOKEN=""
   - [X] Fix map implementation
   - [X] Change polyline color
   - [ ] Hide charts at the beginning
-  - [ ] Allow appending to paths
   - [ ] Speed up Geotiff caching 
   - [ ] Set raster opacity by gradient
