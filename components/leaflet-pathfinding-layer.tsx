@@ -20,29 +20,6 @@ export default function LeafletPathfindingLayer({
 }: LeafletPathfindingLayerProps) {
   const map = useMap();
 
-  // Add method to center map
-  const centerMap = useCallback(
-    (lat: number, lng: number, zoom?: number) => {
-      const newZoom = zoom || map.getZoom();
-      map.setView([lat, lng], newZoom, {
-        animate: true,
-        duration: 1,
-      });
-      if (onBoundsChange) {
-        const bounds = map.getBounds();
-        const nw = bounds.getNorthWest();
-        const se = bounds.getSouthEast();
-        onBoundsChange({
-          north: nw.lat,
-          south: se.lat,
-          east: se.lng,
-          west: nw.lng,
-        });
-      }
-    },
-    [map, onBoundsChange]
-  );
-
   // Center on user's location
   useEffect(() => {
     if ("geolocation" in navigator) {

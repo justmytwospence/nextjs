@@ -47,7 +47,7 @@ export default function CourseDetail({ course }: { course: EnrichedCourse }) {
           <CardContent className="h-full p-0">
             {course.polyline && (
               <div className="h-full w-full rounded-lg overflow-hidden">
-                <LazyPolylineMap>
+                <LazyPolylineMap interactive={true}>
                   <GeoJSONLayer polyline={course.polyline} interactive={true}/>
                 </LazyPolylineMap>
               </div>
