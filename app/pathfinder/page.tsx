@@ -62,15 +62,6 @@ export default function PathFinderPage() {
     setBounds(null);
     setIsLoading(false);
     setAspectPoints(null);
-
-    const mapElement = document.querySelector(".leaflet-container");
-    if (mapElement) {
-      // @ts-ignore - accessing custom property
-      const map = mapElement._leaflet_map;
-      if (map?.resetBounds) {
-        map.resetBounds();
-      }
-    }
   }
 
   function handleCenter() {
@@ -86,15 +77,13 @@ export default function PathFinderPage() {
         return null;
       }
 
-      const combinedPath: LineString = {
+      return {
         type: "LineString",
         coordinates:
           currentPath === null
             ? newPath.coordinates
             : [...currentPath.coordinates, ...newPath.coordinates.slice(1)],
-      };
-
-      return combinedPath;
+      } as LineString;
     });
   }, []);
 
