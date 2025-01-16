@@ -24,7 +24,7 @@ export default function FindPathButton({
   setIsLoading,
   setPath,
   setAspectPoints,
-  setAzimuths
+  setAzimuths,
 }: FindPathButtonProps) {
   async function handleClick() {
     if (!bounds) return;
@@ -49,14 +49,15 @@ export default function FindPathButton({
             toast.error(result.message);
             break;
           case "result": {
-            // setAzimuths(new Uint8Array(result.result.azimuths));
             const path = {
               type: "LineString",
               coordinates: JSON.parse(result.result.path).features.map(
                 (point) => point.geometry.coordinates
               ),
-            } as LineString
+            } as LineString;
             setPath(path);
+            console.log("Setting azimuths from button" )
+            setAzimuths(new Uint8Array(result.result.azimuths));
             setAspectPoints(JSON.parse(result.result.path));
             break;
           }
@@ -70,7 +71,7 @@ export default function FindPathButton({
   }
 
   return (
-    <Button onClick={handleClick} disabled={waypoints.length < 2}>
+    <Button className="flex-1" onClick={handleClick} disabled={waypoints.length < 2}>
       {isLoading ? (
         <>
           Find Path

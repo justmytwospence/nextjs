@@ -204,7 +204,7 @@ pub fn pathfind(
         let azimuth: f32 = azimuths[ny * width + nx];
         let aspect: Aspect = Aspect::from_azimuth(azimuth);
         if excluded_aspects.contains(&aspect) {
-          let _ = console_log(&env, format!("Excluding {:?} aspect at ({:?}, {:?})", aspect, nx, ny).as_str());
+          // let _ = console_log(&env, format!("Excluding {:?} aspect at ({:?}, {:?})", aspect, nx, ny).as_str());
           continue;
         }
 
@@ -263,12 +263,8 @@ pub fn pathfind(
   }
   .to_string();
 
-  let _ = console_log(&env, format!("Serializing azimuths to GeoTIFF: {:?}", geotiff.geo_keys).as_str());
   let origin: [f64; 2] = geotiff.origin().unwrap();
-  let _ = console_log(&env, format!("Origin: {:?}", origin).as_str());
   let azimuth_geotiff: Buffer = serialize_azimuth_to_geotiff(azimuths, width, height, geotiff.geo_keys.unwrap(), origin.to_vec()).unwrap().into();
-  let _ = console_log(&env, format!("Writing azimuth file to: {}", std::env::current_dir().unwrap().join("azimuths.tif").display()).as_str());
-  // std::fs::write("azimuths.tif", &azimuth_geotiff).unwrap();
 
   Ok(PathResults {
     path: results,

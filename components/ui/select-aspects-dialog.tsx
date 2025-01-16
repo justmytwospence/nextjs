@@ -42,7 +42,7 @@ export function SelectAspectsDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" className="w-full">
+        <Button className="w-full">
           {selectedDirections.length
             ? `Avoiding ${selectedDirections.join(", ")}`
             : "Choose aspects to avoid"}

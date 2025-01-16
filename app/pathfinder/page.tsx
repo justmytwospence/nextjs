@@ -11,8 +11,14 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { SelectAspectsDialog } from "@/components/ui/select-aspects-dialog";
 import type { Aspect } from "@/pathfinder";
-import type { Feature, FeatureCollection, LineString, Point } from "geojson";
+import { saveAs } from 'file-saver';
+import type { FeatureCollection, LineString, Point } from "geojson";
+import type GeoTIFF from "geotiff";
+import { fromArrayBuffer } from "geotiff";
 import { useCallback, useState } from "react";
+import togpx from 'togpx';
+
+const parseGeoraster = require("georaster");
 
 export default function PathFinderPage() {
   const [waypoints, setWaypoints] = useState<Point[]>([]);
@@ -22,7 +28,7 @@ export default function PathFinderPage() {
   const [excludedAspects, setExcludedAspects] = useState<Aspect[]>([]);
   const [mapCenter, setMapCenter] = useState<[number, number] | undefined>();
   const [aspectPoints, setAspectPoints] = useState<FeatureCollection | null>(null);
-  const [azimuthRaster, setAzimuthRaster] = useState<Uint8Array | null>(null);
+  const [azimuthRaster, setAzimuthRaster] = useState<GeoTIFF | null>(null);
 
   function handleMapClick(point: Point) {
     setWaypoints([...waypoints, point]);
@@ -109,9 +115,25 @@ export default function PathFinderPage() {
     setMapCenter(center);
   }, []);
 
-  const handleSetAzimuths = useCallback((azimuths: Uint8Array) => {
-    setAzimuthRaster(azimuths);
+  const handleSetAzimuths = useCallback(async (azimuths: Uint8Array) => {
+    const georaster = await parseGeoraster(azimuths.buffer as ArrayBuffer);
+    setAzimuthRaster(georaster);
   }, []);
+
+  // Function to convert LineString to GPX using togpx
+  const handleDownloadGpx = () => {
+    if (!path) return;
+
+    const geojson = {
+      type: "Feature",
+      geometry: path,
+      properties: {}
+    };
+
+    const gpxData = togpx(geojson);
+    const blob = new Blob([gpxData], { type: 'application/gpx+xml' });
+    saveAs(blob, 'path.gpx');
+  };
 
   return (
     <div className="container mx-auto p-4">
@@ -127,12 +149,13 @@ export default function PathFinderPage() {
           setAspectPoints={handleSetAspectPoints}
           setAzimuths={handleSetAzimuths}
         />
-        <Button onClick={handleReset}>Reset</Button>
-        <Button onClick={handleCenter}>Center Points</Button>
+        <Button className="flex-1" onClick={handleReset}>Reset</Button>
+        <Button className="flex-1" onClick={handleCenter}>Center Points</Button>
         <SelectAspectsDialog
           onSelectDirections={setExcludedAspects}
           selectedDirections={excludedAspects}
         />
+        <Button className="flex-1" onClick={handleDownloadGpx}>Download GPX</Button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -147,6 +170,7 @@ export default function PathFinderPage() {
             polylineProperties={aspectPoints}
             center={mapCenter}
             azimuthRaster={azimuthRaster}
+            excludedAspects={excludedAspects}
           />
         </Card>
 

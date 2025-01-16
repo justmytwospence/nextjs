@@ -13,8 +13,8 @@ import {
 import type { Feature, FeatureCollection, LineString, Point } from "geojson";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import parseGeoRaster from "georaster";
 import GeoRasterLayer from "georaster-layer-for-leaflet";
+import type GeoTIFF from "geotiff";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   CircleMarker,
@@ -36,7 +36,8 @@ interface PolylineMapProps {
   clickable?: boolean;
   onCenterChange?: (center: L.LatLng) => void;
   center?: [number, number];
-  azimuthRaster?: Uint8Array | null;
+  azimuthRaster?: GeoTIFF | null;
+  excludedAspects?: Aspect[];
 }
 
 export default function PolylineMap(props: PolylineMapProps) {
@@ -100,7 +101,8 @@ function MapContent({
   clickable = true,
   onCenterChange,
   azimuthRaster,
-}: PolylineMapProps) {
+  excludedAspects
+}: PolylineMapProps) { // Update props type
   const map = useMap();
   const bounds = polyline
     ? L.latLngBounds(polyline.coordinates.map(([lng, lat]) => [lat, lng]))
@@ -178,21 +180,42 @@ function MapContent({
     }
   }, [markers, map]);
 
+  // Add GeoRasterLayer via useEffect
+  useEffect(() => {
+    if (azimuthRaster) {
+      const aspectToCardinal = (aspect: number): Aspect => {
+        if (aspect >= 337.5 || aspect < 22.5) return "North" as Aspect;
+        if (aspect >= 22.5 && aspect < 67.5) return "Northeast" as Aspect;
+        if (aspect >= 67.5 && aspect < 112.5) return "East" as Aspect;
+        if (aspect >= 112.5 && aspect < 157.5) return "Southeast" as Aspect;
+        if (aspect >= 157.5 && aspect < 202.5) return "South" as Aspect;
+        if (aspect >= 202.5 && aspect < 247.5) return "Southwest" as Aspect;
+        if (aspect >= 247.5 && aspect < 292.5) return "West" as Aspect;
+        if (aspect >= 292.5 && aspect < 337.5) return "Northwest" as Aspect;
+        return "Flat" as Aspect;
+      };
+
+      const geoRasterLayer = new GeoRasterLayer({
+        georaster: azimuthRaster,
+        opacity: 0.5,
+        pixelValuesToColorFn: values => {
+          const aspectDegrees = values[0];
+          const cardinalAspect = aspectToCardinal(aspectDegrees);
+          return excludedAspects?.includes(cardinalAspect) ? '#ff0000' : 'transparent';
+        }
+      });
+
+      geoRasterLayer.addTo(map);
+
+      return () => {
+        geoRasterLayer.remove();
+      };
+    }
+  }, [azimuthRaster, excludedAspects, map]);
+
   return (
     <>
       <TileLayer url="https://tile.jawg.io/jawg-terrain/{z}/{x}/{y}{r}.png?access-token=bDE5WHMnFV1P973D59QWuGaq6hebBcjPSyud6vVGYqqi2r4kZyaShdbC3SF2Bc7y" />
-      {azimuthRaster &&
-        (() => {
-          console.log(
-            "Parsing azimuthRaster with parseGeoRaster: ",
-            azimuthRaster
-          );
-          const buffer = azimuthRaster.buffer.slice(0);
-          console.log("Buffer is: ", buffer);
-          const georaster = parseGeoRaster(buffer);
-          baseLogger.debug("Successfully parsed GeoRaster", georaster);
-          return <GeoRasterLayer georaster={georaster} />;
-        })()}
       {polyline === null && (
         <Polyline
           positions={markers.map((point) => [
