@@ -1,7 +1,7 @@
 "use client";
 
 import ElevationChart from "@/components/elevation-chart";
-import LazyPolylineMap from "@/components/polyline-map-lazy";
+import LazyPolylineMap from "@/components/leaflet-map-lazy";
 import {
   Select,
   SelectContent,
@@ -13,6 +13,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { createHoverIndexStore } from "@/store";
 import type { Mappable, MappableItem } from "@prisma/client";
 import { useMemo, useState } from "react";
+import GeoJSONLayer from "./leaflet-geojson-layer";
 
 type SelectedTab = "routes" | "activities";
 
@@ -31,8 +32,12 @@ export default function CourseComparisonColumn({
 }) {
   const hoverIndexStore = useMemo(() => createHoverIndexStore(), []);
   const [selectedTab, setSelectedTab] = useState<SelectedTab>("routes");
-  const [selectedRoute, setSelectedRoute] = useState<string | undefined>(undefined);
-  const [selectedActivity, setSelectedActivity] = useState<string | undefined>(undefined);
+  const [selectedRoute, setSelectedRoute] = useState<string | undefined>(
+    undefined
+  );
+  const [selectedActivity, setSelectedActivity] = useState<string | undefined>(
+    undefined
+  );
 
   const handleRouteChange = (value: string) => {
     setSelectedRoute(value);
@@ -45,7 +50,9 @@ export default function CourseComparisonColumn({
   };
 
   const sortedRoutes = routes.sort((a, b) => a.name.localeCompare(b.name));
-  const sortedActivities = activities.sort((a, b) => a.name.localeCompare(b.name));
+  const sortedActivities = activities.sort((a, b) =>
+    a.name.localeCompare(b.name)
+  );
 
   return (
     <div className="space-y-6 p-6 bg-background border rounded-lg">
@@ -64,7 +71,10 @@ export default function CourseComparisonColumn({
             <Select onValueChange={handleRouteChange} value={selectedRoute}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Choose a route">
-                  {selectedRoute ? sortedRoutes.find(route => route.id === selectedRoute)?.name : "Choose a route"}
+                  {selectedRoute
+                    ? sortedRoutes.find((route) => route.id === selectedRoute)
+                        ?.name
+                    : "Choose a route"}
                 </SelectValue>
               </SelectTrigger>
               <SelectContent>
@@ -76,10 +86,17 @@ export default function CourseComparisonColumn({
               </SelectContent>
             </Select>
           ) : (
-            <Select onValueChange={handleActivityChange} value={selectedActivity}>
+            <Select
+              onValueChange={handleActivityChange}
+              value={selectedActivity}
+            >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Choose an activity">
-                  {selectedActivity ? sortedActivities.find(activity => activity.id === selectedActivity)?.name : "Choose an activity"}
+                  {selectedActivity
+                    ? sortedActivities.find(
+                        (activity) => activity.id === selectedActivity
+                      )?.name
+                    : "Choose an activity"}
                 </SelectValue>
               </SelectTrigger>
               <SelectContent>
@@ -95,10 +112,13 @@ export default function CourseComparisonColumn({
       </div>
       {selectedMap && (
         <div className="h-[300px] w-full mt-4">
-          <LazyPolylineMap
-            polyline={selectedMap.polyline}
-            hoverIndexStore={hoverIndexStore}
-          />
+          <LazyPolylineMap interactive={true}>
+            <GeoJSONLayer
+              polyline={selectedMap.polyline}
+              interactive={true}
+              hoverIndexStore={hoverIndexStore}
+            />
+          </LazyPolylineMap>
         </div>
       )}
 

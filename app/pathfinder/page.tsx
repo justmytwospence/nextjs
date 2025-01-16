@@ -5,18 +5,21 @@ import { AspectChart } from "@/components/aspect-chart";
 import ElevationProfile from "@/components/elevation-chart";
 import FindPathButton from "@/components/find-path-button";
 import GradientCDF from "@/components/gradient-cdf-chart";
+import GeoJSONLayer from "@/components/leaflet-geojson-layer"; // Import GeoJSONLayer
+import LazyPolylineMap from "@/components/leaflet-map-lazy";
+import LeafletPathfindingLayer from "@/components/leaflet-pathfinding-layer";
+import LeafletRasterLayer from "@/components/leaflet-raster-layer"; // Import LeafletRasterLayer
 import LocationSearch from "@/components/location-search";
-import LazyPolylineMap from "@/components/polyline-map-lazy";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { SelectAspectsDialog } from "@/components/ui/select-aspects-dialog";
 import type { Aspect } from "@/pathfinder";
-import { saveAs } from 'file-saver';
+import { hoverIndexStore as defaultHoverIndexStore } from "@/store";
+import { saveAs } from "file-saver";
 import type { FeatureCollection, LineString, Point } from "geojson";
 import type GeoTIFF from "geotiff";
-import { fromArrayBuffer } from "geotiff";
 import { useCallback, useState } from "react";
-import togpx from 'togpx';
+import togpx from "togpx";
 
 const parseGeoraster = require("georaster");
 
@@ -27,7 +30,9 @@ export default function PathFinderPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [excludedAspects, setExcludedAspects] = useState<Aspect[]>([]);
   const [mapCenter, setMapCenter] = useState<[number, number] | undefined>();
-  const [aspectPoints, setAspectPoints] = useState<FeatureCollection | null>(null);
+  const [aspectPoints, setAspectPoints] = useState<FeatureCollection | null>(
+    null
+  );
   const [azimuthRaster, setAzimuthRaster] = useState<GeoTIFF | null>(null);
 
   function handleMapClick(point: Point) {
@@ -74,7 +79,7 @@ export default function PathFinderPage() {
 
   const handleSetPath = useCallback((newPath: LineString | null) => {
     setPath(null);
-    setAspectPoints(null)
+    setAspectPoints(null);
     setPath((currentPath) => {
       if (newPath === null) {
         return null;
@@ -129,12 +134,12 @@ export default function PathFinderPage() {
     const geojson = {
       type: "Feature",
       geometry: path,
-      properties: {}
+      properties: {},
     };
 
     const gpxData = togpx(geojson);
-    const blob = new Blob([gpxData], { type: 'application/gpx+xml' });
-    saveAs(blob, 'path.gpx');
+    const blob = new Blob([gpxData], { type: "application/gpx+xml" });
+    saveAs(blob, "path.gpx");
   };
 
   return (
@@ -151,29 +156,45 @@ export default function PathFinderPage() {
           setAspectPoints={handleSetAspectPoints}
           setAzimuths={handleSetAzimuths}
         />
-        <Button className="flex-1" onClick={handleReset}>Reset</Button>
-        <Button className="flex-1" onClick={handleCenter}>Center Points</Button>
+        <Button className="flex-1" onClick={handleReset}>
+          Reset
+        </Button>
+        <Button className="flex-1" onClick={handleCenter}>
+          Center Points
+        </Button>
         <SelectAspectsDialog
           onSelectDirections={setExcludedAspects}
           selectedDirections={excludedAspects}
         />
-        <Button className="flex-1" onClick={handleDownloadGpx}>Download GPX</Button>
+        <Button className="flex-1" onClick={handleDownloadGpx}>
+          Download GPX
+        </Button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <Card className="aspect-square">
-          <LazyPolylineMap
-            onMapClick={handleMapClick}
-            onMapMove={handleBoundsChange}
-            interactive={true}
-            clickable={path === null}
-            markers={waypoints}
-            polyline={path}
-            polylineProperties={aspectPoints}
-            center={mapCenter}
-            azimuthRaster={azimuthRaster}
-            excludedAspects={excludedAspects}
-          />
+          <LazyPolylineMap interactive={true}>
+            <LeafletPathfindingLayer
+              markers={waypoints}
+              showLine={path == null}
+              onMapClick={handleMapClick}
+              onBoundsChange={handleBoundsChange}
+            />
+            {path && bounds && aspectPoints && (
+              <GeoJSONLayer
+                polyline={path}
+                polylineProperties={aspectPoints}
+                interactive={true}
+                hoverIndexStore={defaultHoverIndexStore}
+              />
+            )}
+            {azimuthRaster && (
+              <LeafletRasterLayer
+                azimuthRaster={azimuthRaster}
+                excludedAspects={excludedAspects}
+              />
+            )}
+          </LazyPolylineMap>
         </Card>
 
         <Card className="p-4">

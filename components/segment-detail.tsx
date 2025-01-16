@@ -2,7 +2,7 @@
 
 import ElevationChart from "@/components/elevation-chart";
 import GradientCdfChart from "@/components/gradient-cdf-chart";
-import LazyPolylineMap from "@/components/polyline-map-lazy";
+import LazyPolylineMap from "@/components/leaflet-map-lazy";
 import {
   Breadcrumb,
   BreadcrumbItem,

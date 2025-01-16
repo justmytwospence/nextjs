@@ -66,8 +66,11 @@ STRAVA_WEBHOOK_VERIFY_TOKEN=""
 - [ ] Sync Activity streams
 - [ ] Implement pace by gradient chart
 - [ ] Show streams in Activity page
-- [ ] Show sortable Segments
-- [ ] Segment search by activity
-- [ ] Segment search by location
 - [ ] Increase athlete headcount
-- [ ] Integrate weather
+- pathfinder
+  - [X] Fix map implementation
+  - [ ] Change polyline color
+  - [ ] Hide charts at the beginning
+  - [ ] Allow appending to paths
+  - [ ] Speed up Geotiff caching 
+  - [ ] Set raster opacity by gradient

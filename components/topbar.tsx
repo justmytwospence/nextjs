@@ -23,10 +23,10 @@ export default function Topbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const links = [
+    { href: "/pathfinder", label: "Path Finder" },
     { href: "/courses", label: "Courses" },
     { href: "/course-comparison", label: "Compare Courses" },
     { href: "/segments", label: "Segments" },
-    { href: "/pathfinder", label: "Path Finder" },
   ];
 
   return (

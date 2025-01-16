@@ -2,7 +2,8 @@
 
 import ElevationChart from "@/components/elevation-chart";
 import GradientCdfChart from "@/components/gradient-cdf-chart";
-import LazyPolylineMap from "@/components/polyline-map-lazy";
+import GeoJSONLayer from "@/components/leaflet-geojson-layer";
+import LazyPolylineMap from "@/components/leaflet-map-lazy";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -11,6 +12,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Card, CardContent } from "@/components/ui/card";
+import { hoverIndexStore as defaultHoverIndexStore } from "@/store";
 import type { EnrichedCourse } from "@prisma/client";
 
 export default function CourseDetail({ course }: { course: EnrichedCourse }) {
@@ -45,7 +47,9 @@ export default function CourseDetail({ course }: { course: EnrichedCourse }) {
           <CardContent className="h-full p-0">
             {course.polyline && (
               <div className="h-full w-full rounded-lg overflow-hidden">
-                <LazyPolylineMap polyline={course.polyline} />
+                <LazyPolylineMap>
+                  <GeoJSONLayer polyline={course.polyline} interactive={true}/>
+                </LazyPolylineMap>
               </div>
             )}
           </CardContent>

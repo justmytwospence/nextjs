@@ -1,4 +1,5 @@
-import LazyPolylineMap from "@/components/polyline-map-lazy";
+import GeoJSONLayer from "@/components/leaflet-geojson-layer"; 
+import LazyPolylineMap from "@/components/leaflet-map-lazy";
 import { Card } from "@/components/ui/card";
 import type { Course } from "@prisma/client";
 import cn from "clsx";
@@ -55,7 +56,9 @@ export default function CourseCard({
       )}
 
       <div className="relative h-48 w-full">
-        <LazyPolylineMap polyline={course.summaryPolyline} interactive={false} />
+        <LazyPolylineMap interactive={false}>
+          <GeoJSONLayer polyline={course.summaryPolyline} interactive={false}/>
+        </LazyPolylineMap>
       </div>
 
       <div className="flex-grow p-4 space-y-3">
