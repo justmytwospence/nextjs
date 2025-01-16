@@ -36,6 +36,9 @@ export default function PathFinderPage() {
   const [azimuthRaster, setAzimuthRaster] = useState<GeoTIFF | null>(null);
 
   function handleMapClick(point: Point) {
+    if (path !== null) {
+      return;
+    }
     setWaypoints([...waypoints, point]);
     return point;
   }
@@ -78,7 +81,6 @@ export default function PathFinderPage() {
   }
 
   const handleSetPath = useCallback((newPath: LineString | null) => {
-    setPath(null);
     setAspectPoints(null);
     setPath((currentPath) => {
       if (newPath === null) {

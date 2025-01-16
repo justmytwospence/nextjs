@@ -1,7 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { PrismaAdapter } from "@auth/prisma-adapter";
-import NextAuth, { type Account, type Session, type User } from "next-auth";
-import type { JWT } from "next-auth/jwt";
+import NextAuth from "next-auth";
 import authConfig from "./auth.config";
 
 export const { auth, handlers, signIn, signOut } = NextAuth({
@@ -35,8 +34,8 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
             {
               method: "POST",
               body: new URLSearchParams({
-                client_id: process.env.STRAVA_CLIENT_ID!,
-                client_secret: process.env.STRAVA_CLIENT_SECRET!,
+                client_id: process.env.STRAVA_CLIENT_ID,
+                client_secret: process.env.STRAVA_CLIENT_SECRET,
                 grant_type: "refresh_token",
                 refresh_token: token.refresh_token
               }),
@@ -45,11 +44,7 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
 
           const tokensOrError = await response.json();
           if (!response.ok) throw tokensOrError;
-          const newTokens = tokensOrError as {
-            access_token: string;
-            expires_in: number;
-            refresh_token?: string;
-          };
+          const newTokens = tokensOrError
 
           console.log("Successfully refreshed token")
 
@@ -78,18 +73,3 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
     },
   },
 });
-
-declare module "next-auth" {
-  interface Session {
-    error?: "RefreshTokenError";
-  }
-}
-
-declare module "next-auth/jwt" {
-  interface JWT {
-    access_token: string;
-    expires_at: number;
-    refresh_token?: string;
-    error?: "RefreshTokenError";
-  }
-}
