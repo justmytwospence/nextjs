@@ -8,7 +8,7 @@ import { CircleMarker, Polyline, useMap, useMapEvents } from "react-leaflet";
 interface LeafletPathfindingLayerProps {
   markers: Point[];
   showLine?: boolean;
-  onMapClick?: (point: Point) => Point;
+  onMapClick?: (point: Point) => void;
   onBoundsChange?: (newBounds: Bounds) => Bounds;
 }
 

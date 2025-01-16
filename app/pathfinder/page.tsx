@@ -40,7 +40,6 @@ export default function PathFinderPage() {
       return;
     }
     setWaypoints([...waypoints, point]);
-    return point;
   }
 
   function handleBoundsChange(newBounds: Bounds) {
