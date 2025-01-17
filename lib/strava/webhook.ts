@@ -15,8 +15,16 @@ export default async function processWebhookEvent(event: WebhookEvent) {
         case "create":
         case "update":
           const account = await queryUserAccount(event.owner_id, "strava");
-          const { detailedActivity } = await fetchDetailedActivity(account.access_token, event.object_id);
-          return await upsertDetailedActivity(event.owner_id, detailedActivity);
+          if (account) {
+            const { detailedActivity } = await fetchDetailedActivity(
+              account.access_token,
+              event.object_id
+            );
+            return await upsertDetailedActivity(
+              event.owner_id,
+              detailedActivity
+            );
+          }
         case "delete":
           return await deleteActivity(event.owner_id, "strava");
       }
