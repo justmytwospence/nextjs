@@ -28,16 +28,6 @@ export type Bounds = {
   west: number;
 };
 
-async function cacheGeoTIFF(geoTiffArrayBuffer: Buffer) {
-  try {
-    await insertGeoTiff(geoTiffArrayBuffer);
-    return true;
-  } catch (error) {
-    console.error("Failed to cache GeoTIFF:", error);
-    return false;
-  }
-}
-
 export default async function* findPath(
   waypoints: Point[],
   bounds: Bounds,
@@ -45,21 +35,18 @@ export default async function* findPath(
 ): AsyncGenerator<findPathMessage, void, unknown> {
   yield { type: "info", message: "Downloading DEM from OpenTopo..." };
   const geoTiffArrayBuffer = await getTopo(bounds);
-  yield { type: "success", message: "DEM downloaded" };
 
   try {
     for (let i = 0; i < waypoints.length - 1; i++) {
-      yield { type: "info", message: `Finding path ${i}` };
-      const start = waypoints[i];
-      const end = waypoints[i + 1];
-
+      yield { type: "info", message: `Finding path for segment ${i+1}` };
       const { path, azimuths } = await pathfind(
         geoTiffArrayBuffer,
-        JSON.stringify(start),
-        JSON.stringify(end),
+        JSON.stringify(waypoints[i]),
+        JSON.stringify(waypoints[i + 1]),
         excludedAspects
       );
 
+      yield { type: "success", message: `Found path ${i+1}...` };
       yield {
         type: "result",
         result: {
@@ -67,7 +54,6 @@ export default async function* findPath(
           azimuths: Array.from(azimuths)
         } 
       };
-      yield { type: "success", message: `Path ${i} found` };
     }
   } catch (error) {
     yield { type: "error", message: "Failed to find path." };

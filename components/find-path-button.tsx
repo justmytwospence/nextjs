@@ -37,18 +37,23 @@ export default function FindPathButton({
       for await (const result of pathGenerator) {
         switch (result.type) {
           case "info":
-            toast.message(result.message);
+            toast.dismiss();
+            toast.message(result.message, { duration: Number.POSITIVE_INFINITY });
             break;
           case "success":
+            toast.dismiss();
             toast.success(result.message);
             break;
           case "warning":
             toast.warning(result.message);
             break;
           case "error":
+            toast.dismiss()
             toast.error(result.message);
             break;
           case "result": {
+            toast.dismiss();
+            toast.success("Path found!");
             const path = {
               type: "LineString",
               coordinates: JSON.parse(result.result.path).features.map(
