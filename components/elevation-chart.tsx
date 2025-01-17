@@ -213,7 +213,8 @@ export default function ElevationChart({
       if (!chartRef.current) return;
       const chart = chartRef.current as ChartJS<"line">;
 
-      if (state.hoverIndex >= 0) {
+      console.log(state)
+      if (state?.hoverIndex >= 0) {
         chart.setActiveElements([
           {
             datasetIndex: 0,

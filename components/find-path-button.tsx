@@ -11,7 +11,7 @@ interface FindPathButtonProps {
   excludedAspects: Aspect[];
   isLoading: boolean;
   setIsLoading: (loading: boolean) => void;
-  setPath: (path: LineString | null) => void;
+  setPath: (path: LineString | null, invocationCounter: number) => void;
   setAspectPoints: (aspectPoints: FeatureCollection | null) => void;
   setAzimuths: (azimuths: Uint8Array) => void;
 }
@@ -34,6 +34,7 @@ export default function FindPathButton({
     try {
       const pathGenerator = await findPath(waypoints, bounds, excludedAspects);
 
+      let invocationCounter = 0;
       for await (const result of pathGenerator) {
         switch (result.type) {
           case "info":
@@ -60,10 +61,11 @@ export default function FindPathButton({
                 (point) => point.geometry.coordinates
               ),
             } as LineString;
-            setPath(path);
+            setPath(path, invocationCounter);
             console.log("Setting azimuths from button" )
             setAzimuths(new Uint8Array(result.result.azimuths));
             setAspectPoints(JSON.parse(result.result.path));
+            invocationCounter++;
             break;
           }
         }
