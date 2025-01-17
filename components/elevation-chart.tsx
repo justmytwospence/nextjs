@@ -212,32 +212,28 @@ export default function ElevationChart({
     const unsubHoverIndex = hoverIndexStore.subscribe((state) => {
       if (!chartRef.current) return;
       const chart = chartRef.current as ChartJS<"line">;
+
       if (state.hoverIndex >= 0) {
         chart.setActiveElements([
           {
             datasetIndex: 0,
             index: state.hoverIndex,
+            // Add additional properties if required by Chart.js version
           },
         ]);
-        chart.tooltip?.setActiveElements(
+        chart.tooltip.setActiveElements(
           [
             {
               datasetIndex: 0,
               index: state.hoverIndex,
+              // Add additional properties if required
             },
           ],
-          {
-            x: chart.scales.x.getPixelForValue(
-              computedDistances[state.hoverIndex]
-            ),
-            y: chart.scales.elevation.getPixelForValue(
-              elevation[state.hoverIndex]
-            ),
-          }
+          { x: 0, y: 0 } // Adjust tooltip position as needed
         );
       } else {
         chart.setActiveElements([]);
-        chart.tooltip?.setActiveElements([], { x: 0, y: 0 });
+        chart.tooltip.setActiveElements([], { x: 0, y: 0 });
       }
     });
     return unsubHoverIndex;

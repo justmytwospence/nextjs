@@ -62,14 +62,16 @@ STRAVA_WEBHOOK_VERIFY_TOKEN=""
 - [X] Implement sort order toggle
 - [X] Fix pagination
 - [X] Add activities to course comparison
+- [ ] Store the access token in the JWT to bypass account lookups
+- [ ] Verify token refresh is working
 - [ ] Add Streams model
 - [ ] Sync Activity streams
-- [ ] Implement pace by gradient chart
-- [ ] Show streams in Activity page
+- [ ] Show streams in Activity detail page
+- [ ] Implement power-duration/gradient curve
 - [ ] Increase athlete headcount
 - pathfinder
   - [X] Fix map implementation
   - [X] Change polyline color
-  - [ ] Hide charts at the beginning
-  - [ ] Speed up Geotiff caching 
   - [ ] Set raster opacity by gradient
+  - [ ] Hide charts at the beginning
+  - [ ] Cache geotiffs

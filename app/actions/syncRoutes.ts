@@ -11,9 +11,7 @@ type SyncRoutesMessage = {
   message: string;
 };
 
-export default async function syncRoutes(): Promise<
-  AsyncGenerator<SyncRoutesMessage>
-> {
+export default async function syncRoutes(): Promise<AsyncGenerator<SyncRoutesMessage>> {
   async function* generator(): AsyncGenerator<SyncRoutesMessage> {
     try {
       const session = await auth();
@@ -29,7 +27,7 @@ export default async function syncRoutes(): Promise<
 
       while (true) {
         const { routes, unrecognizedKeys } = await fetchRoutes(
-          session.user.id,
+          session,
           currentPage
         );
 

@@ -28,7 +28,7 @@ export default async function syncActivities(
         activityIds.map((activityId) =>
           limit(async () => {
             const { detailedActivity } = await fetchDetailedActivity(
-              session.user.id,
+              session,
               activityId
             );
             await upsertDetailedActivity(session.user.id, detailedActivity);

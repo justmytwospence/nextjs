@@ -32,23 +32,17 @@ export class StravaHttpError extends Error {
  * @private
  */
 export async function makeStravaRequest(
-  userId: string,
+  access_token: string,
   endpoint: string,
   params: URLSearchParams = new URLSearchParams()
 ): Promise<Response> {
-  const userAccount = await queryUserAccount(userId, "strava");
-
-  if (!userAccount?.access_token) {
-    baseLogger.error("No Strava access token found");
-    throw new Error("No Strava access token found");
-  }
-
   const url = new URL(`https://www.strava.com/api/v3${endpoint}`);
   params.forEach((value, key) => url.searchParams.append(key, value));
 
   baseLogger.info(`Fetching from URL: ${url.toString()}`);
+  baseLogger.debug(`Access token: ${access_token}`);
   const response = await fetch(url.toString(), {
-    headers: { Authorization: `Bearer ${userAccount.access_token}` },
+    headers: { Authorization: `Bearer ${access_token}` },
   });
 
   if (response.status === 429) {

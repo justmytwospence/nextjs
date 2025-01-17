@@ -33,6 +33,6 @@
     "types/**/*.d.ts",
     ".next/types/**/*.ts",
     "pathfinder/index.d.ts"
-, "auth.js"  ],
+, "auth.ts"  ],
   "exclude": ["node_modules"]
 }

@@ -29,7 +29,7 @@ export default async function syncActivities(): Promise<
 
       while (true) {
         const { summaryActivities, unrecognizedKeys } = await fetchActivities(
-          session.user.id,
+          session,
           currentPage
         );
         if (!summaryActivities?.length) break;
