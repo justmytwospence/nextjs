@@ -71,7 +71,6 @@ export default function PathFinderPage() {
   }
 
   const handleSetPath = useCallback((newPath: LineString | null) => {
-    setAspectPoints(null);
     setPath((currentPath) => {
       if (newPath === null) {
         return null;
