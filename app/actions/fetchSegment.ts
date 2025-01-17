@@ -23,11 +23,11 @@ export default async function fetchSegment(
 
   if (!isEnrichedSegment(segment)) {
     const { detailedSegment } = await fetchDetailedSegment(
-      session.user.id,
+      session.access_token,
       segment.id
     );
     const { segmentStreams } = await fetchSegmentStreams(
-      session.user.id,
+      session.access_token,
       segment.id
     );
     const enrichedSegment = await enrichSegment(

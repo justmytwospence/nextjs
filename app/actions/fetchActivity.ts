@@ -31,7 +31,7 @@ export async function fetchActivity(
     );
 
     const { activityStreams } = await fetchActivityStreams(
-      session,
+      session.access_token,
       activityId
     );
     const enrichedActivity = await enrichActivity(activityId, activityStreams);

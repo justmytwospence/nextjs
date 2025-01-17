@@ -21,7 +21,7 @@ export async function fetchRoute(routeId: string): Promise<EnrichedRoute>  {
   }
 
   if (!isEnrichedRoute(route) || route.enrichedAt < route.updatedAt) {
-    const routeGeoJson = await fetchRouteGeoJson(session, routeId);
+    const routeGeoJson = await fetchRouteGeoJson(session.access_token, routeId);
     const enrichedRoute =  await enrichRoute(session.user.id, route.id, routeGeoJson);
     return enrichedRoute
   }

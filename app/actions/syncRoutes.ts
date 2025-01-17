@@ -27,7 +27,7 @@ export default async function syncRoutes(): Promise<AsyncGenerator<SyncRoutesMes
 
       while (true) {
         const { routes, unrecognizedKeys } = await fetchRoutes(
-          session,
+          session.access_token,
           currentPage
         );
 

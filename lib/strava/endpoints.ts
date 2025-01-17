@@ -15,13 +15,12 @@ import {
 import tj from "@mapbox/togeojson";
 import { DOMParser } from "@xmldom/xmldom";
 import type { LineString } from "geojson";
-import type { Session } from "next-auth";
 import { baseLogger } from "../logger";
 import { makeStravaRequest } from "./api";
 import { validateAndLogExtras } from "./schema";
 
 export const fetchRoutes = async (
-  session: Session,
+  access_token: string,
   page = 1,
   perPage = 200
 ): Promise<{ routes: Route[]; unrecognizedKeys: Set<string> }> => {
@@ -29,7 +28,7 @@ export const fetchRoutes = async (
     per_page: perPage.toString(),
     page: page.toString(),
   });
-  const response = await makeStravaRequest(session.access_token, "/athlete/routes", params);
+  const response = await makeStravaRequest(access_token, "/athlete/routes", params);
   const responseData = await response.json();
   const { validatedData: routes, unrecognizedKeys } = validateAndLogExtras(
     responseData,
@@ -39,13 +38,13 @@ export const fetchRoutes = async (
 };
 
 export const fetchDetailedSegment = async (
-  session: Session,
+  access_token: string,
   segmentId: string
 ): Promise<{
   detailedSegment: DetailedSegment;
   unrecognizedKeys: Set<string>;
 }> => {
-  const response = await makeStravaRequest(session.access_token, `/segments/${segmentId}`);
+  const response = await makeStravaRequest(access_token, `/segments/${segmentId}`);
   const responseData = await response.json();
   const { validatedData: detailedSegment, unrecognizedKeys } =
     validateAndLogExtras(responseData, DetailedSegmentSchema);
@@ -53,11 +52,11 @@ export const fetchDetailedSegment = async (
 };
 
 export const fetchRouteGeoJson = async (
-  session: Session,
+  access_token: string,
   routeId: string
 ): Promise<LineString> => {
   const response = await makeStravaRequest(
-    session.access_token,
+    access_token,
     `/routes/${routeId}/export_gpx`
   );
   const gpxData = await response.text();
@@ -72,7 +71,7 @@ export const fetchRouteGeoJson = async (
 };
 
 export const fetchActivities = async (
-  session: Session,
+  access_token: string,
   page = 1,
   perPage = 200
 ): Promise<{
@@ -84,7 +83,7 @@ export const fetchActivities = async (
     page: page.toString(),
   });
   const response = await makeStravaRequest(
-    session.access_token,
+    access_token,
     "/athlete/activities",
     params
   );
@@ -95,13 +94,13 @@ export const fetchActivities = async (
 };
 
 export const fetchDetailedActivity = async (
-  session: Session,
+  access_token: string,
   activityId: string
 ): Promise<{
   detailedActivity: DetailedActivity;
   unrecognizedKeys: Set<string>;
 }> => {
-  const response = await makeStravaRequest(session.access_token, `/activities/${activityId}`);
+  const response = await makeStravaRequest(access_token, `/activities/${activityId}`);
   const responseData = await response.json();
   const { validatedData: detailedActivity, unrecognizedKeys } =
     validateAndLogExtras(responseData, DetailedActivitySchema);
@@ -109,7 +108,7 @@ export const fetchDetailedActivity = async (
 };
 
 export const fetchActivityStreams = async (
-  session: Session,
+  access_token: string,
   activityId: string
 ): Promise<{
   activityStreams: StreamSet;
@@ -133,7 +132,7 @@ export const fetchActivityStreams = async (
     key_by_type: "true",
   });
   const response = await makeStravaRequest(
-    session.access_token,
+    access_token,
     `/activities/${activityId}/streams`,
     params
   );
@@ -144,14 +143,14 @@ export const fetchActivityStreams = async (
 };
 
 export const fetchRouteStreams = async (
-  session: Session,
+  access_token: string,
   routeId: string
 ): Promise<{
   routeStreams: StreamSet;
   unrecognizedKeys: Set<string>;
 }> => {
   const response = await makeStravaRequest(
-    session.access_token,
+    access_token,
     `/routes/${routeId}/streams`
   );
   const responseData = await response.json();
@@ -162,7 +161,7 @@ export const fetchRouteStreams = async (
 };
 
 export const fetchSegmentStreams = async (
-  session: Session,
+  access_token: string,
   segmentId: string
 ): Promise<{
   segmentStreams: StreamSet;
@@ -186,7 +185,7 @@ export const fetchSegmentStreams = async (
     key_by_type: "true",
   });
   const response = await makeStravaRequest(
-    session.access_token,
+    access_token,
     `/segments/${segmentId}/streams`,
     params
   );
