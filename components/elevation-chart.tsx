@@ -221,23 +221,19 @@ export default function ElevationChart({
             // Add additional properties if required by Chart.js version
           },
         ]);
-        if (chart.tooltip) {
-          chart.tooltip.setActiveElements(
-            [
-              {
-                datasetIndex: 0,
-                index: state.hoverIndex,
-                // Add additional properties if required
-              },
-            ],
-            { x: 0, y: 0 } // Adjust tooltip position as needed
-          );
-        }
+        chart.tooltip.setActiveElements(
+          [
+            {
+              datasetIndex: 0,
+              index: state.hoverIndex,
+              // Add additional properties if required
+            },
+          ],
+          { x: 0, y: 0 } // Adjust tooltip position as needed
+        );
       } else {
         chart.setActiveElements([]);
-        if (chart.tooltip) {
-          chart.tooltip.setActiveElements([], { x: 0, y: 0 });
-        }
+        chart.tooltip.setActiveElements([], { x: 0, y: 0 });
       }
     });
     return unsubHoverIndex;

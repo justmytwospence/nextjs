@@ -168,6 +168,7 @@ export default function PathFinderPage() {
               showLine={path == null}
               onMapClick={handleMapClick}
               onBoundsChange={handleBoundsChange}
+              mapCenter={mapCenter}
             />
             {path && bounds && aspectPoints && (
               <GeoJSONLayer

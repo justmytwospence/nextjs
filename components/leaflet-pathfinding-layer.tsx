@@ -2,6 +2,7 @@ import type { Bounds } from "@/app/actions/findPath";
 import { baseLogger } from "@/lib/logger";
 import type { Point } from "geojson";
 import L from "leaflet";
+import type { LatLngExpression } from "leaflet";
 import { useCallback, useEffect, useRef } from "react";
 import { CircleMarker, Polyline, useMap, useMapEvents } from "react-leaflet";
 
@@ -10,6 +11,7 @@ interface LeafletPathfindingLayerProps {
   showLine?: boolean;
   onMapClick?: (point: Point) => void;
   onBoundsChange?: (newBounds: Bounds) => Bounds;
+  mapCenter?: LatLngExpression;
 }
 
 export default function LeafletPathfindingLayer({
@@ -17,12 +19,14 @@ export default function LeafletPathfindingLayer({
   showLine,
   onMapClick,
   onBoundsChange,
+  mapCenter,
 }: LeafletPathfindingLayerProps) {
   const map = useMap();
 
-  // Center on user's location
   useEffect(() => {
-    if ("geolocation" in navigator) {
+    if (mapCenter) {
+      map.setView(mapCenter, 13, { animate: true });
+    } else if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           map.setView(
@@ -35,7 +39,7 @@ export default function LeafletPathfindingLayer({
         }
       );
     }
-  }, []);
+  }, [mapCenter, map]);
 
   const mapEvents = useMapEvents({
     click(e) {

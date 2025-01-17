@@ -85,8 +85,8 @@ export default function LocationSearch({
       if (highlightedIndex >= 0 && highlightedIndex < results.length) {
         const selected = results[highlightedIndex];
         onLocationSelect([
-          Number.parseFloat(selected.lon),
           Number.parseFloat(selected.lat),
+          Number.parseFloat(selected.lon),
         ]);
         setOpen(false);
         setSearch("");
@@ -94,8 +94,8 @@ export default function LocationSearch({
       } else if (results.length === 1) {
         const selected = results[0];
         onLocationSelect([
-          Number.parseFloat(selected.lon),
           Number.parseFloat(selected.lat),
+          Number.parseFloat(selected.lon),
         ]);
         setOpen(false);
         setSearch("");
@@ -133,8 +133,8 @@ export default function LocationSearch({
                     key={result.display_name}
                     onSelect={() => {
                       onLocationSelect([
-                        Number.parseFloat(result.lon),
                         Number.parseFloat(result.lat),
+                        Number.parseFloat(result.lon),
                       ]);
                       setOpen(false);
                       setSearch("");
