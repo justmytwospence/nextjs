@@ -8,6 +8,10 @@ const { auth } = NextAuth(authConfig);
 export async function middleware(request: NextRequest) {
   const session = await auth();
 
+  if (request.nextUrl.pathname === '/') {
+    return NextResponse.redirect(new URL('/pathfinder', request.url));
+  }
+
   if (!session) {
     const loginUrl = new URL("/login", request.url);
     loginUrl.searchParams.set("redirectUrl", request.url);
