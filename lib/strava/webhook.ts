@@ -13,6 +13,7 @@ export default async function processWebhookEvent(event: WebhookEvent) {
     case "activity":
       switch (event.aspect_type) {
         case "create":
+          break;
         case "update": {
           const account = await queryUserAccount(event.owner_id, "strava");
           if (account?.access_token) {
@@ -25,6 +26,7 @@ export default async function processWebhookEvent(event: WebhookEvent) {
               detailedActivity
             );
           }
+          break;
         }
         case "delete":
           return await deleteActivity(event.owner_id, "strava");
