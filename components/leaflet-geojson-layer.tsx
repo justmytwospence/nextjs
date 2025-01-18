@@ -72,8 +72,8 @@ export default function GeoJSONLayer({
     // Center and zoom the map to fit the GeoJSON layer
     if (geoJsonRef.current) {
       const bounds = geoJsonRef.current.getBounds();
-      if (bounds.isValid()) { // Check if bounds are valid
-        map.fitBounds(bounds, { padding: [30, 30] });
+      if (bounds.isValid()) { 
+        map.fitBounds(bounds, { padding: [30, 30], animate: interactive });
       }
     }
 
