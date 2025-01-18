@@ -74,7 +74,7 @@ export default function GeoJsonInteractionLayer({
         hoverMarkerRef.current.setLatLng([point[1], point[0]]);
       }
     },
-    [polyline]
+    [map, polyline]
   );
 
   // hoverIndex useEffect
@@ -97,7 +97,7 @@ export default function GeoJsonInteractionLayer({
         opacity: 1,
       }));
     }
-  }, []);
+  }, [geoJsonRef]);
 
   // hoveredGradient useEffect
   useEffect(() => {
@@ -108,21 +108,21 @@ export default function GeoJsonInteractionLayer({
       }
     );
     return unsub;
-  }, [highlightGradients, gradientStore]);
+  }, [highlightGradients]);
 
   // respond to hoveredAspect
   const highlightAspect = useCallback((hoveredAspect: Aspect | null) => {
     if (geoJsonRef.current) {
       geoJsonRef.current.setStyle((feature) => ({
         color:
-          feature?.properties?.aspect >= (hoveredAspect ?? 0)
+          feature?.properties?.aspect as Aspect === (hoveredAspect ?? 0)
             ? "orange"
             : "black",
         weight: 3,
         opacity: 1,
       }));
     }
-  }, []);
+  }, [geoJsonRef]);
 
   // hoveredAspect useEffect
   useEffect(() => {
@@ -133,7 +133,7 @@ export default function GeoJsonInteractionLayer({
       }
     );
     return unsub;
-  }, [highlightAspect, aspectStore]);
+  }, [highlightAspect]);
 
   return null;
 }
