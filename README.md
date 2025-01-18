@@ -62,8 +62,8 @@ STRAVA_WEBHOOK_VERIFY_TOKEN=""
 - [X] Implement sort order toggle
 - [X] Fix pagination
 - [X] Add activities to course comparison
-- [ ] Store the access token in the JWT to bypass account lookups
-- [ ] Verify token refresh is working
+- [X] Store the access token in the JWT to bypass account lookups
+- [X] Verify token refresh is working
 - [ ] Add Streams model
 - [ ] Sync Activity streams
 - [ ] Show streams in Activity detail page
@@ -72,6 +72,8 @@ STRAVA_WEBHOOK_VERIFY_TOKEN=""
 - pathfinder
   - [X] Fix map implementation
   - [X] Change polyline color
+  - [ ] Save to Strava
+  - [ ] Improve Aspect categorization
   - [ ] Set raster opacity by gradient
   - [ ] Hide charts at the beginning
   - [ ] Cache geotiffs

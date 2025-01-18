@@ -12,12 +12,26 @@ import LeafletRasterLayer from "@/components/leaflet-raster-layer"; // Import Le
 import LocationSearch from "@/components/location-search";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import {
+  Command,
+  CommandEmpty,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { SelectAspectsDialog } from "@/components/ui/select-aspects-dialog";
 import type { Aspect } from "@/pathfinder";
 import { hoverIndexStore as defaultHoverIndexStore } from "@/store";
+import { CommandGroup } from "cmdk";
 import { saveAs } from "file-saver";
 import type { FeatureCollection, LineString, Point } from "geojson";
 import type GeoTIFF from "geotiff";
+import { ChevronDown, Download } from "lucide-react";
 import { useCallback, useState } from "react";
 import togpx from "togpx";
 
@@ -70,25 +84,28 @@ export default function PathFinderPage() {
     }
   }
 
-  const handleSetPath = useCallback((newPath: LineString | null, invocationCounter: number) => {
-    setPath((currentPath) => {
-      if (newPath === null) {
-        return null;
-      }
+  const handleSetPath = useCallback(
+    (newPath: LineString | null, invocationCounter: number) => {
+      setPath((currentPath) => {
+        if (newPath === null) {
+          return null;
+        }
 
-      if (invocationCounter === 0) {
-        return newPath;
-      }
+        if (invocationCounter === 0) {
+          return newPath;
+        }
 
-      return {
-        type: "LineString",
-        coordinates:
-          currentPath === null
-            ? newPath.coordinates
-            : [...currentPath.coordinates, ...newPath.coordinates.slice(1)],
-      } as LineString;
-    });
-  }, []);
+        return {
+          type: "LineString",
+          coordinates:
+            currentPath === null
+              ? newPath.coordinates
+              : [...currentPath.coordinates, ...newPath.coordinates.slice(1)],
+        } as LineString;
+      });
+    },
+    []
+  );
 
   const handleSetAspectPoints = useCallback(
     (newPoints: FeatureCollection | null) => {
@@ -159,9 +176,26 @@ export default function PathFinderPage() {
           onSelectDirections={setExcludedAspects}
           selectedDirections={excludedAspects}
         />
-        <Button className="flex-1" onClick={handleDownloadGpx}>
-          Download GPX
-        </Button>
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button className="flex-1">
+              Save <ChevronDown className="ml-2 h-4 w-4" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-[200px] p-0" align="end">
+            <Command className="rounded-none">
+              <CommandList>
+              <CommandItem className="rounded-none" onSelect={handleDownloadGpx}>
+                <Download className="mr-2 h-4 w-4" />
+                Download GPX
+              </CommandItem>
+              <CommandItem className="rounded-none" onSelect={() => console.log("Save to Strava")}>
+                Save to Strava
+              </CommandItem>
+              </CommandList>
+            </Command>
+          </PopoverContent>
+        </Popover>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
