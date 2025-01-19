@@ -27,10 +27,10 @@ import {
 import { SelectAspectsDialog } from "@/components/ui/select-aspects-dialog";
 import type { Aspect } from "@/pathfinder";
 import { hoverIndexStore as defaultHoverIndexStore } from "@/store";
-import { CommandGroup } from "cmdk";
 import { saveAs } from "file-saver";
 import type { FeatureCollection, LineString, Point } from "geojson";
-import type GeoTIFF from "geotiff";
+import type { GeoRaster } from "georaster";
+import type { GeoTIFF } from "geotiff";
 import { ChevronDown, Download } from "lucide-react";
 import { useCallback, useState } from "react";
 import togpx from "togpx";
@@ -44,10 +44,10 @@ export default function PathFinderPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [excludedAspects, setExcludedAspects] = useState<Aspect[]>([]);
   const [mapCenter, setMapCenter] = useState<[number, number] | undefined>();
-  const [aspectPoints, setAspectPoints] = useState<FeatureCollection | null>(
+  const [pathAspects, setPathAspects] = useState<FeatureCollection | null>(
     null
   );
-  const [azimuthRaster, setAzimuthRaster] = useState<GeoTIFF | null>(null);
+  const [aspectRaster, setAspectRaster] = useState<GeoRaster | null>(null);
 
   function handleMapClick(point: Point) {
     if (path !== null) {
@@ -75,7 +75,7 @@ export default function PathFinderPage() {
     setPath(null);
     setBounds(null);
     setIsLoading(false);
-    setAspectPoints(null);
+    setPathAspects(null);
   }
 
   function handleCenter() {
@@ -107,9 +107,9 @@ export default function PathFinderPage() {
     []
   );
 
-  const handleSetAspectPoints = useCallback(
+  const handleSetPathAspects = useCallback(
     (newPoints: FeatureCollection | null) => {
-      setAspectPoints((currentAspectPoints) => {
+      setPathAspects((currentAspectPoints) => {
         if (newPoints === null) {
           return null;
         }
@@ -132,10 +132,28 @@ export default function PathFinderPage() {
     setMapCenter(center);
   }, []);
 
-  const handleSetAzimuths = useCallback(async (azimuths: Uint8Array) => {
-    const georaster = await parseGeoraster(azimuths.buffer as ArrayBuffer);
-    setAzimuthRaster(georaster);
-  }, []);
+  const handleSetAspectRaster = useCallback(
+    async (azimuths: Uint8Array, gradients: Uint8Array) => {
+      const azimuthRaster = (await parseGeoraster(
+        azimuths.buffer as ArrayBuffer
+      )) as GeoRaster;
+
+      const gradientRaster = (await parseGeoraster(
+        gradients.buffer as ArrayBuffer
+      )) as GeoRaster;
+
+      const mergedRaster = [azimuthRaster, gradientRaster].reduce((result, georaster) => ({
+        ...georaster,
+        maxs: [...result.maxs, ...georaster.maxs],
+        mins: [...result.mins, ...georaster.mins],
+        ranges: [...result.ranges, georaster.ranges],
+        values: [...result.values, ...georaster.values],
+        numberOfRasters: result.values.length + georaster.values.length,
+      }));
+      setAspectRaster(mergedRaster as GeoRaster);
+    },
+    []
+  );
 
   // Function to convert LineString to GPX using togpx
   const handleDownloadGpx = () => {
@@ -163,8 +181,8 @@ export default function PathFinderPage() {
           isLoading={isLoading}
           setIsLoading={setIsLoading}
           setPath={handleSetPath}
-          setAspectPoints={handleSetAspectPoints}
-          setAzimuths={handleSetAzimuths}
+          setPathAspects={handleSetPathAspects}
+          setAspectRaster={handleSetAspectRaster}
         />
         <Button className="flex-1" onClick={handleReset}>
           Reset
@@ -185,13 +203,19 @@ export default function PathFinderPage() {
           <PopoverContent className="w-[200px] p-0" align="end">
             <Command className="rounded-none">
               <CommandList>
-              <CommandItem className="rounded-none" onSelect={handleDownloadGpx}>
-                <Download className="mr-2 h-4 w-4" />
-                Download GPX
-              </CommandItem>
-              <CommandItem className="rounded-none" onSelect={() => console.log("Save to Strava")}>
-                Save to Strava
-              </CommandItem>
+                <CommandItem
+                  className="rounded-none"
+                  onSelect={handleDownloadGpx}
+                >
+                  <Download className="mr-2 h-4 w-4" />
+                  Download GPX
+                </CommandItem>
+                <CommandItem
+                  className="rounded-none"
+                  onSelect={() => console.log("Save to Strava")}
+                >
+                  Save to Strava
+                </CommandItem>
               </CommandList>
             </Command>
           </PopoverContent>
@@ -208,17 +232,17 @@ export default function PathFinderPage() {
               onBoundsChange={handleBoundsChange}
               mapCenter={mapCenter}
             />
-            {path && bounds && aspectPoints && (
+            {path && bounds && pathAspects && (
               <GeoJSONLayer
                 polyline={path}
-                polylineProperties={aspectPoints}
+                polylineProperties={pathAspects}
                 interactive={true}
                 hoverIndexStore={defaultHoverIndexStore}
               />
             )}
-            {azimuthRaster && (
+            {aspectRaster && (
               <LeafletRasterLayer
-                azimuthRaster={azimuthRaster}
+                aspectRaster={aspectRaster}
                 excludedAspects={excludedAspects}
               />
             )}
@@ -227,9 +251,9 @@ export default function PathFinderPage() {
 
         <Card className="p-4">
           <h2 className="text-lg font-semibold mb-2">Aspect Distribution</h2>
-          {aspectPoints && (
+          {pathAspects && (
             <div className="h-[300px]">
-              <AspectChart aspectPoints={aspectPoints} />
+              <AspectChart aspectPoints={pathAspects} />
             </div>
           )}
         </Card>

@@ -12,8 +12,8 @@ interface FindPathButtonProps {
   isLoading: boolean;
   setIsLoading: (loading: boolean) => void;
   setPath: (path: LineString | null, invocationCounter: number) => void;
-  setAspectPoints: (aspectPoints: FeatureCollection | null) => void;
-  setAzimuths: (azimuths: Uint8Array) => void;
+  setPathAspects: (aspectPoints: FeatureCollection) => void;
+  setAspectRaster: (azimuthRaster: Uint8Array, gradientRaster: Uint8Array) => void;
 }
 
 export default function FindPathButton({
@@ -23,8 +23,8 @@ export default function FindPathButton({
   isLoading,
   setIsLoading,
   setPath,
-  setAspectPoints,
-  setAzimuths,
+  setPathAspects,
+  setAspectRaster
 }: FindPathButtonProps) {
   async function handleClick() {
     if (!bounds) return;
@@ -34,7 +34,7 @@ export default function FindPathButton({
     try {
       const pathGenerator = await findPath(waypoints, bounds, excludedAspects);
 
-      let invocationCounter = 0;
+      let pathSegmentCounter = 0;
       for await (const result of pathGenerator) {
         switch (result.type) {
           case "info":
@@ -49,23 +49,28 @@ export default function FindPathButton({
             toast.warning(result.message);
             break;
           case "error":
-            toast.dismiss()
+            toast.dismiss();
             toast.error(result.message);
             break;
-          case "result": {
+          case "rasterResult": {
+            toast.dismiss();
+            toast.success("Azimuths and gradients computed");
+            const { elevations, azimuths, gradients } = result.result;
+            setAspectRaster(new Uint8Array(azimuths), new Uint8Array(gradients));
+            break;
+          }
+          case "geoJsonResult": {
             toast.dismiss();
             toast.success("Path found!");
             const path = {
               type: "LineString",
-              coordinates: JSON.parse(result.result.path).features.map(
+              coordinates: JSON.parse(result.result).features.map(
                 (point) => point.geometry.coordinates
               ),
             } as LineString;
-            setPath(path, invocationCounter);
-            console.log("Setting azimuths from button" )
-            setAzimuths(new Uint8Array(result.result.azimuths));
-            setAspectPoints(JSON.parse(result.result.path));
-            invocationCounter++;
+            setPath(path, pathSegmentCounter);
+            setPathAspects(JSON.parse(result.result));
+            pathSegmentCounter++;
             break;
           }
         }

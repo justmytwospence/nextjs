@@ -16,7 +16,6 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
       }
       if (account) { 
         // First-time login: add the token stuff to the JWT
-        console.log("First-time login");
         token = {
           ...token,
           access_token: account.access_token || token.access_token,
@@ -25,10 +24,8 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
         };
       } else if (Date.now() < token.expires_at * 1000) {
         // Subsequent logins, but the `access_token` is still valid
-        console.log("Access token still valid");
         return token;
       } else {
-        console.log("Access token expired: ", token);
         return refreshToken(token);
       }
       return token;

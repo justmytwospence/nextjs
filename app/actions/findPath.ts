@@ -3,10 +3,7 @@
 import { getTopo } from "@/lib/geo/open-topo";
 import { checkGeoTIFFCache, getGeoTiff, insertGeoTiff } from "@/lib/geo/tiling";
 import type { Point } from "geojson";
-import type { Aspect, PathResults } from "pathfinder";
-
-const pathfinder = require("pathfinder");
-const { pathfind } = pathfinder;
+import { type Aspect, computeAzimuths, findPathRs } from "pathfinder";
 
 type findPathMessage =
   | {
@@ -14,11 +11,16 @@ type findPathMessage =
       message: string;
     }
   | {
-      type: "result";
+      type: "rasterResult";
       result: {
-        path: string;
+        elevations: number[];
         azimuths: number[];
+        gradients: number[];
       };
+    }
+  | {
+      type: "geoJsonResult";
+      result: string;
     };
 
 export type Bounds = {
@@ -37,22 +39,34 @@ export default async function* findPath(
   const geoTiffArrayBuffer = await getTopo(bounds);
 
   try {
+    yield { type: "info", message: "Computing azimuths and gradients..." };
+    const { elevations, azimuths, gradients } = await computeAzimuths(geoTiffArrayBuffer);
+    console.log("elevations", elevations);
+    console.log("azimuths", azimuths);
+    console.log("gradients", gradients);
+    yield {
+      type: "rasterResult",
+      result: {
+        elevations: Array.from(elevations),
+        azimuths: Array.from(azimuths),
+        gradients: Array.from(gradients),
+      },
+    };
+
     for (let i = 0; i < waypoints.length - 1; i++) {
-      yield { type: "info", message: `Finding path for segment ${i+1}` };
-      const { path, azimuths } = await pathfind(
+      yield { type: "info", message: `Finding path for segment ${i + 1}` };
+      const path = await findPathRs(
         geoTiffArrayBuffer,
         JSON.stringify(waypoints[i]),
         JSON.stringify(waypoints[i + 1]),
-        excludedAspects
+        azimuths,
+        excludedAspects,
+        gradients,
       );
 
-      yield { type: "success", message: `Found path ${i+1}...` };
       yield {
-        type: "result",
-        result: {
-          path: path,
-          azimuths: Array.from(azimuths)
-        } 
+        type: "geoJsonResult",
+        result: path
       };
     }
   } catch (error) {

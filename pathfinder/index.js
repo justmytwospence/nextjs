@@ -310,8 +310,9 @@ if (!nativeBinding) {
   throw new Error(`Failed to load native binding`)
 }
 
-const { PathResults, Aspect, pathfind } = nativeBinding
+const { AzimuthResult, Aspect, computeAzimuths, findPathRs } = nativeBinding
 
-module.exports.PathResults = PathResults
+module.exports.AzimuthResult = AzimuthResult
 module.exports.Aspect = Aspect
-module.exports.pathfind = pathfind
+module.exports.computeAzimuths = computeAzimuths
+module.exports.findPathRs = findPathRs
