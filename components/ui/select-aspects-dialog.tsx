@@ -22,7 +22,6 @@ const aspects = new Set<Aspect>([
   "Southwest" as Aspect,
   "West" as Aspect,
   "Northwest" as Aspect,
-  "Flat" as Aspect,
 ]);
 
 interface SelectAspectsDialogProps {
@@ -50,9 +49,9 @@ export function SelectAspectsDialog({
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Select directions to avoid</DialogTitle>
+          <DialogTitle>Select aspects to avoid</DialogTitle>
           <DialogDescription>
-            Click directions you want to exclude from the path finding
+            Selected aspects will be excluded from the path if they exceed 5% gradient.
           </DialogDescription>
         </DialogHeader>
         <div className="grid grid-cols-4 gap-2">

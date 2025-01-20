@@ -43,7 +43,7 @@ fn exponential_multiplier(x: f64) -> f64 {
 }
 
 fn linear_multiplier(x: f64) -> f64 {
-  (30.0 * x).clamp(1.0, 20.0)
+  (20.0 * x).clamp(1.0, 20.0)
 }
 
 fn cost_fn(distance: f64, gradient: f64) -> i32 {
@@ -57,14 +57,15 @@ pub fn find_path_rs(
   elevations_buffer: Buffer,
   start: String,
   end: String,
+  max_gradient: Option<f64>,
   azimuths_buffer: Buffer,
   excluded_aspects: Option<Vec<Aspect>>,
   gradients_buffer: Buffer,
   aspect_gradient_threshold: Option<f64>,
 ) -> napi::Result<String> { 
-  const MAX_GRADIENT: f64 = 0.25;
-
+  let max_gradient: f64 = max_gradient.unwrap_or(1.0);
   let excluded_aspects: Vec<Aspect> = excluded_aspects.unwrap_or(vec![]);
+  let aspect_gradient_threshold: f64 = aspect_gradient_threshold.unwrap_or(0.0);
 
   let mut elevations_cursor: Cursor<Buffer> = Cursor::new(elevations_buffer);
   let mut elevations_geotiff: GeoTiffReader<&mut Cursor<Buffer>> = GeoTiffReader::open(&mut elevations_cursor).unwrap();
@@ -138,7 +139,7 @@ pub fn find_path_rs(
       if nx < width && ny < height {
         let azimuth: f64 = azimuths[ny][nx];
         let aspect_gradient: f64 = gradients[ny][nx];
-        if aspect_gradient > aspect_gradient_threshold.unwrap_or(0.0) {
+        if aspect_gradient > aspect_gradient_threshold {
           // let _ = console_log(&env, format!("Checking aspect gradient {:?} vs {:?}", aspect_gradient, aspect_gradient_threshold).as_str());
           for aspect in &excluded_aspects {
             // let _ = console_log(&env, format!("Checking aspect: {:?} against azimuth: {:?}", aspect, azimuth).as_str());
@@ -153,7 +154,7 @@ pub fn find_path_rs(
         let dz: f64 = elevations[ny][nx] - elevations[y][x];
         let gradient: f64 = dz / d;
         // let _ = console_log(&env, format!("distance: {:?}, dz: {:?}, gradient: {:?}", distance, dz, gradient).as_str());
-        if gradient < MAX_GRADIENT {
+        if gradient < max_gradient {
           let cost: i32 = cost_fn(d, gradient);
           neighbors.push(((nx, ny), cost));
         }

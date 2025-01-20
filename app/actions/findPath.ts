@@ -33,17 +33,15 @@ export type Bounds = {
 export default async function* findPath(
   waypoints: Point[],
   bounds: Bounds,
-  excludedAspects: Aspect[] = []
+  maxGradient: number,
+  excludedAspects: Aspect[] = [],
 ): AsyncGenerator<findPathMessage, void, unknown> {
   yield { type: "info", message: "Downloading DEM from OpenTopo..." };
   const geoTiffArrayBuffer = await getTopo(bounds);
 
   try {
     yield { type: "info", message: "Computing azimuths and gradients..." };
-    const { elevations, azimuths, gradients } = await computeAzimuths(geoTiffArrayBuffer);
-    console.log("elevations", elevations);
-    console.log("azimuths", azimuths);
-    console.log("gradients", gradients);
+    const { elevations, azimuths, gradients } = computeAzimuths(geoTiffArrayBuffer);
     yield {
       type: "rasterResult",
       result: {
@@ -55,10 +53,11 @@ export default async function* findPath(
 
     for (let i = 0; i < waypoints.length - 1; i++) {
       yield { type: "info", message: `Finding path for segment ${i + 1}` };
-      const path = await findPathRs(
+      const path = findPathRs(
         geoTiffArrayBuffer,
         JSON.stringify(waypoints[i]),
         JSON.stringify(waypoints[i + 1]),
+        maxGradient,
         azimuths,
         excludedAspects,
         gradients,

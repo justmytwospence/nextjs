@@ -12,25 +12,26 @@ import LeafletRasterLayer from "@/components/leaflet-raster-layer"; // Import Le
 import LocationSearch from "@/components/location-search";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Command, CommandItem, CommandList } from "@/components/ui/command";
 import {
-  Command,
-  CommandEmpty,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { SelectAspectsDialog } from "@/components/ui/select-aspects-dialog";
+import { Slider } from "@/components/ui/slider";
 import type { Aspect } from "@/pathfinder";
 import { hoverIndexStore as defaultHoverIndexStore } from "@/store";
 import { saveAs } from "file-saver";
 import type { FeatureCollection, LineString, Point } from "geojson";
 import type { GeoRaster } from "georaster";
-import type { GeoTIFF } from "geotiff";
 import { ChevronDown, Download } from "lucide-react";
 import { useCallback, useState } from "react";
 import togpx from "togpx";
@@ -48,6 +49,7 @@ export default function PathFinderPage() {
     null
   );
   const [aspectRaster, setAspectRaster] = useState<GeoRaster | null>(null);
+  const [maxGradient, setMaxGradient] = useState<number>(0.25);
 
   function handleMapClick(point: Point) {
     if (path !== null) {
@@ -142,14 +144,16 @@ export default function PathFinderPage() {
         gradients.buffer as ArrayBuffer
       )) as GeoRaster;
 
-      const mergedRaster = [azimuthRaster, gradientRaster].reduce((result, georaster) => ({
-        ...georaster,
-        maxs: [...result.maxs, ...georaster.maxs],
-        mins: [...result.mins, ...georaster.mins],
-        ranges: [...result.ranges, georaster.ranges],
-        values: [...result.values, ...georaster.values],
-        numberOfRasters: result.values.length + georaster.values.length,
-      }));
+      const mergedRaster = [azimuthRaster, gradientRaster].reduce(
+        (result, georaster) => ({
+          ...georaster,
+          maxs: [...result.maxs, ...georaster.maxs],
+          mins: [...result.mins, ...georaster.mins],
+          ranges: [...result.ranges, georaster.ranges],
+          values: [...result.values, ...georaster.values],
+          numberOfRasters: result.values.length + georaster.values.length,
+        })
+      );
       setAspectRaster(mergedRaster as GeoRaster);
     },
     []
@@ -177,6 +181,7 @@ export default function PathFinderPage() {
         <FindPathButton
           waypoints={waypoints}
           bounds={bounds}
+          maxGradient={maxGradient}
           excludedAspects={excludedAspects}
           isLoading={isLoading}
           setIsLoading={setIsLoading}
@@ -194,6 +199,31 @@ export default function PathFinderPage() {
           onSelectDirections={setExcludedAspects}
           selectedDirections={excludedAspects}
         />
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button className="flex-1">
+              Set Max Gradient ({Math.round(maxGradient * 100)}%)
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogTitle>Set Maximum Gradient</DialogTitle>
+            <DialogDescription> 
+              The maximum gradient to allow on the path.
+            </DialogDescription>
+            <Slider
+              defaultValue={[0.25]}
+              onValueChange={(value) => {
+                setMaxGradient(value[0]);
+              }}
+              min={0.05}
+              max={2}
+              step={0.01}
+            />
+            <p className="mt-2">
+              Current Max Gradient: {Math.round(maxGradient * 100)}%
+            </p>
+          </DialogContent>
+        </Dialog>
         <Popover>
           <PopoverTrigger asChild>
             <Button className="flex-1">

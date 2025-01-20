@@ -8,82 +8,91 @@ import { toast } from "sonner";
 interface FindPathButtonProps {
   waypoints: Point[];
   bounds: Bounds | null;
+  maxGradient: number;
   excludedAspects: Aspect[];
   isLoading: boolean;
   setIsLoading: (loading: boolean) => void;
   setPath: (path: LineString | null, invocationCounter: number) => void;
   setPathAspects: (aspectPoints: FeatureCollection) => void;
-  setAspectRaster: (azimuthRaster: Uint8Array, gradientRaster: Uint8Array) => void;
+  setAspectRaster: (
+    azimuthRaster: Uint8Array,
+    gradientRaster: Uint8Array
+  ) => void;
 }
 
 export default function FindPathButton({
   waypoints,
   bounds,
+  maxGradient,
   excludedAspects,
   isLoading,
   setIsLoading,
   setPath,
   setPathAspects,
-  setAspectRaster
+  setAspectRaster,
 }: FindPathButtonProps) {
   async function handleClick() {
     if (!bounds) return;
     setIsLoading(true);
     toast.dismiss();
 
-    try {
-      const pathGenerator = await findPath(waypoints, bounds, excludedAspects);
+    const pathGenerator = await findPath(
+      waypoints,
+      bounds,
+      maxGradient,
+      excludedAspects
+    );
 
-      let pathSegmentCounter = 0;
-      for await (const result of pathGenerator) {
-        switch (result.type) {
-          case "info":
-            toast.dismiss();
-            toast.message(result.message, { duration: Number.POSITIVE_INFINITY });
-            break;
-          case "success":
-            toast.dismiss();
-            toast.success(result.message);
-            break;
-          case "warning":
-            toast.warning(result.message);
-            break;
-          case "error":
-            toast.dismiss();
-            toast.error(result.message);
-            break;
-          case "rasterResult": {
-            toast.dismiss();
-            toast.success("Azimuths and gradients computed");
-            const { elevations, azimuths, gradients } = result.result;
-            setAspectRaster(new Uint8Array(azimuths), new Uint8Array(gradients));
-            break;
-          }
-          case "geoJsonResult": {
-            toast.dismiss();
-            toast.success("Path found!");
-            const path = {
-              type: "LineString",
-              coordinates: JSON.parse(result.result).features.map(
-                (point) => point.geometry.coordinates
-              ),
-            } as LineString;
-            setPath(path, pathSegmentCounter);
-            setPathAspects(JSON.parse(result.result));
-            pathSegmentCounter++;
-            break;
-          }
+    let pathSegmentCounter = 0;
+    for await (const result of pathGenerator) {
+      switch (result.type) {
+        case "info":
+          toast.dismiss();
+          toast.message(result.message, { duration: Number.POSITIVE_INFINITY });
+          break;
+        case "success":
+          toast.dismiss();
+          toast.success(result.message);
+          break;
+        case "warning":
+          toast.warning(result.message);
+          break;
+        case "error":
+          toast.dismiss();
+          toast.error(result.message);
+          break;
+        case "rasterResult": {
+          toast.dismiss();
+          toast.success("Azimuths and gradients computed");
+          const { elevations, azimuths, gradients } = result.result;
+          setAspectRaster(new Uint8Array(azimuths), new Uint8Array(gradients));
+          break;
+        }
+        case "geoJsonResult": {
+          toast.dismiss();
+          toast.success("Path found!");
+          const path = {
+            type: "LineString",
+            coordinates: JSON.parse(result.result).features.map(
+              (point) => point.geometry.coordinates
+            ),
+          } as LineString;
+          setPath(path, pathSegmentCounter);
+          setPathAspects(JSON.parse(result.result));
+          pathSegmentCounter++;
+          break;
         }
       }
-    } catch (error) {
-      // Error handling is already managed by the generator
-    } finally {
-      setIsLoading(false);
     }
+    setIsLoading(false);
   }
 
   return (
-    <Button className="flex-1" onClick={handleClick} disabled={waypoints.length < 2}>
+    <Button
+      className="flex-1"
+      onClick={handleClick}
+      disabled={waypoints.length < 2}
+    >
       {isLoading ? (
         <>
           Find Path

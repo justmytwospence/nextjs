@@ -99,7 +99,7 @@ fn compute_gradient_along_azimuth(gx: f64, gy: f64, azimuth: f64) -> f64 {
   ((gx_normalized * gx_normalized) + (gy_normalized * gy_normalized)).sqrt()
 }
 
-/// Apply a 5x5 Sobel filter to compute azimuth and gradient along azimuth for each pixel on a `Vec<f64>`
+/// Apply a 5x5 Sobel filter to compute azimuth and gradient along azimuth for each pixel on a `Vec<f32>`
 #[napi]
 pub fn compute_azimuths(elevations_geotiff: Buffer) -> AzimuthResult {
   let mut cursor: Cursor<Buffer> = Cursor::new(elevations_geotiff);

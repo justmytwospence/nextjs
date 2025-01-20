@@ -14,9 +14,9 @@ export enum Aspect {
   Northwest = 'Northwest',
   Flat = 'Flat'
 }
-/** Apply a 5x5 Sobel filter to compute azimuth and gradient along azimuth for each pixel on a `Vec<f64>` */
+/** Apply a 5x5 Sobel filter to compute azimuth and gradient along azimuth for each pixel on a `Vec<f32>` */
 export declare function computeAzimuths(elevationsGeotiff: Buffer): AzimuthResult
-export declare function findPathRs(elevationsBuffer: Buffer, start: string, end: string, azimuthsBuffer: Buffer, excludedAspects: Array<Aspect> | undefined | null, gradientsBuffer: Buffer, aspectGradientThreshold?: number | undefined | null): string
+export declare function findPathRs(elevationsBuffer: Buffer, start: string, end: string, maxGradient: number | undefined | null, azimuthsBuffer: Buffer, excludedAspects: Array<Aspect> | undefined | null, gradientsBuffer: Buffer, aspectGradientThreshold?: number | undefined | null): string
 export declare class AzimuthResult {
   elevations: Buffer
   azimuths: Buffer
