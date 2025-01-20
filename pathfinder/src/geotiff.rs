@@ -1,6 +1,6 @@
 use std::io::Cursor;
 use napi::bindgen_prelude::Buffer;
-use tiff::encoder::colortype::Gray64Float;
+use tiff::encoder::colortype::Gray32Float;
 use tiff::encoder::TiffEncoder;
 use tiff::tags::Tag;
 use tiff::TiffError;
@@ -21,10 +21,10 @@ pub fn serialize_to_geotiff(
     let mut image: tiff::encoder::ImageEncoder<
       '_,
       &mut Cursor<Vec<u8>>,
-      Gray64Float,
+      Gray32Float,
       tiff::encoder::TiffKindStandard,
     > = encoder
-      .new_image::<Gray64Float>(width as u32, height as u32)
+      .new_image::<Gray32Float>(width as u32, height as u32)
       .map_err(|e: TiffError| napi::Error::from_reason(format!("{}", e)))
       .unwrap();
 
@@ -54,7 +54,7 @@ pub fn serialize_to_geotiff(
       .write_tag(Tag::Unknown(33922), &tie_points[..])
       .unwrap(); // ModelTiePointTag
 
-    let flattened: Vec<f64> = raster.into_iter().flatten().collect();
+    let flattened: Vec<f32> = raster.into_iter().flatten().map(|x| x as f32).collect();
     image
       .write_data(&flattened)
       .map_err(|e: TiffError| napi::Error::from_reason(format!("{}", e)))
