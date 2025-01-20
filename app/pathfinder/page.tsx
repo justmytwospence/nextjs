@@ -206,7 +206,7 @@ export default function PathFinderPage() {
           </DialogTrigger>
           <DialogContent>
             <DialogTitle>Set Maximum Gradient</DialogTitle>
-            <DialogDescription> 
+            <DialogDescription>
               The maximum gradient to allow on the path.
             </DialogDescription>
             <Slider
@@ -223,7 +223,11 @@ export default function PathFinderPage() {
             </p>
           </DialogContent>
         </Dialog>
-        <Button className="flex-1" onClick={handleDownloadGpx}>
+        <Button
+          className="flex-1"
+          disabled={path == null}
+          onClick={handleDownloadGpx}
+        >
           Save GPX <Download className="ml-2 h-4 w-4" />
         </Button>
       </div>
