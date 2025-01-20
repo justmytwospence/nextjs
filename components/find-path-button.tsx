@@ -60,6 +60,7 @@ export default function FindPathButton({
         case "error":
           toast.dismiss();
           toast.error(result.message);
+          setIsLoading(false);
           break;
         case "rasterResult": {
           toast.dismiss();
