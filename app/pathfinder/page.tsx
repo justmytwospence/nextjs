@@ -12,7 +12,6 @@ import LeafletRasterLayer from "@/components/leaflet-raster-layer"; // Import Le
 import LocationSearch from "@/components/location-search";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Command, CommandItem, CommandList } from "@/components/ui/command";
 import {
   Dialog,
   DialogContent,
@@ -224,32 +223,9 @@ export default function PathFinderPage() {
             </p>
           </DialogContent>
         </Dialog>
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button className="flex-1">
-              Save <ChevronDown className="ml-2 h-4 w-4" />
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-[200px] p-0" align="end">
-            <Command className="rounded-none">
-              <CommandList>
-                <CommandItem
-                  className="rounded-none"
-                  onSelect={handleDownloadGpx}
-                >
-                  <Download className="mr-2 h-4 w-4" />
-                  Download GPX
-                </CommandItem>
-                <CommandItem
-                  className="rounded-none"
-                  onSelect={() => console.log("Save to Strava")}
-                >
-                  Save to Strava
-                </CommandItem>
-              </CommandList>
-            </Command>
-          </PopoverContent>
-        </Popover>
+        <Button className="flex-1" onClick={handleDownloadGpx}>
+          Save GPX <Download className="ml-2 h-4 w-4" />
+        </Button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -282,7 +258,7 @@ export default function PathFinderPage() {
         <Card className="p-4">
           <h2 className="text-lg font-semibold mb-2">Aspect Distribution</h2>
           {pathAspects && (
-            <div className="h-[300px]">
+            <div className="h-[300px] flex items-center justify-center">
               <AspectChart aspectPoints={pathAspects} />
             </div>
           )}
