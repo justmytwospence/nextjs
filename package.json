@@ -45,6 +45,7 @@
     "chartjs-plugin-zoom": "^2",
     "class-variance-authority": "^0.7",
     "clsx": "^2.1",
+    "cmdk": "^1.0.4",
     "date-fns": "^3.6",
     "encoding": "^0.1.13",
     "file-saver": "^2.0.5",
