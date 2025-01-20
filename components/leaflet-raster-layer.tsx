@@ -55,9 +55,7 @@ export default function LeafletRasterLayer({
         console.log(`Azimuth: ${azimuth}, Gradient: ${gradient}`);
         for (const excludedAspect of excludedAspects) {
           if (containsAzimuth(excludedAspect, azimuth, 2.5)) {
-            const color = `rgba(255, 0, 0, ${Math.min(gradient, 1)})`;
-            console.log(color)
-            return `rgba(255, 0, 0, ${Math.min(gradient, 1)})`;
+            return `rgba(255, 0, 0, ${Math.min(gradient * 0.4, 0.8)})`;
           }
         }
         return "transparent";

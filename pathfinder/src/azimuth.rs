@@ -84,16 +84,27 @@ pub fn calculate_azimuth(gx: f64, gy: f64) -> f64 {
 
 /// Compute gradient along azimuth
 fn compute_gradient_along_azimuth(gx: f64, gy: f64, azimuth: f64) -> f64 {
-  let azimuth_rad: f64 = azimuth.to_radians();
-  gx * azimuth_rad.cos() + gy * azimuth_rad.sin()
+  if azimuth == -1.0 {
+    return 0.0;
+  }
+
+  const PIXEL_SIZE: f64 = 10.0; // 10m pixel size
+  const KERNEL_SUM: f64 = 68.0; // Sum of absolute values in Sobel 5x5 kernel
+
+  // Normalize gradients
+  let gx_normalized: f64 = gx / (KERNEL_SUM * PIXEL_SIZE).abs();
+  let gy_normalized: f64 = gy / (KERNEL_SUM * PIXEL_SIZE).abs();
+
+  // Calculate slope as rise/run
+  ((gx_normalized * gx_normalized) + (gy_normalized * gy_normalized)).sqrt()
 }
 
 /// Apply a 5x5 Sobel filter to compute azimuth and gradient along azimuth for each pixel on a `Vec<f64>`
 #[napi]
 pub fn compute_azimuths(elevations_geotiff: Buffer) -> AzimuthResult {
-
   let mut cursor: Cursor<Buffer> = Cursor::new(elevations_geotiff);
-  let mut elevations_geotiff: GeoTiffReader<&mut Cursor<Buffer>> = GeoTiffReader::open(&mut cursor).unwrap();
+  let mut elevations_geotiff: GeoTiffReader<&mut Cursor<Buffer>> =
+    GeoTiffReader::open(&mut cursor).unwrap();
   let elevations: Vec<Vec<f64>> = get_raster(&mut elevations_geotiff).unwrap();
 
   let gx_kernel: [[f64; 5]; 5] = [

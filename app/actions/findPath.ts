@@ -62,6 +62,7 @@ export default async function* findPath(
         azimuths,
         excludedAspects,
         gradients,
+        0.05
       );
 
       yield {
