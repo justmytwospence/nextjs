@@ -72,8 +72,8 @@ STRAVA_WEBHOOK_VERIFY_TOKEN=""
 - pathfinder
   - [X] Fix map implementation
   - [X] Change polyline color
-  - [ ] Save to Strava
-  - [ ] Improve Aspect categorization
-  - [ ] Set raster opacity by gradient
+  - [X] Save to Strava
+  - [X] Improve Aspect categorization
+  - [X] Set raster opacity by gradient
   - [ ] Hide charts at the beginning
   - [ ] Cache geotiffs
