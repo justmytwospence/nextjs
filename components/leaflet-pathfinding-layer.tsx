@@ -3,7 +3,7 @@ import { baseLogger } from "@/lib/logger";
 import type { Point } from "geojson";
 import L from "leaflet";
 import type { LatLngExpression } from "leaflet";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { CircleMarker, Polyline, useMap, useMapEvents } from "react-leaflet";
 
 interface LeafletPathfindingLayerProps {
@@ -22,24 +22,38 @@ export default function LeafletPathfindingLayer({
   mapCenter,
 }: LeafletPathfindingLayerProps) {
   const map = useMap();
+  const [userLocation, setUserLocation] = useState<[number, number] | null>(
+    () => {
+      const savedUserLocation = localStorage.getItem("userLocation");
+      if (savedUserLocation) {
+        return JSON.parse(savedUserLocation);
+      }
+      if (navigator?.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const location: [number, number] = [
+              position.coords.latitude,
+              position.coords.longitude,
+            ];
+            localStorage.setItem("userLocation", JSON.stringify(location));
+            setUserLocation(location);
+          },
+          (error) => {
+            baseLogger.error("Error getting location:", error);
+          }
+        );
+      }
+      return null;
+    }
+  );
 
   useEffect(() => {
     if (mapCenter) {
       map.setView(mapCenter, 13, { animate: true });
-    } else if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          map.setView(
-            [position.coords.latitude, position.coords.longitude],
-            13
-          );
-        },
-        (error) => {
-          baseLogger.error("Geolocation error:", error);
-        }
-      );
+    } else if (userLocation) {
+      map.setView(userLocation, 13, { animate: true });
     }
-  }, [mapCenter, map]);
+  }, [map, mapCenter, userLocation]);
 
   const mapEvents = useMapEvents({
     click(e) {
