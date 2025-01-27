@@ -10,16 +10,16 @@ generator json {
 datasource db {
   provider   = "postgresql"
   url        = env("DATABASE_URL")
-  // directUrl  = env("DIRECT_URL")
-  extensions = [postgis, postgis_raster]
+  directUrl  = env("DIRECT_URL")
+  // extensions = [postgis, postgis_raster]
 }
 
-model ElevationTile {
-  // autoincrement happens at the DB level, unlike UUID or CUID, which is nice
-  // because we have to write raw SQL for postgis
-  rid  Int                   @id @default(autoincrement())
-  rast Unsupported("raster")
-}
+// model ElevationTile {
+//   // autoincrement happens at the DB level, unlike UUID or CUID, which is nice
+//   // because we have to write raw SQL for postgis
+//   rid  Int                   @id @default(autoincrement())
+//   rast Unsupported("raster")
+// }
 
 model User {
   id        String   @id @default(cuid())
